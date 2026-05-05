@@ -252,7 +252,8 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION = '1.4.0';
+const VERSION    = '1.5.0';
+const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 const analyzer = new SpamAnalyzer();
 let currentScore   = null;
@@ -269,6 +270,7 @@ Office.onReady(info => {
   document.getElementById('btn-scan').addEventListener('click', scanJunkFolder);
   document.getElementById('btn-copy-headers').addEventListener('click', () => copyToClipboard(lastHeaders, 'Header kopiert'));
   document.getElementById('btn-copy-body').addEventListener('click',    () => copyToClipboard(lastBodyText, 'Body-Text kopiert'));
+  document.getElementById('btn-claude').addEventListener('click', runClaudeCheck);
 
   initPinHint();
   document.getElementById('version-label').textContent = 'v' + VERSION;
@@ -606,6 +608,85 @@ function verdictText(score) {
   if (score <= 6)  return 'Verdächtig';
   if (score <= 8)  return 'Wahrscheinlich Spam';
   return 'Sehr wahrscheinlich Spam';
+}
+
+// ─── Claude AI check ───────────────────────────────────────────────────────────
+
+async function runClaudeCheck() {
+  const btn      = document.getElementById('btn-claude');
+  const resultEl = document.getElementById('claude-result');
+
+  if (!lastHeaders && !lastBodyText) {
+    showToast('Keine E-Mail-Daten verfügbar — bitte zuerst analysieren', true);
+    return;
+  }
+
+  btn.disabled    = true;
+  btn.textContent = 'Claude analysiert…';
+  resultEl.classList.add('hidden');
+  resultEl.innerHTML = '';
+
+  const item        = Office.context.mailbox.item;
+  const subject     = item?.subject      || '';
+  const senderEmail = item?.from?.emailAddress || '';
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ headers: lastHeaders, bodyText: lastBodyText, subject, senderEmail }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Worker-Fehler ${res.status}: ${errText}`);
+    }
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    renderClaudeResult(data);
+  } catch (err) {
+    resultEl.innerHTML = `<p class="claude-error">⚠ ${escapeHtml(err.message)}</p>`;
+    resultEl.classList.remove('hidden');
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Mit Claude AI prüfen';
+  }
+}
+
+function renderClaudeResult(data) {
+  const resultEl = document.getElementById('claude-result');
+
+  const cls   = data.verdict === 'spam'     ? 'claude-spam'
+              : data.verdict === 'ham'       ? 'claude-ham'
+              :                               'claude-uncertain';
+
+  const label = data.verdict === 'spam'     ? '🚨 Spam'
+              : data.verdict === 'ham'       ? '✅ Kein Spam'
+              : data.verdict === 'uncertain' ? '⚠️ Unsicher'
+              :                               '❓ Unbekannt';
+
+  const signalsHtml = (data.signals || []).length
+    ? '<ul class="claude-signals">' +
+        data.signals.map(s => `<li>${escapeHtml(s)}</li>`).join('') +
+      '</ul>'
+    : '';
+
+  const scoreHtml = data.score != null
+    ? `<span class="claude-score">Score: ${data.score}/10</span>`
+    : '';
+
+  resultEl.innerHTML = `
+    <div class="claude-verdict ${cls}">
+      <strong>${label}</strong>
+      <span class="claude-confidence">${data.confidence ?? '—'}% Konfidenz</span>
+      ${scoreHtml}
+    </div>
+    ${data.summary ? `<p class="claude-summary">${escapeHtml(data.summary)}</p>` : ''}
+    ${signalsHtml}
+  `;
+  resultEl.classList.remove('hidden');
 }
 
 function initPinHint() {

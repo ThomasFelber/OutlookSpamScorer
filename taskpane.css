@@ -378,6 +378,80 @@ body {
 
 .pin-hint-dismiss:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
+/* ── Claude AI button ────────────────────────────────────────────────────── */
+
+.btn-claude {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid #6264a7;
+  background: #f0f0ff;
+  color: #3b3b8c;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: background 0.12s;
+}
+.btn-claude:hover:not(:disabled) { background: #e3e3f8; }
+.btn-claude:focus-visible { outline: 2px solid #6264a7; outline-offset: 2px; }
+.btn-claude:disabled { opacity: 0.6; cursor: default; }
+
+/* ── Claude result ───────────────────────────────────────────────────────── */
+
+.claude-result { font-size: 13px; }
+
+.claude-verdict {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.claude-spam     { background: var(--critical-bg); color: var(--critical); border-color: var(--critical-border); }
+.claude-ham      { background: var(--low-bg);      color: var(--low);      border-color: var(--low-border); }
+.claude-uncertain{ background: var(--medium-bg);   color: var(--medium);   border-color: var(--medium-border); }
+
+.claude-confidence { margin-left: auto; font-size: 11px; font-weight: 400; opacity: 0.85; }
+.claude-score      { font-size: 11px; font-weight: 400; opacity: 0.85; }
+
+.claude-summary {
+  color: var(--subtle);
+  margin-bottom: 8px;
+  line-height: 1.45;
+}
+
+.claude-signals {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.claude-signals li {
+  padding: 2px 0 2px 14px;
+  position: relative;
+  font-size: 12px;
+  color: var(--subtle);
+}
+
+.claude-signals li::before {
+  content: '·';
+  position: absolute;
+  left: 4px;
+}
+
+.claude-error {
+  color: var(--critical);
+  font-size: 12px;
+}
+
 /* ── Version label ───────────────────────────────────────────────────────── */
 
 .version-label {
