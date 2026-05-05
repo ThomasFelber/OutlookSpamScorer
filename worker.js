@@ -83,11 +83,13 @@ Analyse the provided email data carefully and respond with a single JSON object 
 JSON shape:
 {
   "verdict":    "spam" | "ham" | "uncertain",
-  "confidence": <integer 0–100>,
-  "score":      <integer 0–10>,
+  "confidence": <integer 0–100, certainty in the verdict>,
+  "score":      <integer 0–10, SPAM score: 0 = definitely legitimate, 10 = definitely spam>,
   "signals":    ["<specific finding>", ...],
   "summary":    "<1–2 sentences in German explaining the verdict>"
-}`,
+}
+
+Score and verdict must be consistent: spam → score 7–10, uncertain → score 4–6, ham → score 0–3.`,
             cache_control: { type: 'ephemeral' },
           },
         ],
