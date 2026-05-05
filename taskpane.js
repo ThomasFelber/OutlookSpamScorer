@@ -83,43 +83,64 @@ class SpamAnalyzer {
       }
     }
 
-    // Reply-To domain differs from From domain — classic phishing pattern
+    // OFR:SpamFilterAuthJ = Exchange spam filter explicitly overrode an auth-based pass decision.
+    // Strong signal: the server identified spam characteristics despite clean auth.
+    if (/OFR:SpamFilter/i.test(msDelivery)) {
+      score += 1;
+      reasons.push('Microsoft Exchange: Spam-Filter hat Auth-Pass überstimmt (OFR:SpamFilter)');
+    }
+
+    // Reply-To domain differs from From domain — classic phishing pattern.
+    // Use root-domain comparison so subdomain senders (noreply@mail.company.com) replying
+    // to the parent domain (support@company.com) are not falsely flagged.
     const fromHeader    = this._getHeader(headers, 'From')     || '';
     const replyToHeader = this._getHeader(headers, 'Reply-To') || '';
     if (fromHeader && replyToHeader) {
       const fromDomain    = this._extractDomain(fromHeader);
       const replyToDomain = this._extractDomain(replyToHeader);
-      if (fromDomain && replyToDomain && fromDomain !== replyToDomain) {
+      const fromRoot      = this._extractRootDomain(fromDomain);
+      const replyToRoot   = this._extractRootDomain(replyToDomain);
+      if (fromRoot && replyToRoot && fromRoot !== replyToRoot) {
         score += 1;
         reasons.push(`Reply-To-Domain abweichend (${replyToDomain} ≠ ${fromDomain})`);
       }
     }
 
-    // Return-Path domain mismatch
+    // Return-Path domain mismatch — bounce addresses on a subdomain are normal
+    // (e.g. bounce.mail.company.com for a sender at mail.company.com).
     const returnPath = this._getHeader(headers, 'Return-Path') || '';
     if (fromHeader && returnPath) {
       const fromDomain       = this._extractDomain(fromHeader);
       const returnPathDomain = this._extractDomain(returnPath);
-      if (fromDomain && returnPathDomain && fromDomain !== returnPathDomain) {
+      const fromRoot         = this._extractRootDomain(fromDomain);
+      const returnPathRoot   = this._extractRootDomain(returnPathDomain);
+      if (fromRoot && returnPathRoot && fromRoot !== returnPathRoot) {
         score += 0.5;
         reasons.push(`Return-Path-Domain abweichend (${returnPathDomain})`);
       }
     }
 
     // HELO domain mismatch — connecting server's HELO name doesn't match envelope From domain.
-    // Skip when auth fully passes OR HELO is a known legitimate ESP hostname.
+    // Known ESP hostnames are whitelisted. When auth fully passes, apply reduced penalty
+    // (spammers increasingly register throwaway domains with valid SPF/DKIM/DMARC but still
+    // use unrelated sending infrastructure, e.g. HELO=pitchbook.com for a .web.id sender).
     const espHelo = /\.(mailgun\.net|sendgrid\.net|amazonses\.com|sparkpostmail\.com|exacttarget\.com|salesforceemails\.com|campaignmonitor\.com|createsend\.com|mandrill\.com|postmarkapp\.com|mimecast\.com|proofpoint\.com|constantcontact\.com|hubspot\.com|marketo\.net|klaviyo\.com|brevo\.com|mailjet\.com|elasticemail\.com)$/i;
     const receivedSpf = this._getHeader(headers, 'Received-SPF') || '';
     const heloM = receivedSpf.match(/helo=([\w.-]+)/i);
-    if (heloM && !authFullyPasses) {
+    if (heloM) {
       const heloDomain  = heloM[1].toLowerCase();
       const fromDomainH = this._extractDomain(fromHeader);
       if (fromDomainH && heloDomain !== fromDomainH
           && !heloDomain.endsWith('.' + fromDomainH)
           && !fromDomainH.endsWith('.' + heloDomain)
           && !espHelo.test(heloDomain)) {
-        score += 1;
-        reasons.push(`HELO-Domain abweichend (${heloDomain} ≠ ${fromDomainH})`);
+        if (authFullyPasses) {
+          score += 0.5;
+          reasons.push(`HELO-Domain abweichend (${heloDomain} ≠ ${fromDomainH}) — trotz vollst. Auth`);
+        } else {
+          score += 1;
+          reasons.push(`HELO-Domain abweichend (${heloDomain} ≠ ${fromDomainH})`);
+        }
       }
     }
 
@@ -136,14 +157,23 @@ class SpamAnalyzer {
       }
     }
 
-    // Multiple DKIM signatures from different domains → relaying through unrelated infrastructure
+    // Multiple DKIM signatures from different domains → relaying through unrelated infrastructure.
+    // Exclude known infrastructure providers (Amazon SES, SendGrid, …) that co-sign transactional
+    // email on behalf of the real sender, and same-org subdomains.
     const allDkimSigs = headers.match(/^DKIM-Signature:.+(?:\r?\n[ \t].+)*/gim) || [];
     if (allDkimSigs.length > 1) {
       const dkimDomains = new Set(
         allDkimSigs.map(s => (s.match(/\bd=([\w.-]+)/i) || [])[1]?.toLowerCase()).filter(Boolean)
       );
-      const fromDomainC = this._extractDomain(fromHeader);
-      const foreignDoms = [...dkimDomains].filter(d => d !== fromDomainC);
+      const fromDomainC     = this._extractDomain(fromHeader);
+      const fromRootDomainC = this._extractRootDomain(fromDomainC);
+      const dkimInfraRe = /amazonses\.com|sendgrid\.net|mailgun\.net|sparkpostmail\.com|mandrill\.com|exacttarget\.com|postmarkapp\.com|brevo\.com|mailjet\.com|elasticemail\.com|klaviyo\.com/i;
+      const foreignDoms = [...dkimDomains].filter(d =>
+        d !== fromDomainC &&
+        this._extractRootDomain(d) !== fromRootDomainC &&
+        !dkimInfraRe.test(d) &&
+        !dkimRelayWhitelist.test(d)
+      );
       if (dkimDomains.size > 1 && foreignDoms.length > 0) {
         score += 1.5;
         reasons.push(`Mehrere DKIM-Signaturen aus verschiedenen Domains: ${[...dkimDomains].join(', ')}`);
@@ -161,9 +191,11 @@ class SpamAnalyzer {
     const precedence = this._getHeader(headers, 'Precedence') || '';
     if (/bulk|junk/i.test(precedence)) { score += 0.3; reasons.push('Precedence: bulk/junk'); }
 
-    // Excessive mail hops — overly forwarded / obfuscated routing
+    // Excessive mail hops — overly forwarded / obfuscated routing.
+    // Threshold is 12: large enterprise environments (Exchange, Domino) and multi-region
+    // transactional relay chains legitimately produce 9–11 hops.
     const hopCount = (headers.match(/^Received:/gim) || []).length;
-    if (hopCount > 8) { score += 0.5; reasons.push(`Viele Mail-Hops (${hopCount} Received-Zeilen)`); }
+    if (hopCount > 12) { score += 0.5; reasons.push(`Viele Mail-Hops (${hopCount} Received-Zeilen)`); }
 
     // postmaster@ is a system address — never sends newsletters or commercial mail
     const fromEmail = (fromHeader.match(/<([^>]+)>/) || [])[1] || fromHeader.trim();
@@ -172,11 +204,26 @@ class SpamAnalyzer {
       reasons.push('Absender postmaster@ — System-Adresse, kein legitimer Newsletter-Absender');
     }
 
+    // Spam keywords in the From email's local part (e.g. "Casino-angebot_2026@…").
+    // Legitimate senders never encode campaign names in their address.
+    const fromLocalPart = fromEmail.split('@')[0] || '';
+    if (/^(casino|jackpot|lotto|freispiel|gluck|glueck|wett|winn|gewinn|slot[-_]?s?|roulette|blackjack)/i.test(fromLocalPart)) {
+      score += 1.5;
+      reasons.push(`Spam-Keyword im Absender-Nutzernamen: "${fromLocalPart}"`);
+    }
+
+    // Expose authFullyPasses to _analyzeBody via instance state (avoids parameter threading)
+    this._lastAuthFullyPasses = authFullyPasses;
+
     return score;
   }
 
   _analyzeBody(bodyHtml, subject, reasons) {
     let score = 0;
+
+    // Read auth state set by _analyzeHeaders — used to reduce penalties for
+    // authenticated bulk/transactional senders (e.g. Deutsche Bahn, Anthropic invoices)
+    const authFullyPasses = this._lastAuthFullyPasses || false;
 
     const plainText   = this._stripHtml(bodyHtml || '');
     const fullText    = (subject || '') + ' ' + plainText;
@@ -187,11 +234,11 @@ class SpamAnalyzer {
       { re: /gewinn(en|er|t)|lotterie|jackpot|millionen?\s*euro|preis\s*gewonnen/i,        w: 2,   label: 'Gewinnversprechen' },
       { re: /nigeria|prince|inheritance|erbschaft|million[s]?\s*dollar/i,                  w: 2.5, label: 'Nigeria-/Vorschussbetrug' },
       { re: /viagra|cialis|levitra|pharmacy|apotheke\s*ohne\s*rezept/i,                    w: 2.5, label: 'Pharma-Spam' },
-      { re: /casino|online.?wett(en|büro)|glücksspiel/i,                                   w: 1.5, label: 'Glücksspiel' },
+      { re: /casino|online.?wett(en|büro)|glücksspiel|freispiel(e)?|\bslots?\b|roulette|blackjack|poker\s*bonus/i, w: 1.5, label: 'Glücksspiel/Casino' },
       { re: /ihr\s+(konto|paypal|amazon|apple|microsoft).{0,30}(gesperrt|deaktiviert)/i,   w: 2,   label: 'Phishing: Konto gesperrt' },
       { re: /passwort\s*(ablaufen|bestätigen|verifizieren|erneuern|expired)/i,             w: 2,   label: 'Phishing: Passwort-Anfrage' },
       { re: /klicken\s*sie\s*hier|click\s*here|jetzt\s*klicken/i,                         w: 0.5, label: 'Generische Klick-Aufforderung' },
-      { re: /dringend|urgent|sofort\s*handeln|act\s*now|limited\s*time|angebot\s*endet/i, w: 0.5, label: 'Künstliche Dringlichkeit' },
+      { re: /dringend|urgent|sofort\s*handeln|act\s*now|limited\s*time|angebot\s*(endet|läuft)|läuft\s*(heute\s*)?ab|bald\s*nicht\s*mehr\s*verfügbar|bonus\s*(endet|läuft|expires)|angebot\s+endet\s+bald/i, w: 0.5, label: 'Künstliche Dringlichkeit' },
       { re: /100\s*%\s*(kostenlos|gratis|free)|völlig\s*kostenlos/i,                      w: 0.8, label: 'Gratis-Versprechen' },
       { re: /sie\s*wurden\s*ausgewählt|you\s*have\s*been\s*selected/i,                    w: 1.5, label: 'Pseudo-Auszeichnung' },
       { re: /\bcrypto|bitcoin|kryptowährun|invest.{0,30}(rendite|gewinne?|robot)|hohe\s*rendite|trading.{0,20}(auto|bot|signal)|warum\s+alle.{0,20}invest|fibonacci|forex\s+signal/i, w: 1.5, label: 'Crypto/Investment-Spam' },
@@ -257,15 +304,30 @@ class SpamAnalyzer {
         score += 1;
         reasons.push('Sehr kurzer Text mit mehreren Links');
       } else if (textLen > 0 && (linkCount / (textLen / 100)) > 0.4) {
-        score += Math.min(1, linkCount * 0.12);
-        reasons.push(`Hohe Link-Dichte (${linkCount} Links)`);
+        // Reduce link-density penalty for fully-authenticated senders (transactional mail
+        // legitimately contains many tracked links)
+        const raw     = Math.min(1, linkCount * 0.12);
+        const penalty = authFullyPasses ? raw * 0.3 : raw;
+        if (penalty >= 0.1) {
+          score += penalty;
+          reasons.push(`Hohe Link-Dichte (${linkCount} Links)`);
+        }
       }
     }
 
-    // Hidden / invisible text — classic spam obfuscation technique
+    // Hidden / invisible text — classic spam obfuscation technique.
+    // Distinguish: substantial hidden text → strong signal regardless of auth;
+    // minimal hidden content (tracking pixel etc.) → only penalise unauthenticated senders.
     if (/color\s*:\s*(white|#fff\b|#ffffff)|font-size\s*:\s*[01]px|display\s*:\s*none|visibility\s*:\s*hidden/i.test(bodyHtml || '')) {
-      score += 1.5;
-      reasons.push('Versteckter/unsichtbarer Text gefunden');
+      const hiddenContent = this._extractHiddenText(bodyHtml || '');
+      if (hiddenContent.length > 60) {
+        score += 1.5;
+        reasons.push('Versteckter/unsichtbarer Text gefunden (substantiell)');
+      } else if (!authFullyPasses) {
+        score += 0.5;
+        reasons.push('Versteckte Elemente gefunden (Tracking-Pixel o.ä.)');
+      }
+      // authFullyPasses + minimal hidden content → no penalty (normal transactional mail)
     }
 
     // Quoted-Printable obfuscation in HTML body — spam pipelines encode content to evade filters
@@ -381,6 +443,20 @@ class SpamAnalyzer {
     return m ? m[1].toLowerCase() : null;
   }
 
+  // Return the eTLD+1 root domain (e.g. mail.anthropic.com → anthropic.com)
+  // Handles common multi-part TLDs (co.uk, com.au, etc.) to avoid false mismatches
+  // between subdomains of the same organisation.
+  _extractRootDomain(domain) {
+    if (!domain) return null;
+    const multiTld = /\.(co\.(uk|jp|nz|za|in)|com\.(au|br|mx)|net\.(au|nz)|org\.(uk|nz)|web\.id|my\.id|biz\.id|sch\.id)$/i;
+    if (multiTld.test(domain)) {
+      const m = domain.match(/[^.]+\.[^.]+\.[^.]+$/);
+      return m ? m[0] : domain;
+    }
+    const parts = domain.split('.');
+    return parts.length >= 2 ? parts.slice(-2).join('.') : domain;
+  }
+
   _stripHtml(html) {
     return html
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
@@ -399,7 +475,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '1.9.0';
+const VERSION    = '1.9.2';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 const analyzer = new SpamAnalyzer();
