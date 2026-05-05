@@ -208,13 +208,19 @@ Office.onReady(info => {
   document.getElementById('btn-copy-headers').addEventListener('click', () => copyToClipboard(lastHeaders, 'Header kopiert'));
   document.getElementById('btn-copy-body').addEventListener('click',    () => copyToClipboard(lastBodyText, 'Body-Text kopiert'));
 
+  initPinHint();
+
   // Stay open automatically for every email from now on
   if (Office.addin?.setStartupBehavior) {
     Office.addin.setStartupBehavior(Office.StartupBehavior.load).catch(() => {});
   }
 
   // Re-analyze when user navigates to a different email (pinned pane)
-  Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, analyzeCurrentItem);
+  // Also hides the pin hint — ItemChanged only fires when the pane IS pinned
+  Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, () => {
+    hidePinHint();
+    analyzeCurrentItem();
+  });
 
   analyzeCurrentItem();
 });
@@ -537,6 +543,21 @@ function verdictText(score) {
   if (score <= 6)  return 'Verdächtig';
   if (score <= 8)  return 'Wahrscheinlich Spam';
   return 'Sehr wahrscheinlich Spam';
+}
+
+function initPinHint() {
+  const hint = document.getElementById('pin-hint');
+  if (!hint) return;
+  if (localStorage.getItem('pinHintDismissed')) { hint.classList.add('hidden'); return; }
+  document.getElementById('pin-hint-dismiss').addEventListener('click', () => {
+    localStorage.setItem('pinHintDismissed', '1');
+    hint.classList.add('hidden');
+  });
+}
+
+function hidePinHint() {
+  const hint = document.getElementById('pin-hint');
+  if (hint) hint.classList.add('hidden');
 }
 
 function copyToClipboard(text, successMsg) {

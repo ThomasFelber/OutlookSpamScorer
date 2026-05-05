@@ -346,6 +346,38 @@ body {
 .toast.ok  { background: var(--low-bg);      color: var(--low);      border-color: var(--low-border); }
 .toast.err { background: var(--critical-bg); color: var(--critical); border-color: var(--critical-border); }
 
+/* ── Pin hint ────────────────────────────────────────────────────────────── */
+
+.pin-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  margin-bottom: 12px;
+  background: #deecf9;
+  color: #004578;
+  border: 1px solid #b3d0ee;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.pin-hint.hidden { display: none !important; }
+
+.pin-hint-dismiss {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #004578;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.pin-hint-dismiss:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
 /* ── Divider ─────────────────────────────────────────────────────────────── */
 
 hr {
