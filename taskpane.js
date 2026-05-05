@@ -86,8 +86,14 @@ class SpamAnalyzer {
     // OFR:SpamFilterAuthJ = Exchange spam filter explicitly overrode an auth-based pass decision.
     // Strong signal: the server identified spam characteristics despite clean auth.
     if (/OFR:SpamFilter/i.test(msDelivery)) {
-      score += 1;
+      score += 1.5;
       reasons.push('Microsoft Exchange: Spam-Filter hat Auth-Pass überstimmt (OFR:SpamFilter)');
+    }
+
+    // Combo: dest:J AND OFR together = two independent Microsoft verdicts → stronger than either alone
+    if (/dest:J/i.test(msDelivery) && /OFR:SpamFilter/i.test(msDelivery)) {
+      score += 0.5;
+      reasons.push('Microsoft Exchange: Doppel-Signal — Junk-Zustellung UND Filter-Override');
     }
 
     // Reply-To domain differs from From domain — classic phishing pattern.
@@ -185,7 +191,19 @@ class SpamAnalyzer {
     if (fromDomain) {
       if (/\d{5,}/.test(fromDomain))                  { score += 0.5; reasons.push('Absender-Domain enthält viele Ziffern'); }
       if (/[a-z]{18,}/.test(fromDomain.split('.')[0])) { score += 0.3; reasons.push('Sehr langer Sub-Domain-Name'); }
+
+      // Sender domain uses a TLD that is heavily abused for throwaway spam/phishing domains.
+      // Note: .la, .pw, .cc etc. are technically valid ccTLDs but almost never used by legitimate
+      // bulk senders — phishers register them precisely because they're cheap and obscure.
+      const suspSenderTld = /\.(tk|cf|ga|ml|gq|xyz|top|click|download|stream|loan|win|racing|buzz|la|pw|cc|ws|nu)$/i;
+      if (suspSenderTld.test(fromDomain)) {
+        score += 1.5;
+        reasons.push(`Verdächtige Absender-Domain-TLD (.${fromDomain.split('.').pop()})`);
+      }
     }
+
+    // Store root domain for brand-impersonation check in _analyzeBody (subject not available here)
+    this._lastFromRootDomain = this._extractRootDomain(fromDomain);
 
     // Bulk/junk precedence header
     const precedence = this._getHeader(headers, 'Precedence') || '';
@@ -231,7 +249,7 @@ class SpamAnalyzer {
 
     // Spam keyword patterns (German + English)
     const patterns = [
-      { re: /gewinn(en|er|t)|lotterie|jackpot|millionen?\s*euro|preis\s*gewonnen/i,        w: 2,   label: 'Gewinnversprechen' },
+      { re: /gewinn(en|er|t|chance)|ihre?\s+gewinnchance|lotterie|jackpot|millionen?\s*euro|preis\s*gewonnen|haben\s+(sie\s+)?gewonnen/i, w: 2, label: 'Gewinnversprechen' },
       { re: /nigeria|prince|inheritance|erbschaft|million[s]?\s*dollar/i,                  w: 2.5, label: 'Nigeria-/Vorschussbetrug' },
       { re: /viagra|cialis|levitra|pharmacy|apotheke\s*ohne\s*rezept/i,                    w: 2.5, label: 'Pharma-Spam' },
       { re: /casino|online.?wett(en|büro)|glücksspiel|freispiel(e)?|\bslots?\b|roulette|blackjack|poker\s*bonus/i, w: 1.5, label: 'Glücksspiel/Casino' },
@@ -251,6 +269,49 @@ class SpamAnalyzer {
 
     for (const p of patterns) {
       if (p.re.test(fullLower)) { score += p.w; reasons.push(p.label); }
+    }
+
+    // Brand impersonation: subject prominently names a major brand but the sender domain
+    // doesn't belong to that brand — classic phishing pattern.
+    // Only fires when _lastFromRootDomain is known and doesn't match the brand's official roots.
+    // False-positive guard: legitimate newsletters from a brand come from the brand's own domain.
+    const fromRootForBrand = this._lastFromRootDomain || null;
+    if (fromRootForBrand) {
+      const brandMap = [
+        { re: /\brewe\b/i,                        roots: ['rewe.de', 'rewe-group.com'] },
+        { re: /\bedeka\b/i,                        roots: ['edeka.de', 'edeka-group.com'] },
+        { re: /\blidl\b/i,                         roots: ['lidl.de', 'lidl.com'] },
+        { re: /\baldi\b/i,                         roots: ['aldi-sued.de', 'aldi-nord.de', 'aldi.de', 'aldi.com'] },
+        { re: /\bkaufland\b/i,                     roots: ['kaufland.de', 'kaufland.com'] },
+        { re: /\bpenny\b/i,                        roots: ['penny.de'] },
+        { re: /\bnetto\b/i,                        roots: ['netto-online.de', 'netto.de'] },
+        { re: /\brossmann\b/i,                     roots: ['rossmann.de'] },
+        { re: /\bdm[\s-]?(drogerie|markt)\b/i,     roots: ['dm.de'] },
+        { re: /\bdeutsche\s*bahn\b|\bdb\s+bahn\b/, roots: ['deutschebahn.com', 'bahn.de', 'db.de'] },
+        { re: /\bdhl\b/i,                          roots: ['dhl.de', 'dhl.com', 'dhl-group.com'] },
+        { re: /\bups\b/i,                          roots: ['ups.com', 'ups.de'] },
+        { re: /\bhermes\b/i,                       roots: ['myhermes.de', 'hermesworld.com', 'hlg.de'] },
+        { re: /\bamazon\b/i,                       roots: ['amazon.de', 'amazon.com', 'amazon.co.uk'] },
+        { re: /\bpaypal\b/i,                       roots: ['paypal.com', 'paypal.de'] },
+        { re: /\bnetflix\b/i,                      roots: ['netflix.com', 'netflix.net'] },
+        { re: /\bspotify\b/i,                      roots: ['spotify.com'] },
+        { re: /\bapple\b/i,                        roots: ['apple.com'] },
+        { re: /\bmicrosoft\b|\boutlook\.com\b|\bonedrive\b/i, roots: ['microsoft.com', 'outlook.com', 'live.com', 'hotmail.com'] },
+        { re: /\bsparkasse\b/i,                    roots: ['sparkasse.de'] },
+        { re: /\bvolksbank\b/i,                    roots: ['volksbank.de', 'vr.de'] },
+        { re: /\bpostbank\b/i,                     roots: ['postbank.de'] },
+        { re: /\bdeutsche\s*bank\b/i,              roots: ['deutsche-bank.de', 'db.com'] },
+        { re: /\bcommerzbank\b/i,                  roots: ['commerzbank.de', 'commerzbank.com'] },
+        { re: /\bing[\s-]?diba\b|\bing\s+bank\b/i, roots: ['ing.de', 'ing-diba.de'] },
+      ];
+      for (const { re, roots } of brandMap) {
+        if (re.test(subject) && !roots.includes(fromRootForBrand)) {
+          const matchedBrand = (subject.match(re) || [''])[0];
+          score += 2.5;
+          reasons.push(`Marken-Impersonation: "${matchedBrand}" im Betreff, Absender-Domain "${fromRootForBrand}"`);
+          break; // one impersonation signal is enough
+        }
+      }
     }
 
     // ALL-CAPS abuse (only meaningful if there are enough words)
@@ -475,7 +536,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '1.9.2';
+const VERSION    = '1.9.3';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 const analyzer = new SpamAnalyzer();
