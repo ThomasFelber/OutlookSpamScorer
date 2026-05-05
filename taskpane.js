@@ -29,7 +29,18 @@ class SpamAnalyzer {
       if (/dkim=fail/i.test(authLine))    { score += 1.5; reasons.push('DKIM: FAIL'); }
 
       if (/dmarc=fail/i.test(authLine))   { score += 2;   reasons.push('DMARC: FAIL'); }
+
+      // compauth=fail — Microsoft Composite Auth failed despite individual checks
+      const compAuth = (authLine.match(/compauth=(pass|fail|softpass)/i) || [])[1]?.toLowerCase() ?? null;
+      if (compAuth === 'fail') { score += 2; reasons.push('compauth=fail — Microsoft Composite Auth versagt'); }
     }
+
+    // authFullyPasses: all three + compauth pass → likely legitimate bulk mail via ESP
+    const compAuth = authLine ? (authLine.match(/compauth=(pass|fail|softpass)/i) || [])[1]?.toLowerCase() ?? null : null;
+    const authFullyPasses = authLine
+      ? /spf=pass/i.test(authLine) && /dkim=pass/i.test(authLine)
+        && /dmarc=pass/i.test(authLine) && compAuth === 'pass'
+      : false;
 
     // Server-side spam verdicts from common MTA headers
     const xSpamStatus = this._getHeader(headers, 'X-Spam-Status') || '';
@@ -41,8 +52,13 @@ class SpamAnalyzer {
     // SCL (Spam Confidence Level): 0–4 = clean, 5–6 = junk, 7–9 = spam
     const scl = parseInt(this._getHeader(headers, 'X-MS-Exchange-Organization-SCL') || '', 10);
     if (!isNaN(scl)) {
-      if (scl >= 7)      { score += 2.5; reasons.push(`Microsoft SCL ${scl}: als Spam eingestuft`); }
-      else if (scl >= 5) { score += 1.5; reasons.push(`Microsoft SCL ${scl}: als Junk eingestuft`); }
+      if (authFullyPasses) {
+        // Legitimate ESPs often get SCL 5–6; only flag SCL 7+ even with full auth
+        if (scl >= 7) { score += 1; reasons.push(`Microsoft SCL ${scl} (Spam-Score trotz vollständiger Authentifizierung)`); }
+      } else {
+        if (scl >= 7)      { score += 2.5; reasons.push(`Microsoft SCL ${scl}: als Spam eingestuft`); }
+        else if (scl >= 5) { score += 1.5; reasons.push(`Microsoft SCL ${scl}: als Junk eingestuft`); }
+      }
     }
 
     // BCL (Bulk Complaint Level) in X-Microsoft-Antispam: 0 = not bulk, 4–7 = bulk, 8–9 = high complaints
@@ -51,13 +67,19 @@ class SpamAnalyzer {
     if (bclM) {
       const bcl = parseInt(bclM[1], 10);
       if (bcl >= 8)      { score += 2;   reasons.push(`Microsoft BCL ${bcl}: sehr hohe Beschwerderate`); }
-      else if (bcl >= 7) { score += 1.5; reasons.push(`Microsoft BCL ${bcl}: hohe Beschwerderate (Bulk-Mail)`); }
+      else if (bcl >= 7) { score += 2.5; reasons.push(`Microsoft BCL ${bcl}: hohe Beschwerderate (Bulk-Mail)`); }
       else if (bcl >= 4) { score += 0.8; reasons.push(`Microsoft BCL ${bcl}: erhöhte Beschwerderate`); }
     }
 
     // dest:J = Exchange delivered to Junk — the server already classified it as spam
     const msDelivery = this._getHeader(headers, 'X-Microsoft-Antispam-Mailbox-Delivery') || '';
-    if (/dest:J/i.test(msDelivery)) { score += 2; reasons.push('Microsoft Exchange: an Junk-Ordner zugestellt'); }
+    if (/dest:J/i.test(msDelivery)) {
+      if (authFullyPasses) {
+        score += 0.5; reasons.push('Microsoft Exchange: Junk-Zustellung (aber vollständige Authentifizierung — evtl. ESP)');
+      } else {
+        score += 2; reasons.push('Microsoft Exchange: an Junk-Ordner zugestellt');
+      }
+    }
 
     // Reply-To domain differs from From domain — classic phishing pattern
     const fromHeader    = this._getHeader(headers, 'From')     || '';
@@ -82,30 +104,47 @@ class SpamAnalyzer {
       }
     }
 
-    // HELO domain mismatch — the connecting server's HELO name doesn't match the envelope From domain.
-    // Visible in Received-SPF: "helo=searchhomesinwilmington.com"
+    // HELO domain mismatch — connecting server's HELO name doesn't match envelope From domain.
+    // Skip when auth fully passes OR HELO is a known legitimate ESP hostname.
+    const espHelo = /\.(mailgun\.net|sendgrid\.net|amazonses\.com|sparkpostmail\.com|exacttarget\.com|salesforceemails\.com|campaignmonitor\.com|createsend\.com|mandrill\.com|postmarkapp\.com|mimecast\.com|proofpoint\.com|constantcontact\.com|hubspot\.com|marketo\.net|klaviyo\.com|brevo\.com|mailjet\.com|elasticemail\.com)$/i;
     const receivedSpf = this._getHeader(headers, 'Received-SPF') || '';
     const heloM = receivedSpf.match(/helo=([\w.-]+)/i);
-    if (heloM) {
+    if (heloM && !authFullyPasses) {
       const heloDomain  = heloM[1].toLowerCase();
       const fromDomainH = this._extractDomain(fromHeader);
-      // Only flag if HELO doesn't share the root domain with From (avoids false positives on subdomains)
-      if (fromDomainH && heloDomain !== fromDomainH && !heloDomain.endsWith('.' + fromDomainH) && !fromDomainH.endsWith('.' + heloDomain)) {
+      if (fromDomainH && heloDomain !== fromDomainH
+          && !heloDomain.endsWith('.' + fromDomainH)
+          && !fromDomainH.endsWith('.' + heloDomain)
+          && !espHelo.test(heloDomain)) {
         score += 1;
         reasons.push(`HELO-Domain abweichend (${heloDomain} ≠ ${fromDomainH})`);
       }
     }
 
-    // DKIM signing domain ≠ From domain — legitimate senders always align these.
-    // A pass with a mismatched d= means the signing domain was hijacked/borrowed.
+    // DKIM signing domain ≠ From domain — but skip known relay services that legitimately re-sign.
+    const dkimRelayWhitelist = /privaterelay\.appleid\.com|icloud\.com|groups\.google\.com/i;
     const dkimSig   = this._getHeader(headers, 'DKIM-Signature') || '';
     const dkimDomM  = dkimSig.match(/\bd=([\w.-]+)/i);
     if (dkimDomM) {
       const dkimDomain  = dkimDomM[1].toLowerCase();
       const fromDomainD = this._extractDomain(fromHeader);
-      if (fromDomainD && dkimDomain !== fromDomainD) {
+      if (fromDomainD && dkimDomain !== fromDomainD && !dkimRelayWhitelist.test(dkimDomain)) {
         score += 1.5;
         reasons.push(`DKIM-Signatur-Domain abweichend (${dkimDomain} ≠ ${fromDomainD})`);
+      }
+    }
+
+    // Multiple DKIM signatures from different domains → relaying through unrelated infrastructure
+    const allDkimSigs = headers.match(/^DKIM-Signature:.+(?:\r?\n[ \t].+)*/gim) || [];
+    if (allDkimSigs.length > 1) {
+      const dkimDomains = new Set(
+        allDkimSigs.map(s => (s.match(/\bd=([\w.-]+)/i) || [])[1]?.toLowerCase()).filter(Boolean)
+      );
+      const fromDomainC = this._extractDomain(fromHeader);
+      const foreignDoms = [...dkimDomains].filter(d => d !== fromDomainC);
+      if (dkimDomains.size > 1 && foreignDoms.length > 0) {
+        score += 1.5;
+        reasons.push(`Mehrere DKIM-Signaturen aus verschiedenen Domains: ${[...dkimDomains].join(', ')}`);
       }
     }
 
@@ -123,6 +162,13 @@ class SpamAnalyzer {
     // Excessive mail hops — overly forwarded / obfuscated routing
     const hopCount = (headers.match(/^Received:/gim) || []).length;
     if (hopCount > 8) { score += 0.5; reasons.push(`Viele Mail-Hops (${hopCount} Received-Zeilen)`); }
+
+    // postmaster@ is a system address — never sends newsletters or commercial mail
+    const fromEmail = (fromHeader.match(/<([^>]+)>/) || [])[1] || fromHeader.trim();
+    if (/^postmaster@/i.test(fromEmail)) {
+      score += 0.5;
+      reasons.push('Absender postmaster@ — System-Adresse, kein legitimer Newsletter-Absender');
+    }
 
     return score;
   }
@@ -149,6 +195,9 @@ class SpamAnalyzer {
       { re: /\bcrypto|bitcoin|kryptowährun|invest.{0,30}(rendite|gewinne?|robot)|hohe\s*rendite|trading.{0,20}(auto|bot|signal)|warum\s+alle.{0,20}invest|fibonacci|forex\s+signal/i, w: 1.5, label: 'Crypto/Investment-Spam' },
       { re: /ihre\s*(daten|informationen)\s*(wurden\s*)?bestätigen|verify\s*your\s*info/i, w: 1.5, label: 'Datenmissbrauch-Phishing' },
       { re: /lions?\s*(mane|spray)|körper\s*reset|nahrungsergänzung|supplement\b|fettverbrenner|schlank(heits)?|kräuter.{0,25}(spray|tropfen|kapsel)|testosteron.{0,20}boost|abnehm/i, w: 1.5, label: 'Supplement/Gesundheits-Spam' },
+      { re: /wechat|微信|telegram\s*(channel|contact|group|id)|whatsapp\s*(contact|number|group)|line\s*id\s*:/i, w: 1.5, label: 'Messenger-Kontakt-Solicitation (WeChat/Telegram/WhatsApp)' },
+      { re: /bundeszentralamt|finanzamt\b|bundeszoll|steuerpr[üu]fung.*krypto|amtliche?\s+(mahnung|aufforderung|mitteilung).*steuer/i, w: 2.5, label: 'Behörden-Impersonation (Finanzamt/BZSt)' },
+      { re: /\b(UPS|DHL|FedEx|Hermes|DPD|GLS|Yodel|Evri)\b.{0,40}(paket|lieferung|sendung|delivery|tracking|notification|nicht\s*zugestellt)/i, w: 1.5, label: 'Kurierdienst-Erwähnung (auf Domain-Mismatch prüfen)' },
     ];
 
     for (const p of patterns) {
@@ -246,6 +295,19 @@ class SpamAnalyzer {
       reasons.push('Nicht ersetzter Platzhalter im Betreff (z.B. {Name}) — Massen-E-Mail bestätigt');
     }
 
+    // Unicode Mathematical Bold/Sans-serif Bold obfuscation (𝗔𝗯𝗻𝗲𝗵𝗺𝗲𝗻, 𝙱𝚘𝚕𝚍)
+    // Spam senders use these to bypass text-based filters — plain text readers see styled glyphs
+    if (/[\u{1D400}-\u{1D7FF}]/u.test(fullText)) {
+      score += 1.5;
+      reasons.push('Unicode-Styling-Obfuskation (𝗕𝗼𝗹𝗱/𝗜𝘁𝗮𝗹𝗶𝗰 Glyphen) — Spam-Filter-Umgehung');
+    }
+
+    // Fake countdown / expiry urgency — stronger than generic "dringend"
+    if (/expires?\s+in\s+\d+\s*(minute|hour|stunde|min\b)|abläuft\s+in\s+\d+|(\d{2,3})\s*%\s*(voll|full|capacity)|status\s+expires|storage\s+(almost\s+)?full/i.test(fullText)) {
+      score += 1.5;
+      reasons.push('Gefälschter Countdown / Ablauf-Zeitdruck ("expires in X minutes", "99% voll")');
+    }
+
     // Broken UTF-8 rendered as Latin-1 — common in spam pipelines (Ã¶=ö, Ã¼=ü, Ã¤=ä)
     if (/Ã¶|Ã¼|Ã¤|Ã–|Ã/.test((bodyHtml || '') + subject)) {
       score += 1;
@@ -319,7 +381,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '1.7.0';
+const VERSION    = '1.8.0';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 const analyzer = new SpamAnalyzer();
