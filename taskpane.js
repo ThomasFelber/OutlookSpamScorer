@@ -37,6 +37,28 @@ class SpamAnalyzer {
     if (/^\s*yes/i.test(xSpamStatus)) { score += 2; reasons.push('Server: als Spam markiert (X-Spam-Status)'); }
     if (/yes/i.test(xSpamFlag))       { score += 1; reasons.push('Server: X-Spam-Flag gesetzt'); }
 
+    // Microsoft Exchange spam intelligence signals
+    // SCL (Spam Confidence Level): 0–4 = clean, 5–6 = junk, 7–9 = spam
+    const scl = parseInt(this._getHeader(headers, 'X-MS-Exchange-Organization-SCL') || '', 10);
+    if (!isNaN(scl)) {
+      if (scl >= 7)      { score += 2.5; reasons.push(`Microsoft SCL ${scl}: als Spam eingestuft`); }
+      else if (scl >= 5) { score += 1.5; reasons.push(`Microsoft SCL ${scl}: als Junk eingestuft`); }
+    }
+
+    // BCL (Bulk Complaint Level) in X-Microsoft-Antispam: 0 = not bulk, 4–7 = bulk, 8–9 = high complaints
+    const msAntispam = this._getHeader(headers, 'X-Microsoft-Antispam') || '';
+    const bclM = msAntispam.match(/BCL:(\d+)/);
+    if (bclM) {
+      const bcl = parseInt(bclM[1], 10);
+      if (bcl >= 8)      { score += 2;   reasons.push(`Microsoft BCL ${bcl}: sehr hohe Beschwerderate`); }
+      else if (bcl >= 7) { score += 1.5; reasons.push(`Microsoft BCL ${bcl}: hohe Beschwerderate (Bulk-Mail)`); }
+      else if (bcl >= 4) { score += 0.8; reasons.push(`Microsoft BCL ${bcl}: erhöhte Beschwerderate`); }
+    }
+
+    // dest:J = Exchange delivered to Junk — the server already classified it as spam
+    const msDelivery = this._getHeader(headers, 'X-Microsoft-Antispam-Mailbox-Delivery') || '';
+    if (/dest:J/i.test(msDelivery)) { score += 2; reasons.push('Microsoft Exchange: an Junk-Ordner zugestellt'); }
+
     // Reply-To domain differs from From domain — classic phishing pattern
     const fromHeader    = this._getHeader(headers, 'From')     || '';
     const replyToHeader = this._getHeader(headers, 'Reply-To') || '';
@@ -57,6 +79,19 @@ class SpamAnalyzer {
       if (fromDomain && returnPathDomain && fromDomain !== returnPathDomain) {
         score += 0.5;
         reasons.push(`Return-Path-Domain abweichend (${returnPathDomain})`);
+      }
+    }
+
+    // DKIM signing domain ≠ From domain — legitimate senders always align these.
+    // A pass with a mismatched d= means the signing domain was hijacked/borrowed.
+    const dkimSig   = this._getHeader(headers, 'DKIM-Signature') || '';
+    const dkimDomM  = dkimSig.match(/\bd=([\w.-]+)/i);
+    if (dkimDomM) {
+      const dkimDomain  = dkimDomM[1].toLowerCase();
+      const fromDomainD = this._extractDomain(fromHeader);
+      if (fromDomainD && dkimDomain !== fromDomainD) {
+        score += 1.5;
+        reasons.push(`DKIM-Signatur-Domain abweichend (${dkimDomain} ≠ ${fromDomainD})`);
       }
     }
 
@@ -99,6 +134,7 @@ class SpamAnalyzer {
       { re: /sie\s*wurden\s*ausgewählt|you\s*have\s*been\s*selected/i,                    w: 1.5, label: 'Pseudo-Auszeichnung' },
       { re: /\bcrypto|bitcoin|kryptowährun|invest.{0,30}rendite|hohe\s*rendite/i,         w: 1,   label: 'Crypto/Investment-Spam' },
       { re: /ihre\s*(daten|informationen)\s*(wurden\s*)?bestätigen|verify\s*your\s*info/i, w: 1.5, label: 'Datenmissbrauch-Phishing' },
+      { re: /lions?\s*(mane|spray)|körper\s*reset|nahrungsergänzung|supplement\b|fettverbrenner|schlank(heits)?|kräuter.{0,25}(spray|tropfen|kapsel)|testosteron.{0,20}boost|abnehm/i, w: 1.5, label: 'Supplement/Gesundheits-Spam' },
     ];
 
     for (const p of patterns) {
@@ -158,6 +194,30 @@ class SpamAnalyzer {
       reasons.push('Versteckter/unsichtbarer Text gefunden');
     }
 
+    // Unsubstituted merge tag in subject, e.g. {Name}, {Felber} — bulk mailer didn't replace placeholder
+    if (/\{[A-Za-z][^}]{0,25}\}/.test(subject)) {
+      score += 2;
+      reasons.push('Nicht ersetzter Platzhalter im Betreff (z.B. {Name}) — Massen-E-Mail bestätigt');
+    }
+
+    // Broken UTF-8 rendered as Latin-1 — common in spam pipelines (Ã¶=ö, Ã¼=ü, Ã¤=ä)
+    if (/Ã¶|Ã¼|Ã¤|Ã–|Ã/.test((bodyHtml || '') + subject)) {
+      score += 1;
+      reasons.push('Kaputte Zeichenkodierung (UTF-8/Latin-1) — typisch für Spam-Versand-Pipelines');
+    }
+
+    // CAN-SPAM-compliant virtual mailbox address (e.g. "Ste 744 #511") — not a real business office
+    if (/\bSte\.?\s+\d+\s*#\s*\d+|\bPMB\s*\d+|\bBox\s*#\d+/i.test(plainText)) {
+      score += 0.8;
+      reasons.push('CAN-SPAM-Adresse: virtueller Briefkasten (kein echtes Büro)');
+    }
+
+    // Affiliate-spam responsibility deflection: "advertiser does not manage your subscription"
+    if (/verwaltet\s+(ihr|dein)\s+abonnement\s+nicht|does\s+not\s+manage\s+your\s+subscri/i.test(plainText)) {
+      score += 0.8;
+      reasons.push('Affiliate-Spam-Disclaimer: Verantwortungs-Ablehnung für Abonnement');
+    }
+
     return score;
   }
 
@@ -192,7 +252,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION = '1.3.0';
+const VERSION = '1.4.0';
 
 const analyzer = new SpamAnalyzer();
 let currentScore   = null;
