@@ -192,6 +192,8 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
+const VERSION = '1.3.0';
+
 const analyzer = new SpamAnalyzer();
 let currentScore   = null;
 let lastHeaders    = '';
@@ -209,6 +211,7 @@ Office.onReady(info => {
   document.getElementById('btn-copy-body').addEventListener('click',    () => copyToClipboard(lastBodyText, 'Body-Text kopiert'));
 
   initPinHint();
+  document.getElementById('version-label').textContent = 'v' + VERSION;
 
   // Stay open automatically for every email from now on
   if (Office.addin?.setStartupBehavior) {

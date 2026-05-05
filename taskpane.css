@@ -378,6 +378,19 @@ body {
 
 .pin-hint-dismiss:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
+/* ── Version label ───────────────────────────────────────────────────────── */
+
+.version-label {
+  position: fixed;
+  bottom: 56px;
+  right: 10px;
+  font-size: 10px;
+  color: #c8c6c4;
+  pointer-events: none;
+  user-select: none;
+  z-index: 100;
+}
+
 /* ── Divider ─────────────────────────────────────────────────────────────── */
 
 hr {
