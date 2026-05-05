@@ -4,11 +4,17 @@
  * Receives email data from the Outlook task pane, calls the Claude API,
  * and returns a structured spam verdict. The API key is stored as a
  * Worker secret (ANTHROPIC_API_KEY) and is never exposed to the client.
+ *
+ * Modes:
+ *   (default)      — spam analysis via claude-haiku-4-5
+ *   mode="advice"  — sender reputation advice via claude-sonnet-4-5
  */
 
-const ALLOWED_ORIGIN = 'https://outlook-spam-scorer.pages.dev';
-const CLAUDE_MODEL   = 'claude-haiku-4-5';
-const MAX_TOKENS     = 1024;
+const ALLOWED_ORIGIN   = 'https://outlook-spam-scorer.pages.dev';
+const MODEL_ANALYSIS   = 'claude-haiku-4-5';
+const MODEL_ADVICE     = 'claude-sonnet-4-5';
+const MAX_TOKENS       = 1024;
+const MAX_TOKENS_ADVICE = 2048;
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin':  ALLOWED_ORIGIN,
@@ -34,34 +40,44 @@ export default {
       return json({ error: 'Invalid JSON body' }, 400);
     }
 
-    const { headers = '', bodyText = '', subject = '', senderEmail = '', origSrcUrls = [] } = payload;
-
-    if (!headers && !bodyText) {
-      return json({ error: 'No email data provided' }, 400);
+    // Route by mode
+    if (payload.mode === 'advice') {
+      return handleAdvice(payload, env);
     }
+    return handleAnalysis(payload, env);
+  },
+};
 
-    // Trim to avoid huge token counts
-    const trimmedHeaders  = headers.slice(0, 4000);
-    const trimmedBodyText = bodyText.slice(0, 3000);
+// ── Spam analysis (default mode) ──────────────────────────────────────────────
 
-    const userPrompt = buildPrompt(trimmedHeaders, trimmedBodyText, subject, senderEmail, origSrcUrls);
+async function handleAnalysis(payload, env) {
+  const { headers = '', bodyText = '', subject = '', senderEmail = '', origSrcUrls = [] } = payload;
 
-    let claudeResponse;
-    try {
-      const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type':      'application/json',
-          'x-api-key':         env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model:      CLAUDE_MODEL,
-          max_tokens: MAX_TOKENS,
-          system: [
-            {
-              type: 'text',
-              text: `You are an expert email security analyst specialising in spam and phishing detection.
+  if (!headers && !bodyText) {
+    return json({ error: 'No email data provided' }, 400);
+  }
+
+  const trimmedHeaders  = headers.slice(0, 4000);
+  const trimmedBodyText = bodyText.slice(0, 3000);
+
+  const userPrompt = buildAnalysisPrompt(trimmedHeaders, trimmedBodyText, subject, senderEmail, origSrcUrls);
+
+  let claudeResponse;
+  try {
+    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model:      MODEL_ANALYSIS,
+        max_tokens: MAX_TOKENS,
+        system: [
+          {
+            type: 'text',
+            text: `You are an expert email security analyst specialising in spam and phishing detection.
 Analyse the provided email data carefully and respond with a single JSON object — no prose, no markdown fences.
 
 JSON shape:
@@ -72,40 +88,122 @@ JSON shape:
   "signals":    ["<specific finding>", ...],
   "summary":    "<1–2 sentences in German explaining the verdict>"
 }`,
-              // Prompt caching for the static system prompt
-              cache_control: { type: 'ephemeral' },
-            },
-          ],
-          messages: [{ role: 'user', content: userPrompt }],
-        }),
-      });
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
+        messages: [{ role: 'user', content: userPrompt }],
+      }),
+    });
 
-      if (!apiRes.ok) {
-        const errText = await apiRes.text();
-        return json({ error: `Claude API error ${apiRes.status}: ${errText}` }, 502);
-      }
-
-      claudeResponse = await apiRes.json();
-    } catch (err) {
-      return json({ error: `Fetch failed: ${err.message}` }, 502);
+    if (!apiRes.ok) {
+      const errText = await apiRes.text();
+      return json({ error: `Claude API error ${apiRes.status}: ${errText}` }, 502);
     }
 
-    // Extract the text content from the response
-    const rawText = claudeResponse.content?.[0]?.text ?? '';
+    claudeResponse = await apiRes.json();
+  } catch (err) {
+    return json({ error: `Fetch failed: ${err.message}` }, 502);
+  }
 
-    let analysis;
-    try {
-      // Claude should return pure JSON, but strip markdown fences just in case
-      const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
-      analysis = JSON.parse(cleaned);
-    } catch {
-      // Fallback: return raw text so the UI can still show something
-      analysis = { verdict: 'uncertain', confidence: 0, score: null, signals: [], summary: rawText };
+  const rawText = claudeResponse.content?.[0]?.text ?? '';
+
+  let analysis;
+  try {
+    const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+    analysis = JSON.parse(cleaned);
+  } catch {
+    analysis = { verdict: 'uncertain', confidence: 0, score: null, signals: [], summary: rawText };
+  }
+
+  return json(analysis);
+}
+
+// ── Reputation advice mode ────────────────────────────────────────────────────
+
+async function handleAdvice(payload, env) {
+  const {
+    headers      = '',
+    bodyText     = '',
+    subject      = '',
+    senderEmail  = '',
+    addinScore   = null,
+    addinSignals = [],
+    claudeResult = null,
+  } = payload;
+
+  const userPrompt = buildAdvicePrompt(
+    headers.slice(0, 3000),
+    bodyText.slice(0, 2000),
+    subject,
+    senderEmail,
+    addinScore,
+    addinSignals,
+    claudeResult,
+  );
+
+  let claudeResponse;
+  try {
+    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model:      MODEL_ADVICE,
+        max_tokens: MAX_TOKENS_ADVICE,
+        system: [
+          {
+            type: 'text',
+            text: `You are a senior email deliverability consultant.
+Given a spam analysis report for an email, produce concrete, prioritised recommendations the SENDER can implement to improve their email reputation and reduce spam classification.
+Focus on: authentication (SPF/DKIM/DMARC), content quality, sending infrastructure, list hygiene, and subscriber engagement.
+Respond ONLY with a JSON object — no prose, no markdown fences.
+
+JSON shape:
+{
+  "summary": "<2–3 sentences in German summarising the main deliverability issues>",
+  "recommendations": [
+    {
+      "category": "<Authentifizierung | Inhalt | Infrastruktur | Listen-Hygiene | Engagement>",
+      "priority": "<hoch | mittel | niedrig>",
+      "title":    "<short title in German>",
+      "action":   "<concrete actionable step in German>"
+    }
+  ]
+}`,
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
+        messages: [{ role: 'user', content: userPrompt }],
+      }),
+    });
+
+    if (!apiRes.ok) {
+      const errText = await apiRes.text();
+      return json({ error: `Claude API error ${apiRes.status}: ${errText}` }, 502);
     }
 
-    return json(analysis);
-  },
-};
+    claudeResponse = await apiRes.json();
+  } catch (err) {
+    return json({ error: `Fetch failed: ${err.message}` }, 502);
+  }
+
+  const rawText = claudeResponse.content?.[0]?.text ?? '';
+
+  let advice;
+  try {
+    const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+    advice = JSON.parse(cleaned);
+  } catch {
+    advice = { summary: rawText, recommendations: [] };
+  }
+
+  return json(advice);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -113,8 +211,6 @@ function json(data, status = 200) {
     headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
   });
 }
-
-// ── Header helpers ────────────────────────────────────────────────────────────
 
 function getHdr(headers, name) {
   const re = new RegExp(`^${name}:\\s*(.+(?:\\r?\\n[ \\t].+)*)`, 'im');
@@ -128,10 +224,9 @@ function extractDomain(str) {
   return m ? m[1].toLowerCase() : null;
 }
 
-// ── Prompt builder ────────────────────────────────────────────────────────────
+// ── Analysis prompt builder ───────────────────────────────────────────────────
 
-function buildPrompt(headers, bodyText, subject, senderEmail, origSrcUrls = []) {
-  // ── Extract key signals ───────────────────────────────────────────────────
+function buildAnalysisPrompt(headers, bodyText, subject, senderEmail, origSrcUrls = []) {
   const fromHeader       = getHdr(headers, 'From')        || '';
   const returnPath       = getHdr(headers, 'Return-Path') || '';
   const replyTo          = getHdr(headers, 'Reply-To')    || '';
@@ -146,7 +241,6 @@ function buildPrompt(headers, bodyText, subject, senderEmail, origSrcUrls = []) 
   const replyToDomain    = extractDomain(replyTo);
   const dkimDomain       = (dkimSig.match(/\bd=([\w.-]+)/i) || [])[1]?.toLowerCase() ?? null;
 
-  // Microsoft Exchange verdicts
   const scl        = getHdr(headers, 'X-MS-Exchange-Organization-SCL');
   const antispam   = getHdr(headers, 'X-Microsoft-Antispam') || '';
   const bcl        = (antispam.match(/BCL:(\d+)/) || [])[1] ?? null;
@@ -154,14 +248,12 @@ function buildPrompt(headers, bodyText, subject, senderEmail, origSrcUrls = []) 
   const destJunk   = /dest:J/i.test(delivery);
   const ofrJunk    = /OFR:SpamFilter/i.test(delivery);
 
-  // Pattern signals
   const mergeTag       = /\{[A-Za-z][^}]{0,25}\}/.test(subject);
   const brokenEncoding = /Ã¶|Ã¼|Ã¤|Ã–/.test(bodyText + subject);
   const hasShortener   = /bit\.ly|tinyurl|t\.co|goo\.gl|ow\.ly/i.test(bodyText);
   const canSpamBox     = /\bSte\.?\s+\d+\s*#\s*\d+|\bPMB\s*\d+/i.test(bodyText);
   const affiliateDiscl = /verwaltet\s+ihr\s+abonnement\s+nicht|does not manage your subscri/i.test(bodyText);
 
-  // ── Alignment section ─────────────────────────────────────────────────────
   const align = (domain, label) => {
     if (!domain) return null;
     const match = domain === fromDomain;
@@ -169,40 +261,34 @@ function buildPrompt(headers, bodyText, subject, senderEmail, origSrcUrls = []) 
   };
 
   const alignLines = [
-    fromDomain       ? `${'Von (From)'.padEnd(16)} ${fromDomain.padEnd(40)} (reference)` : null,
+    fromDomain ? `${'Von (From)'.padEnd(16)} ${fromDomain.padEnd(40)} (reference)` : null,
     align(returnPathDomain, 'Return-Path'),
     align(dkimDomain,       'DKIM d='),
     align(replyToDomain,    'Reply-To'),
   ].filter(Boolean).join('\n');
 
-  // ── SCL description ───────────────────────────────────────────────────────
-  const sclN   = scl ? parseInt(scl, 10) : null;
+  const sclN    = scl ? parseInt(scl, 10) : null;
   const sclDesc = sclN == null       ? 'not present'
                 : sclN <= 4          ? `${sclN} (clean)`
                 : sclN <= 6          ? `${sclN} → JUNK (threshold 5–6)`
                 :                     `${sclN} → SPAM (threshold 7–9)`;
 
-  // ── HELO mismatch ─────────────────────────────────────────────────────────
-  const receivedSpf2 = getHdr(headers, 'Received-SPF') || '';
-  const heloM2       = receivedSpf2.match(/helo=([\w.-]+)/i);
+  const heloM2       = receivedSpf.match(/helo=([\w.-]+)/i);
   const heloDomain   = heloM2?.[1]?.toLowerCase() ?? null;
   const heloMismatch = heloDomain && fromDomain
     && heloDomain !== fromDomain
     && !heloDomain.endsWith('.' + fromDomain)
     && !fromDomain.endsWith('.' + heloDomain);
 
-  // ── originalsrc (real URLs behind Microsoft Safe Links) ───────────────────
   const origSrcSection = origSrcUrls.length > 0
     ? `\n=== REAL LINK DESTINATIONS (unwrapped from Safe Links) ===\n${origSrcUrls.slice(0, 10).join('\n')}`
     : '';
 
-  // ── Alignment (extended with HELO) ────────────────────────────────────────
   const alignLinesExt = [
     ...alignLines.split('\n').filter(Boolean),
     heloDomain ? `${'HELO'.padEnd(16)} ${heloDomain.padEnd(40)} ${heloMismatch ? '⚠ MISMATCH' : '✓ aligned'}` : null,
   ].filter(Boolean).join('\n');
 
-  // ── Compose prompt ────────────────────────────────────────────────────────
   return `Analyse this email for spam. Return ONLY a JSON object:
 { "verdict": "spam"|"ham"|"uncertain", "confidence": 0-100, "score": 0-10, "signals": ["..."], "summary": "1-2 sentences in German" }
 
@@ -242,4 +328,37 @@ ${headers.slice(0, 3000)}
 
 === BODY TEXT (truncated to 2000 chars) ===
 ${bodyText.slice(0, 2000)}`;
+}
+
+// ── Advice prompt builder ─────────────────────────────────────────────────────
+
+function buildAdvicePrompt(headers, bodyText, subject, senderEmail, addinScore, addinSignals, claudeResult) {
+  const signalList = (addinSignals || []).map(s => `  - ${s}`).join('\n') || '  (keine)';
+  const aiSummary  = claudeResult?.summary  || '(nicht verfügbar)';
+  const aiScore    = claudeResult?.score    ?? '(nicht verfügbar)';
+  const aiVerdict  = claudeResult?.verdict  || '(nicht verfügbar)';
+  const aiSignals  = (claudeResult?.signals || []).map(s => `  - ${s}`).join('\n') || '  (keine)';
+
+  return `Analysiere diesen Spam-Bericht und erstelle priorisierte Empfehlungen für den ABSENDER.
+
+=== ANALYSE-ERGEBNIS ===
+Add-in Score : ${addinScore ?? '?'}/10
+Claude Score : ${aiScore}/10 — Verdict: ${aiVerdict}
+Absender     : ${senderEmail || '(unbekannt)'}
+Betreff      : ${subject || '(unbekannt)'}
+
+=== ERKANNTE PROBLEME (Add-in) ===
+${signalList}
+
+=== ERKANNTE PROBLEME (Claude KI) ===
+${aiSignals}
+
+=== CLAUDE ZUSAMMENFASSUNG ===
+${aiSummary}
+
+=== SCHLÜSSEL-HEADER ===
+${headers.slice(0, 1500)}
+
+=== BODY-TEXT (Auszug) ===
+${bodyText.slice(0, 800)}`;
 }

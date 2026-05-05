@@ -41,12 +41,6 @@
   <!-- Ergebnis -->
   <div id="state-result" class="hidden">
 
-    <!-- Betreff & Absender -->
-    <div id="item-meta" class="item-meta">
-      <div id="meta-subject" class="meta-subject" title=""></div>
-      <div id="meta-from" class="meta-from"></div>
-    </div>
-
     <!-- Score-Anzeige -->
     <div id="score-wrap" class="score-wrap">
       <div id="score-number" class="score-number">0</div>
@@ -66,6 +60,15 @@
       <ul id="reasons-list" class="reasons-list"></ul>
     </section>
 
+    <!-- Versteckter Text (nur sichtbar wenn gefunden) -->
+    <section class="section hidden" id="hidden-text-section">
+      <h2>Versteckter Text</h2>
+      <button id="btn-toggle-hidden" class="btn-expander" aria-expanded="false">
+        <span class="expander-icon">▶</span> Anzeigen
+      </button>
+      <div id="hidden-text-content" class="hidden-text-content hidden" aria-live="polite"></div>
+    </section>
+
     <!-- E-Mail-Authentifizierung (hidden when all pass) -->
     <section class="section" id="auth-section">
       <h2>Authentifizierung</h2>
@@ -77,6 +80,13 @@
       <h2>Claude AI Analyse</h2>
       <button id="btn-claude" class="btn btn-claude">Mit Claude AI prüfen</button>
       <div id="claude-result" class="claude-result hidden" aria-live="polite"></div>
+    </section>
+
+    <!-- E-Mail-Reputations-Beratung (nur nach Analyse sichtbar) -->
+    <section class="section hidden" id="advice-section">
+      <h2>Reputations-Verbesserung</h2>
+      <button id="btn-advice" class="btn btn-advice">Verbesserungsvorschläge generieren</button>
+      <div id="advice-result" class="advice-result hidden" aria-live="polite"></div>
     </section>
 
     <!-- Kopieren -->
@@ -92,17 +102,6 @@
 
   <!-- Versionsnummer -->
   <div id="version-label" class="version-label"></div>
-
-  <!-- Junk-Ordner scannen (immer sichtbar) -->
-  <div class="scan-controls">
-    <hr>
-    <button id="btn-scan" class="btn btn-secondary">Junk-Ordner scannen (max. 50)</button>
-  </div>
-
-  <section id="scan-section" class="section hidden">
-    <div id="scan-progress" class="scan-progress"></div>
-    <div id="scan-results" class="scan-results"></div>
-  </section>
 
 </body>
 </html>

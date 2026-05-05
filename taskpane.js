@@ -8,9 +8,11 @@ class SpamAnalyzer {
     const reasons = [];
     const hScore = headers ? this._analyzeHeaders(headers, reasons) : 0;
     const bScore = this._analyzeBody(bodyHtml, subject, reasons);
+    const hiddenText = this._extractHiddenText(bodyHtml);
     return {
       score: Math.min(10, Math.round(hScore + bScore)),
       reasons,
+      hiddenText,
     };
   }
 
@@ -249,13 +251,6 @@ class SpamAnalyzer {
       reasons.push(`Verdächtige Link-TLD (.${tld}) — auch in Safe-Link-Original`);
     }
 
-    // Excessive safe-link wrapping on ALL links — bulk mailer or phishing campaign
-    const safeLinksCount = (bodyHtml || '').match(/safelinks\.protection\.outlook\.com/gi)?.length || 0;
-    if (safeLinksCount > 0 && origSrcs.length > 0 && origSrcs.length === safeLinksCount) {
-      // Every link is safe-link wrapped — normal for OWA, not a spam signal by itself
-      // But if real destinations are suspicious, that matters (already caught above)
-    }
-
     if (linkCount > 0) {
       const textLen = plainText.length;
       if (textLen < 80 && linkCount >= 2) {
@@ -309,7 +304,7 @@ class SpamAnalyzer {
     }
 
     // Broken UTF-8 rendered as Latin-1 — common in spam pipelines (Ã¶=ö, Ã¼=ü, Ã¤=ä)
-    if (/Ã¶|Ã¼|Ã¤|Ã–|Ã/.test((bodyHtml || '') + subject)) {
+    if (/Ã¶|Ã¼|Ã¤|Ã–|Ã/.test((bodyHtml || '') + subject)) {
       score += 1;
       reasons.push('Kaputte Zeichenkodierung (UTF-8/Latin-1) — typisch für Spam-Versand-Pipelines');
     }
@@ -327,6 +322,29 @@ class SpamAnalyzer {
     }
 
     return score;
+  }
+
+  // Extract text content from hidden/invisible elements — for the expander UI
+  _extractHiddenText(html) {
+    if (!html) return '';
+    try {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      const texts = [];
+      tmp.querySelectorAll('[style]').forEach(el => {
+        const st = el.style;
+        const isHidden =
+          st.visibility === 'hidden' ||
+          st.display    === 'none'   ||
+          parseInt(st.fontSize, 10) <= 1 ||
+          /^(?:white|#fff|#ffffff)$/i.test(st.color);
+        if (isHidden) {
+          const t = el.textContent.replace(/\s+/g, ' ').trim();
+          if (t.length > 3) texts.push(t);
+        }
+      });
+      return [...new Set(texts)].join('\n').trim();
+    } catch { return ''; }
   }
 
   // Clean body for display / copy — removes MIME artifacts, QP encoding, hidden blocks
@@ -381,14 +399,17 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '1.8.0';
+const VERSION    = '1.9.0';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 const analyzer = new SpamAnalyzer();
-let currentScore   = null;
-let lastHeaders    = '';
-let lastBodyHtml   = '';   // raw HTML — for originalsrc extraction sent to worker
-let lastBodyText   = '';   // cleaned plain text — for copy button
+let currentScore    = null;
+let lastHeaders     = '';
+let lastBodyHtml    = '';   // raw HTML — for originalsrc extraction sent to worker
+let lastBodyText    = '';   // cleaned plain text — for copy button
+let lastHiddenText  = '';   // text extracted from hidden elements
+let lastAnalysis    = null; // { score, reasons, hiddenText }
+let lastClaudeResult = null;
 
 // ─── Office init ───────────────────────────────────────────────────────────────
 
@@ -397,10 +418,11 @@ Office.onReady(info => {
 
   document.getElementById('btn-apply').addEventListener('click', applyCategory);
   document.getElementById('btn-retry').addEventListener('click', analyzeCurrentItem);
-  document.getElementById('btn-scan').addEventListener('click', scanJunkFolder);
   document.getElementById('btn-copy-headers').addEventListener('click', () => copyToClipboard(lastHeaders, 'Header kopiert'));
   document.getElementById('btn-copy-body').addEventListener('click',    () => copyToClipboard(lastBodyText, 'Body-Text kopiert'));
   document.getElementById('btn-claude').addEventListener('click', runClaudeCheck);
+  document.getElementById('btn-toggle-hidden').addEventListener('click', toggleHiddenText);
+  document.getElementById('btn-advice').addEventListener('click', runAdviceCheck);
 
   initPinHint();
   document.getElementById('version-label').textContent = 'v' + VERSION;
@@ -411,10 +433,10 @@ Office.onReady(info => {
   }
 
   // Re-analyze when user navigates to a different email (pinned pane)
-  // Also hides the pin hint — ItemChanged only fires when the pane IS pinned
   Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, () => {
     hidePinHint();
     resetClaudeResult();
+    resetAdviceResult();
     analyzeCurrentItem();
   });
 
@@ -425,7 +447,17 @@ Office.onReady(info => {
 
 function analyzeCurrentItem() {
   showState('loading');
-  currentScore = null;
+  currentScore  = null;
+  lastAnalysis  = null;
+  lastHiddenText = '';
+
+  // Reset hidden text expander
+  const htSection = document.getElementById('hidden-text-section');
+  const htContent = document.getElementById('hidden-text-content');
+  const htBtn     = document.getElementById('btn-toggle-hidden');
+  if (htSection) htSection.classList.add('hidden');
+  if (htContent) { htContent.classList.add('hidden'); htContent.textContent = ''; }
+  if (htBtn)     { htBtn.setAttribute('aria-expanded', 'false'); htBtn.querySelector('.expander-icon').textContent = '▶'; }
 
   const item = Office.context.mailbox.item;
   if (!item) { showState('no-item'); return; }
@@ -449,11 +481,13 @@ function analyzeCurrentItem() {
       });
     }),
   ]).then(([headers, bodyHtml]) => {
-    lastHeaders  = headers;
-    lastBodyHtml = bodyHtml;
-    lastBodyText = analyzer._cleanBody(bodyHtml);
-    const result = analyzer.analyze(headers, bodyHtml, subject, senderEmail);
-    currentScore = result.score;
+    lastHeaders    = headers;
+    lastBodyHtml   = bodyHtml;
+    lastBodyText   = analyzer._cleanBody(bodyHtml);
+    const result   = analyzer.analyze(headers, bodyHtml, subject, senderEmail);
+    currentScore   = result.score;
+    lastAnalysis   = result;
+    lastHiddenText = result.hiddenText;
     renderResult(result, headers, subject, senderName || senderEmail);
     showState('result');
   }).catch(err => {
@@ -464,165 +498,69 @@ function analyzeCurrentItem() {
 
 // ─── Apply category ────────────────────────────────────────────────────────────
 
-function applyCategory() {
+async function applyCategory() {
   if (currentScore === null) return;
 
-  const btn          = document.getElementById('btn-apply');
-  const newCategory  = `Spam: ${currentScore}`;
-  const item         = Office.context.mailbox.item;
+  const btn         = document.getElementById('btn-apply');
+  const newCategory = `Spam: ${currentScore}`;
+  const item        = Office.context.mailbox.item;
+
+  if (!item?.categories) {
+    showToast('Kategorien nicht verfügbar (Mailbox API 1.8+ erforderlich)', true);
+    return;
+  }
 
   btn.disabled    = true;
   btn.textContent = 'Speichern…';
 
-  item.categories.getAsync(getResult => {
-    const oldSpam = getResult.status === Office.AsyncResultStatus.Succeeded
-      ? getResult.value.filter(c => /^Spam: \d+$/.test(c.displayName)).map(c => c.displayName)
-      : [];
-
-    const doAdd = () => {
-      item.categories.addAsync([newCategory], addResult => {
-        if (addResult.status === Office.AsyncResultStatus.Succeeded) {
-          showToast(`Kategorie "${newCategory}" gesetzt`, false);
-        } else {
-          showToast('Fehler: ' + (addResult.error?.message || 'Unbekannt'), true);
-        }
-        btn.disabled    = false;
-        btn.textContent = 'Als Kategorie speichern';
+  try {
+    // 1. Ensure the category exists in the master list (required before adding to item)
+    if (Office.context.mailbox.masterCategories) {
+      await new Promise(resolve => {
+        Office.context.mailbox.masterCategories.addAsync(
+          [{ displayName: newCategory, color: Office.MailboxEnums.CategoryColor.Preset0 }],
+          () => resolve()   // ignore "already exists" error
+        );
       });
-    };
+    }
+
+    // 2. Read existing Spam: categories on this item
+    const existing = await new Promise((resolve, reject) => {
+      item.categories.getAsync(r => {
+        if (r.status === Office.AsyncResultStatus.Succeeded) resolve(r.value);
+        else reject(new Error(r.error?.message || 'Kategorien konnten nicht gelesen werden'));
+      });
+    });
+
+    // 3. Remove any previous Spam: N category
+    const oldSpam = existing
+      .filter(c => /^Spam: \d+$/.test(c.displayName))
+      .map(c => c.displayName);
 
     if (oldSpam.length > 0) {
-      item.categories.removeAsync(oldSpam, doAdd);
-    } else {
-      doAdd();
+      await new Promise(resolve => item.categories.removeAsync(oldSpam, () => resolve()));
     }
-  });
-}
 
-// ─── Junk folder scan ──────────────────────────────────────────────────────────
+    // 4. Add the new category
+    await new Promise((resolve, reject) => {
+      item.categories.addAsync([newCategory], r => {
+        if (r.status === Office.AsyncResultStatus.Succeeded) resolve();
+        else reject(new Error(r.error?.message || 'Kategorie konnte nicht gesetzt werden'));
+      });
+    });
 
-function scanJunkFolder() {
-  if (typeof Office.context.mailbox.makeEwsRequestAsync !== 'function') {
-    setScanProgress('EWS wird nicht unterstützt (nur Exchange / Microsoft 365).', true);
-    document.getElementById('scan-section').classList.remove('hidden');
-    return;
+    showToast(`Kategorie "${newCategory}" gesetzt`, false);
+  } catch (err) {
+    showToast('Fehler: ' + err.message, true);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Als Kategorie speichern';
   }
-
-  const btn = document.getElementById('btn-scan');
-  btn.disabled = true;
-  document.getElementById('scan-section').classList.remove('hidden');
-  document.getElementById('scan-results').innerHTML = '';
-  setScanProgress('Lade Junk-Ordner…');
-
-  const findXml = `<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
-  xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"
-  xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages">
-  <soap:Body>
-    <m:FindItem Traversal="Shallow">
-      <m:ItemShape>
-        <t:BaseShape>IdOnly</t:BaseShape>
-        <t:AdditionalProperties>
-          <t:FieldURI FieldURI="item:Subject"/>
-          <t:FieldURI FieldURI="message:From"/>
-        </t:AdditionalProperties>
-      </m:ItemShape>
-      <m:IndexedPageItemView MaxEntriesReturned="50" Offset="0" BasePoint="Beginning"/>
-      <m:ParentFolderIds>
-        <t:DistinguishedFolderId Id="junkemail"/>
-      </m:ParentFolderIds>
-    </m:FindItem>
-  </soap:Body>
-</soap:Envelope>`;
-
-  Office.context.mailbox.makeEwsRequestAsync(findXml, findResult => {
-    if (findResult.status !== Office.AsyncResultStatus.Succeeded) {
-      setScanProgress('EWS-Fehler: ' + findResult.error.message, true);
-      btn.disabled = false;
-      return;
-    }
-
-    const xmlDoc   = new DOMParser().parseFromString(findResult.value, 'text/xml');
-    const msgNodes = xmlDoc.querySelectorAll('Message');
-
-    if (msgNodes.length === 0) {
-      setScanProgress('Junk-Ordner ist leer.');
-      btn.disabled = false;
-      return;
-    }
-
-    setScanProgress(`${msgNodes.length} E-Mails gefunden. Analysiere…`);
-
-    const items = Array.from(msgNodes).map(n => ({
-      id:       n.querySelector('ItemId')?.getAttribute('Id') || '',
-      subject:  n.querySelector('Subject')?.textContent || '(kein Betreff)',
-      from:     n.querySelector('EmailAddress')?.textContent || '',
-      fromName: n.querySelector('Name')?.textContent || '',
-    })).filter(i => i.id);
-
-    processEwsItems(items, 0, [], btn);
-  });
-}
-
-function processEwsItems(items, index, results, btn) {
-  if (index >= items.length) {
-    renderScanResults(results);
-    setScanProgress(`Fertig — ${results.length} E-Mails analysiert.`);
-    btn.disabled = false;
-    return;
-  }
-
-  const cur = items[index];
-  setScanProgress(`Analysiere ${index + 1} / ${items.length}: ${cur.subject.slice(0, 40)}…`);
-
-  // PR_TRANSPORT_MESSAGE_HEADERS (0x007D) delivers raw internet headers without body download
-  const getXml = `<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
-  xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"
-  xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages">
-  <soap:Body>
-    <m:GetItem>
-      <m:ItemShape>
-        <t:BaseShape>IdOnly</t:BaseShape>
-        <t:BodyType>HTML</t:BodyType>
-        <t:AdditionalProperties>
-          <t:FieldURI FieldURI="item:Body"/>
-          <t:ExtendedFieldURI PropertyTag="0x007D" PropertyType="String"/>
-        </t:AdditionalProperties>
-      </m:ItemShape>
-      <m:ItemIds>
-        <t:ItemId Id="${escapeXml(cur.id)}"/>
-      </m:ItemIds>
-    </m:GetItem>
-  </soap:Body>
-</soap:Envelope>`;
-
-  Office.context.mailbox.makeEwsRequestAsync(getXml, getResult => {
-    let headers  = '';
-    let bodyHtml = '';
-
-    if (getResult.status === Office.AsyncResultStatus.Succeeded) {
-      const doc   = new DOMParser().parseFromString(getResult.value, 'text/xml');
-      bodyHtml    = doc.querySelector('Body')?.textContent  || '';
-      // Extended property value contains the raw transport headers
-      headers     = doc.querySelector('Value')?.textContent || '';
-    }
-
-    const analysis = analyzer.analyze(headers, bodyHtml, cur.subject, cur.from);
-    results.push({ ...cur, ...analysis });
-
-    // Small delay to avoid overwhelming Exchange
-    setTimeout(() => processEwsItems(items, index + 1, results, btn), 120);
-  });
 }
 
 // ─── Rendering ─────────────────────────────────────────────────────────────────
 
 function renderResult(result, headers, subject, senderDisplay) {
-  document.getElementById('meta-subject').textContent = subject;
-  document.getElementById('meta-subject').title       = subject;
-  document.getElementById('meta-from').textContent    = senderDisplay;
-
   const scoreNum  = document.getElementById('score-number');
   const scoreBar  = document.getElementById('score-bar-fill');
   const scoreWrap = document.getElementById('score-wrap');
@@ -651,30 +589,18 @@ function renderResult(result, headers, subject, senderDisplay) {
     });
   }
 
+  // Hidden text expander — show only when content was found
+  const htSection = document.getElementById('hidden-text-section');
+  if (result.hiddenText) {
+    document.getElementById('hidden-text-content').textContent = result.hiddenText;
+    htSection.classList.remove('hidden');
+  } else {
+    htSection.classList.add('hidden');
+  }
+
   const auth = buildAuthBadges(headers);
   document.getElementById('auth-section').classList.toggle('hidden', auth.allPass);
   document.getElementById('auth-summary').innerHTML = auth.html;
-}
-
-function renderScanResults(results) {
-  results.sort((a, b) => b.score - a.score);
-  const container = document.getElementById('scan-results');
-
-  if (results.length === 0) {
-    container.innerHTML = '<p class="scan-empty">Keine Ergebnisse.</p>';
-    return;
-  }
-
-  container.innerHTML = results.map(r => {
-    const lvl = scoreLevel(r.score);
-    return `<div class="scan-item lvl-${lvl}">
-      <span class="scan-score lvl-${lvl}">${r.score}</span>
-      <div class="scan-info">
-        <div class="scan-subject" title="${escapeHtml(r.subject)}">${escapeHtml(r.subject.slice(0, 55))}</div>
-        <div class="scan-from">${escapeHtml(r.from)}</div>
-      </div>
-    </div>`;
-  }).join('');
 }
 
 function buildAuthBadges(headers) {
@@ -750,6 +676,23 @@ function buildAuthBadges(headers) {
   return { html: badgesHtml + alignHtml, allPass: false };
 }
 
+// ─── Hidden text toggle ────────────────────────────────────────────────────────
+
+function toggleHiddenText() {
+  const btn     = document.getElementById('btn-toggle-hidden');
+  const content = document.getElementById('hidden-text-content');
+  const icon    = btn.querySelector('.expander-icon');
+  const expanded = btn.getAttribute('aria-expanded') === 'true';
+
+  btn.setAttribute('aria-expanded', String(!expanded));
+  icon.textContent = expanded ? '▶' : '▼';
+  btn.querySelector('span:last-child')
+    ? (btn.lastChild.textContent = expanded ? ' Anzeigen' : ' Ausblenden')
+    : null;
+
+  content.classList.toggle('hidden', expanded);
+}
+
 // ─── UI helpers ────────────────────────────────────────────────────────────────
 
 function showState(state) {
@@ -757,12 +700,6 @@ function showState(state) {
   document.getElementById('state-no-item').classList.toggle('hidden', state !== 'no-item');
   document.getElementById('state-error').classList.toggle('hidden',   state !== 'error');
   document.getElementById('state-result').classList.toggle('hidden',  state !== 'result');
-}
-
-function setScanProgress(msg, isError = false) {
-  const el = document.getElementById('scan-progress');
-  el.textContent = msg;
-  el.className   = 'scan-progress' + (isError ? ' is-error' : '');
 }
 
 function showToast(msg, isError) {
@@ -831,7 +768,11 @@ async function runClaudeCheck() {
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
-    renderClaudeResult(data);
+    lastClaudeResult = data;
+    renderClaudeResult(data, subject, senderEmail);
+
+    // Reveal the advice section after a successful Claude analysis
+    document.getElementById('advice-section').classList.remove('hidden');
   } catch (err) {
     resultEl.innerHTML = `<p class="claude-error">⚠ ${escapeHtml(err.message)}</p>`;
     resultEl.classList.remove('hidden');
@@ -841,7 +782,7 @@ async function runClaudeCheck() {
   }
 }
 
-function renderClaudeResult(data) {
+function renderClaudeResult(data, subject, senderEmail) {
   const resultEl = document.getElementById('claude-result');
 
   const cls   = data.verdict === 'spam'     ? 'claude-spam'
@@ -859,26 +800,194 @@ function renderClaudeResult(data) {
       '</ul>'
     : '';
 
-  const scoreHtml = data.score != null
-    ? `<span class="claude-score">Score: ${data.score}/10</span>`
-    : '';
+  const aiScore    = data.score ?? null;
+  const addinScore = currentScore ?? null;
+
+  // Score comparison row
+  let comparisonHtml = '';
+  if (aiScore !== null && addinScore !== null) {
+    const diff = Math.abs(aiScore - addinScore);
+    const diffCls = diff <= 1 ? 'score-diff-agree'
+                  : diff <= 3 ? 'score-diff-warn'
+                  :             'score-diff-danger';
+    const diffLabel = diff <= 1  ? '≈ übereinstimmend'
+                    : aiScore > addinScore ? `⬆ KI ${diff} Punkte höher`
+                    :                        `⬇ KI ${diff} Punkte niedriger`;
+    comparisonHtml = `
+      <div class="score-comparison">
+        Add-in: <strong>${addinScore}/10</strong> · KI: <strong>${aiScore}/10</strong>
+        <span class="${diffCls}">${diffLabel}</span>
+      </div>`;
+  }
+
+  // Improvement prompt for copy
+  const promptText = buildImprovementPrompt(data, subject, senderEmail);
+  const promptHtml = `
+    <details class="improvement-prompt">
+      <summary>LLM-Prompt zur Verbesserung der Logik</summary>
+      <div class="prompt-box" id="improvement-prompt-box">${escapeHtml(promptText)}</div>
+      <button class="btn-copy-prompt" id="btn-copy-prompt">📋 Prompt kopieren</button>
+    </details>`;
 
   resultEl.innerHTML = `
     <div class="claude-verdict ${cls}">
       <strong>${label}</strong>
       <span class="claude-confidence">${data.confidence ?? '—'}% Konfidenz</span>
-      ${scoreHtml}
+      ${aiScore !== null ? `<span class="claude-score">Score: ${aiScore}/10</span>` : ''}
     </div>
+    ${comparisonHtml}
     ${data.summary ? `<p class="claude-summary">${escapeHtml(data.summary)}</p>` : ''}
     ${signalsHtml}
+    ${promptHtml}
   `;
+
+  // Wire up the copy button after inserting HTML
+  document.getElementById('btn-copy-prompt')?.addEventListener('click', () => {
+    copyToClipboard(promptText, 'Prompt kopiert');
+  });
+
   resultEl.classList.remove('hidden');
+}
+
+function buildImprovementPrompt(claudeData, subject, senderEmail) {
+  const addinScore  = currentScore ?? '?';
+  const aiScore     = claudeData.score ?? '?';
+  const addinVerdict = currentScore !== null ? verdictText(currentScore) : '?';
+  const signals     = (lastAnalysis?.reasons || []).map(r => `  - ${r}`).join('\n') || '  (keine)';
+  const aiSignals   = (claudeData.signals || []).map(s => `  - ${s}`).join('\n') || '  (keine)';
+
+  const caseType = (currentScore !== null && claudeData.score !== null)
+    ? currentScore < claudeData.score
+      ? 'False Negative (Add-in zu nachsichtig — erkennt Spam nicht)'
+      : currentScore > claudeData.score
+        ? 'False Positive (Add-in zu streng — legitime E-Mail als Spam eingestuft)'
+        : 'Scores stimmen überein — Signals zur Überprüfung'
+    : 'Unbekannte Abweichung';
+
+  return `Du reviewst die Spam-Scoring-Logik eines Outlook Add-ins (taskpane.js, SpamAnalyzer-Klasse).
+Analysiere den folgenden Fall und schlage konkrete Verbesserungen vor.
+
+## E-Mail-Kontext
+Betreff  : ${subject || '(unbekannt)'}
+Absender : ${senderEmail || '(unbekannt)'}
+
+## Scoring-Ergebnis
+Add-in Score  : ${addinScore}/10 (${addinVerdict})
+Claude KI Score: ${aiScore}/10 — Verdict: ${claudeData.verdict ?? '?'} (${claudeData.confidence ?? '?'}% Konfidenz)
+Falltyp       : ${caseType}
+
+## Add-in Signale (gefundene Indikatoren)
+${signals}
+
+## Claude KI Signale
+${aiSignals}
+
+## Claude Zusammenfassung
+${claudeData.summary || '(keine)'}
+
+## Aufgabe
+Schlage spezifische Verbesserungen für die SpamAnalyzer-Klasse in taskpane.js vor:
+
+1. Welche bestehenden Signal-Gewichte sollten angepasst werden und warum?
+2. Welche neuen Regex-Muster (mit konkretem JavaScript-Code) sollten ergänzt werden?
+3. Welche Bedingungen sollten den Score SENKEN (False-Positive-Prävention)?
+4. Welche Bedingungen sollten den Score ERHÖHEN (False-Negative-Prävention)?
+
+Berücksichtige dabei sowohl False Positives (legitime E-Mails als Spam) als auch
+False Negatives (Spam-E-Mails nicht erkannt). Liefere konkreten JavaScript-Code.`;
 }
 
 function resetClaudeResult() {
   const el = document.getElementById('claude-result');
   if (el) { el.innerHTML = ''; el.classList.add('hidden'); }
+  lastClaudeResult = null;
 }
+
+// ─── Reputation advice ─────────────────────────────────────────────────────────
+
+async function runAdviceCheck() {
+  const btn      = document.getElementById('btn-advice');
+  const resultEl = document.getElementById('advice-result');
+
+  btn.disabled    = true;
+  btn.textContent = 'Generiere Vorschläge…';
+  resultEl.classList.add('hidden');
+  resultEl.innerHTML = '';
+
+  const item        = Office.context.mailbox.item;
+  const subject     = item?.subject             || '';
+  const senderEmail = item?.from?.emailAddress  || '';
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode:         'advice',
+        headers:      lastHeaders,
+        bodyText:     lastBodyText,
+        subject,
+        senderEmail,
+        addinScore:   currentScore,
+        addinSignals: lastAnalysis?.reasons || [],
+        claudeResult: lastClaudeResult,
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Worker-Fehler ${res.status}: ${errText}`);
+    }
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    renderAdviceResult(data);
+  } catch (err) {
+    resultEl.innerHTML = `<p class="advice-error">⚠ ${escapeHtml(err.message)}</p>`;
+    resultEl.classList.remove('hidden');
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Verbesserungsvorschläge generieren';
+  }
+}
+
+function renderAdviceResult(data) {
+  const resultEl = document.getElementById('advice-result');
+
+  const summaryHtml = data.summary
+    ? `<p class="advice-summary">${escapeHtml(data.summary)}</p>`
+    : '';
+
+  const recs = data.recommendations || [];
+  const recsHtml = recs.length
+    ? '<ul class="advice-list">' + recs.map(r => {
+        const prioClass = (r.priority || '').toLowerCase() === 'hoch'    ? 'prio-hoch'
+                        : (r.priority || '').toLowerCase() === 'mittel'  ? 'prio-mittel'
+                        :                                                   'prio-niedrig';
+        return `<li class="advice-item ${prioClass}">
+          <div class="advice-item-header">
+            <span class="advice-category">${escapeHtml(r.category || '')}</span>
+            <span class="advice-priority">${escapeHtml(r.priority || '')}</span>
+          </div>
+          <div class="advice-title">${escapeHtml(r.title || '')}</div>
+          <div class="advice-action">${escapeHtml(r.action || '')}</div>
+        </li>`;
+      }).join('') + '</ul>'
+    : '<p class="advice-action">Keine Empfehlungen gefunden.</p>';
+
+  resultEl.innerHTML = summaryHtml + recsHtml;
+  resultEl.classList.remove('hidden');
+}
+
+function resetAdviceResult() {
+  const section  = document.getElementById('advice-section');
+  const resultEl = document.getElementById('advice-result');
+  if (section)  section.classList.add('hidden');
+  if (resultEl) { resultEl.innerHTML = ''; resultEl.classList.add('hidden'); }
+}
+
+// ─── Pin hint ──────────────────────────────────────────────────────────────────
 
 function initPinHint() {
   const hint = document.getElementById('pin-hint');
@@ -895,6 +1004,8 @@ function hidePinHint() {
   if (hint) hint.classList.add('hidden');
 }
 
+// ─── Clipboard ────────────────────────────────────────────────────────────────
+
 function copyToClipboard(text, successMsg) {
   if (!text) { showToast('Keine Daten verfügbar', true); return; }
   navigator.clipboard.writeText(text).then(
@@ -907,13 +1018,4 @@ function escapeHtml(str) {
   const d = document.createElement('div');
   d.textContent = String(str);
   return d.innerHTML;
-}
-
-function escapeXml(str) {
-  return String(str)
-    .replace(/&/g,  '&amp;')
-    .replace(/</g,  '&lt;')
-    .replace(/>/g,  '&gt;')
-    .replace(/"/g,  '&quot;')
-    .replace(/'/g,  '&apos;');
 }
