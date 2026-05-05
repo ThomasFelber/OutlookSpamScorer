@@ -1,0 +1,334 @@
+/* Fluent UI / Outlook-inspired design */
+
+:root {
+  --text:          #201f1e;
+  --subtle:        #605e5c;
+  --bg:            #ffffff;
+  --border:        #edebe9;
+  --brand:         #0078d4;
+  --brand-hover:   #106ebe;
+
+  --low:           #107c10;
+  --low-bg:        #dff6dd;
+  --low-border:    #bad7b5;
+
+  --medium:        #835b00;
+  --medium-bg:     #fff4ce;
+  --medium-border: #f0d060;
+
+  --high:          #d83b01;
+  --high-bg:       #fce4e4;
+  --high-border:   #f3a7a5;
+
+  --critical:      #a4262c;
+  --critical-bg:   #fde7e9;
+  --critical-border: #f1a7ab;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  padding: 12px 16px 80px; /* bottom padding for sticky scan button */
+}
+
+/* ── States ─────────────────────────────────────────────────────────────── */
+
+.hidden { display: none !important; }
+
+.state-panel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 0;
+  color: var(--subtle);
+}
+
+.hint   { color: var(--subtle); }
+.error-text { color: var(--critical); }
+
+/* ── Spinner ─────────────────────────────────────────────────────────────── */
+
+.spinner {
+  flex-shrink: 0;
+  width: 18px; height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .spinner { animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+}
+
+/* ── Item meta ───────────────────────────────────────────────────────────── */
+
+.item-meta {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.meta-subject {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta-from {
+  font-size: 12px;
+  color: var(--subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Score display ───────────────────────────────────────────────────────── */
+
+.score-wrap {
+  text-align: center;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  margin-bottom: 12px;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.score-number {
+  font-size: 60px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.score-sublabel {
+  font-size: 12px;
+  color: inherit;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+.score-bar-track {
+  height: 6px;
+  background: rgba(0,0,0,0.12);
+  border-radius: 3px;
+  margin: 10px 0 6px;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+
+.score-verdict {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* Level colour sets */
+.score-wrap.lvl-low      { color: var(--low);      background: var(--low-bg);      border-color: var(--low-border); }
+.score-wrap.lvl-medium   { color: var(--medium);    background: var(--medium-bg);   border-color: var(--medium-border); }
+.score-wrap.lvl-high     { color: var(--high);      background: var(--high-bg);     border-color: var(--high-border); }
+.score-wrap.lvl-critical { color: var(--critical);  background: var(--critical-bg); border-color: var(--critical-border); }
+
+.score-bar-fill.lvl-low      { background: var(--low); }
+.score-bar-fill.lvl-medium   { background: #ffb900; }
+.score-bar-fill.lvl-high     { background: var(--high); }
+.score-bar-fill.lvl-critical { background: var(--critical); }
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+
+.btn {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: background 0.12s;
+}
+
+.btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+
+.btn-primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+.btn-primary:hover:not(:disabled) { background: var(--brand-hover); }
+
+.btn-secondary { background: #f3f2f1; color: var(--text); border-color: #8a8886; }
+.btn-secondary:hover:not(:disabled) { background: #edebe9; }
+
+/* ── Sections ────────────────────────────────────────────────────────────── */
+
+.section { margin-bottom: 16px; }
+
+.section h2 {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--subtle);
+  margin-bottom: 8px;
+}
+
+/* ── Reasons list ────────────────────────────────────────────────────────── */
+
+.reasons-list {
+  list-style: none;
+  padding: 0;
+}
+
+.reasons-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 13px;
+}
+
+.reasons-list li::before {
+  content: '⚠';
+  font-size: 11px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  color: var(--high);
+}
+
+.reason-ok { color: var(--low); }
+.reason-ok::before { content: '✓' !important; color: var(--low) !important; }
+
+/* ── Auth badges ─────────────────────────────────────────────────────────── */
+
+.auth-summary { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.auth-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+
+.auth-pass     { background: var(--low-bg);      color: var(--low);      border-color: var(--low-border); }
+.auth-fail     { background: var(--critical-bg); color: var(--critical); border-color: var(--critical-border); }
+.auth-softfail { background: var(--high-bg);     color: var(--high);     border-color: var(--high-border); }
+.auth-warn     { background: var(--medium-bg);   color: var(--medium);   border-color: var(--medium-border); }
+.auth-none     { background: #f3f2f1;            color: var(--subtle);   border-color: #c8c6c4; }
+
+/* ── Scan controls (sticky footer) ──────────────────────────────────────── */
+
+.scan-controls {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--bg);
+  padding: 8px 16px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.scan-controls hr { display: none; }
+
+/* ── Scan section ────────────────────────────────────────────────────────── */
+
+.scan-progress {
+  font-size: 12px;
+  color: var(--subtle);
+  margin-bottom: 8px;
+  min-height: 18px;
+}
+
+.scan-progress.is-error { color: var(--critical); }
+
+.scan-results { max-height: 260px; overflow-y: auto; }
+
+.scan-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  margin-bottom: 3px;
+}
+
+.scan-item.lvl-low      { background: var(--low-bg); }
+.scan-item.lvl-medium   { background: var(--medium-bg); }
+.scan-item.lvl-high     { background: var(--high-bg); }
+.scan-item.lvl-critical { background: var(--critical-bg); }
+
+.scan-score {
+  font-size: 20px;
+  font-weight: 700;
+  min-width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.scan-score.lvl-low      { color: var(--low); }
+.scan-score.lvl-medium   { color: var(--medium); }
+.scan-score.lvl-high     { color: var(--high); }
+.scan-score.lvl-critical { color: var(--critical); }
+
+.scan-info { min-width: 0; }
+
+.scan-subject {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scan-from {
+  font-size: 11px;
+  color: var(--subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scan-empty { color: var(--subtle); font-size: 13px; padding: 8px 0; }
+
+/* ── Toast ───────────────────────────────────────────────────────────────── */
+
+.toast {
+  position: fixed;
+  bottom: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 7px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 200;
+  border: 1px solid transparent;
+  transition: opacity 0.2s;
+}
+
+.toast.visible { opacity: 1; }
+.toast.ok  { background: var(--low-bg);      color: var(--low);      border-color: var(--low-border); }
+.toast.err { background: var(--critical-bg); color: var(--critical); border-color: var(--critical-border); }
+
+/* ── Divider ─────────────────────────────────────────────────────────────── */
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0 0 10px;
+}

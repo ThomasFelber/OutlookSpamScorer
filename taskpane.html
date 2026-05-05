@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <title>Spam-Bewerter</title>
+  <link rel="stylesheet" href="taskpane.css">
+  <!-- Office.js muss synchron geladen werden (kein defer) -->
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <script src="taskpane.js" defer></script>
+</head>
+<body>
+
+  <!-- Toast-Benachrichtigung -->
+  <div id="toast" class="toast" aria-live="polite" role="status"></div>
+
+  <!-- Ladezustand -->
+  <div id="state-loading" class="state-panel">
+    <div class="spinner" aria-hidden="true"></div>
+    <span>Analysiere E-Mail…</span>
+  </div>
+
+  <!-- Kein Element geöffnet -->
+  <div id="state-no-item" class="state-panel hidden">
+    <p class="hint">Bitte eine E-Mail öffnen.</p>
+  </div>
+
+  <!-- Fehler -->
+  <div id="state-error" class="state-panel hidden">
+    <p class="error-text" id="error-message"></p>
+    <button id="btn-retry" class="btn btn-secondary">Erneut versuchen</button>
+  </div>
+
+  <!-- Ergebnis -->
+  <div id="state-result" class="hidden">
+
+    <!-- Betreff & Absender -->
+    <div id="item-meta" class="item-meta">
+      <div id="meta-subject" class="meta-subject" title=""></div>
+      <div id="meta-from" class="meta-from"></div>
+    </div>
+
+    <!-- Score-Anzeige -->
+    <div id="score-wrap" class="score-wrap">
+      <div id="score-number" class="score-number">0</div>
+      <div class="score-sublabel">von 10</div>
+      <div class="score-bar-track" role="meter" aria-label="Spam-Score" aria-valuemin="0" aria-valuemax="10">
+        <div id="score-bar-fill" class="score-bar-fill" style="width:0%"></div>
+      </div>
+      <div id="score-verdict" class="score-verdict"></div>
+    </div>
+
+    <!-- Kategorie speichern -->
+    <button id="btn-apply" class="btn btn-primary">Als Kategorie speichern</button>
+
+    <!-- Spam-Indikatoren -->
+    <section class="section">
+      <h2>Spam-Indikatoren</h2>
+      <ul id="reasons-list" class="reasons-list"></ul>
+    </section>
+
+    <!-- E-Mail-Authentifizierung -->
+    <section class="section">
+      <h2>Authentifizierung</h2>
+      <div id="auth-summary" class="auth-summary"></div>
+    </section>
+
+  </div>
+
+  <!-- Junk-Ordner scannen (immer sichtbar) -->
+  <div class="scan-controls">
+    <hr>
+    <button id="btn-scan" class="btn btn-secondary">Junk-Ordner scannen (max. 50)</button>
+  </div>
+
+  <section id="scan-section" class="section hidden">
+    <div id="scan-progress" class="scan-progress"></div>
+    <div id="scan-results" class="scan-results"></div>
+  </section>
+
+</body>
+</html>

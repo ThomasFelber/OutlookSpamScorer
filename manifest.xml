@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:type="MailApp">
+
+  <!-- KONFIGURATION: Ersetze https://39f43085.outlook-spam-scorer.pages.dev durch deine Produktions-URL -->
+  <Id>4f8e9a7b-3c2d-4e5f-a6b7-8c9d0e1f2a3b</Id>
+  <Version>1.0.0</Version>
+  <ProviderName>Thomas Felber</ProviderName>
+  <DefaultLocale>de-DE</DefaultLocale>
+  <DisplayName DefaultValue="Spam-Bewerter"/>
+  <Description DefaultValue="Analysiert E-Mail-Header und -Inhalt auf Spam-Merkmale. Score 0 (kein Spam) bis 10 (sicher Spam)."/>
+  <IconUrl DefaultValue="https://39f43085.outlook-spam-scorer.pages.dev/icon-32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://39f43085.outlook-spam-scorer.pages.dev/icon-64.png"/>
+  <SupportUrl DefaultValue="https://39f43085.outlook-spam-scorer.pages.dev"/>
+
+  <AppDomains>
+    <AppDomain>https://39f43085.outlook-spam-scorer.pages.dev</AppDomain>
+  </AppDomains>
+
+  <Hosts>
+    <Host Name="Mailbox"/>
+  </Hosts>
+
+  <Requirements>
+    <Sets>
+      <!-- Mailbox 1.8 benötigt für: getAllInternetHeadersAsync, categories API -->
+      <Set Name="Mailbox" MinVersion="1.8"/>
+    </Sets>
+  </Requirements>
+
+  <FormSettings>
+    <Form xsi:type="ItemRead">
+      <DesktopSettings>
+        <SourceLocation DefaultValue="https://39f43085.outlook-spam-scorer.pages.dev/taskpane.html"/>
+        <RequestedHeight>500</RequestedHeight>
+      </DesktopSettings>
+    </Form>
+  </FormSettings>
+
+  <!-- ReadWriteMailbox benötigt für: EWS-Zugriff auf Junk-Ordner -->
+  <Permissions>ReadWriteMailbox</Permissions>
+
+  <Rule xsi:type="RuleCollection" Mode="Or">
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/>
+  </Rule>
+
+  <DisableEntityHighlighting>false</DisableEntityHighlighting>
+
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:type="VersionOverridesV1_0">
+    <Requirements>
+      <Sets>
+        <Set Name="Mailbox" MinVersion="1.8"/>
+      </Sets>
+    </Requirements>
+
+    <Hosts>
+      <Host xsi:type="MailHost">
+        <DesktopFormFactor>
+          <ExtensionPoint xsi:type="MessageReadCommandSurface">
+            <OfficeTab id="TabDefault">
+              <Group id="msgReadGroup">
+                <Label resid="GroupLabel"/>
+                <Control xsi:type="Button" id="msgReadOpenPaneButton">
+                  <Label resid="TaskpaneButton.Label"/>
+                  <Supertip>
+                    <Title resid="TaskpaneButton.Label"/>
+                    <Description resid="TaskpaneButton.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16x16"/>
+                    <bt:Image size="32" resid="Icon.32x32"/>
+                    <bt:Image size="80" resid="Icon.80x80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>spamScorerPane</TaskpaneId>
+                    <SourceLocation resid="Taskpane.Url"/>
+                  </Action>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+
+    <Resources>
+      <bt:Images>
+        <bt:Image id="Icon.16x16" DefaultValue="https://39f43085.outlook-spam-scorer.pages.dev/icon-16.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://39f43085.outlook-spam-scorer.pages.dev/icon-32.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://39f43085.outlook-spam-scorer.pages.dev/icon-80.png"/>
+      </bt:Images>
+      <bt:Urls>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://39f43085.outlook-spam-scorer.pages.dev/taskpane.html"/>
+      </bt:Urls>
+      <bt:ShortStrings>
+        <bt:String id="GroupLabel" DefaultValue="Spam-Analyse"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Spam-Score"/>
+      </bt:ShortStrings>
+      <bt:LongStrings>
+        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="E-Mail auf Spam analysieren und Score 0–10 als Kategorie vergeben"/>
+      </bt:LongStrings>
+    </Resources>
+  </VersionOverrides>
+
+</OfficeApp>
