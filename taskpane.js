@@ -83,6 +83,13 @@ class SpamAnalyzer {
       }
     }
 
+    // OFR:SpamFilterAuthJ = Exchange spam filter explicitly overrode an auth-based pass decision.
+    // This is a strong signal: the server identified spam characteristics despite clean auth.
+    if (/OFR:SpamFilter/i.test(msDelivery)) {
+      score += 1;
+      reasons.push('Microsoft Exchange: Spam-Filter hat Auth-Pass überstimmt (OFR:SpamFilter)');
+    }
+
     // Reply-To domain differs from From domain — classic phishing pattern
     const fromHeader    = this._getHeader(headers, 'From')     || '';
     const replyToHeader = this._getHeader(headers, 'Reply-To') || '';
@@ -111,15 +118,22 @@ class SpamAnalyzer {
     const espHelo = /\.(mailgun\.net|sendgrid\.net|amazonses\.com|sparkpostmail\.com|exacttarget\.com|salesforceemails\.com|campaignmonitor\.com|createsend\.com|mandrill\.com|postmarkapp\.com|mimecast\.com|proofpoint\.com|constantcontact\.com|hubspot\.com|marketo\.net|klaviyo\.com|brevo\.com|mailjet\.com|elasticemail\.com)$/i;
     const receivedSpf = this._getHeader(headers, 'Received-SPF') || '';
     const heloM = receivedSpf.match(/helo=([\w.-]+)/i);
-    if (heloM && !authFullyPasses) {
+    if (heloM) {
       const heloDomain  = heloM[1].toLowerCase();
       const fromDomainH = this._extractDomain(fromHeader);
       if (fromDomainH && heloDomain !== fromDomainH
           && !heloDomain.endsWith('.' + fromDomainH)
           && !fromDomainH.endsWith('.' + heloDomain)
           && !espHelo.test(heloDomain)) {
-        score += 1;
-        reasons.push(`HELO-Domain abweichend (${heloDomain} ≠ ${fromDomainH})`);
+        if (authFullyPasses) {
+          // Reduced penalty when auth passes — spammers increasingly set up valid SPF/DKIM/DMARC
+          // but still use unrelated sending infrastructure (e.g. HELO=pitchbook.com for a .web.id sender)
+          score += 0.5;
+          reasons.push(`HELO-Domain abweichend (${heloDomain} ≠ ${fromDomainH}) — trotz vollst. Auth`);
+        } else {
+          score += 1;
+          reasons.push(`HELO-Domain abweichend (${heloDomain} ≠ ${fromDomainH})`);
+        }
       }
     }
 
@@ -172,6 +186,15 @@ class SpamAnalyzer {
       reasons.push('Absender postmaster@ — System-Adresse, kein legitimer Newsletter-Absender');
     }
 
+    // Spam keywords in the From email's local part (the part before @).
+    // Real spam operations routinely encode campaign names here: "Casino-angebot_2026@...",
+    // "winn-chance_de@...", etc. Legitimate senders never do this.
+    const fromLocalPart = fromEmail.split('@')[0] || '';
+    if (/^(casino|jackpot|lotto|freispiel|gluck|glueck|wett|winn|gewinn|slot[-_]?s?|roulette|blackjack)/i.test(fromLocalPart)) {
+      score += 1.5;
+      reasons.push(`Spam-Keyword im Absender-Nutzernamen: "${fromLocalPart}"`);
+    }
+
     return score;
   }
 
@@ -187,11 +210,11 @@ class SpamAnalyzer {
       { re: /gewinn(en|er|t)|lotterie|jackpot|millionen?\s*euro|preis\s*gewonnen/i,        w: 2,   label: 'Gewinnversprechen' },
       { re: /nigeria|prince|inheritance|erbschaft|million[s]?\s*dollar/i,                  w: 2.5, label: 'Nigeria-/Vorschussbetrug' },
       { re: /viagra|cialis|levitra|pharmacy|apotheke\s*ohne\s*rezept/i,                    w: 2.5, label: 'Pharma-Spam' },
-      { re: /casino|online.?wett(en|büro)|glücksspiel/i,                                   w: 1.5, label: 'Glücksspiel' },
+      { re: /casino|online.?wett(en|büro)|glücksspiel|freispiel(e)?|\bslots?\b|roulette|blackjack|poker\s*bonus/i, w: 1.5, label: 'Glücksspiel/Casino' },
       { re: /ihr\s+(konto|paypal|amazon|apple|microsoft).{0,30}(gesperrt|deaktiviert)/i,   w: 2,   label: 'Phishing: Konto gesperrt' },
       { re: /passwort\s*(ablaufen|bestätigen|verifizieren|erneuern|expired)/i,             w: 2,   label: 'Phishing: Passwort-Anfrage' },
       { re: /klicken\s*sie\s*hier|click\s*here|jetzt\s*klicken/i,                         w: 0.5, label: 'Generische Klick-Aufforderung' },
-      { re: /dringend|urgent|sofort\s*handeln|act\s*now|limited\s*time|angebot\s*endet/i, w: 0.5, label: 'Künstliche Dringlichkeit' },
+      { re: /dringend|urgent|sofort\s*handeln|act\s*now|limited\s*time|angebot\s*(endet|läuft)|läuft\s*(heute\s*)?ab|bald\s*nicht\s*mehr\s*verfügbar|bonus\s*(endet|läuft|expires)|angebot\s+endet\s+bald/i, w: 0.5, label: 'Künstliche Dringlichkeit' },
       { re: /100\s*%\s*(kostenlos|gratis|free)|völlig\s*kostenlos/i,                      w: 0.8, label: 'Gratis-Versprechen' },
       { re: /sie\s*wurden\s*ausgewählt|you\s*have\s*been\s*selected/i,                    w: 1.5, label: 'Pseudo-Auszeichnung' },
       { re: /\bcrypto|bitcoin|kryptowährun|invest.{0,30}(rendite|gewinne?|robot)|hohe\s*rendite|trading.{0,20}(auto|bot|signal)|warum\s+alle.{0,20}invest|fibonacci|forex\s+signal/i, w: 1.5, label: 'Crypto/Investment-Spam' },
@@ -399,7 +422,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '1.9.0';
+const VERSION    = '1.9.1';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 const analyzer = new SpamAnalyzer();
