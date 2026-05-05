@@ -204,7 +204,12 @@ Office.onReady(info => {
   document.getElementById('btn-retry').addEventListener('click', analyzeCurrentItem);
   document.getElementById('btn-scan').addEventListener('click', scanJunkFolder);
 
-  // Re-analyze when user navigates to a different email (Outlook on the web)
+  // Stay open automatically for every email from now on
+  if (Office.addin?.setStartupBehavior) {
+    Office.addin.setStartupBehavior(Office.StartupBehavior.load).catch(() => {});
+  }
+
+  // Re-analyze when user navigates to a different email (pinned pane)
   Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, analyzeCurrentItem);
 
   analyzeCurrentItem();
