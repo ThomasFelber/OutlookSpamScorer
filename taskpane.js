@@ -82,6 +82,20 @@ class SpamAnalyzer {
       }
     }
 
+    // HELO domain mismatch — the connecting server's HELO name doesn't match the envelope From domain.
+    // Visible in Received-SPF: "helo=searchhomesinwilmington.com"
+    const receivedSpf = this._getHeader(headers, 'Received-SPF') || '';
+    const heloM = receivedSpf.match(/helo=([\w.-]+)/i);
+    if (heloM) {
+      const heloDomain  = heloM[1].toLowerCase();
+      const fromDomainH = this._extractDomain(fromHeader);
+      // Only flag if HELO doesn't share the root domain with From (avoids false positives on subdomains)
+      if (fromDomainH && heloDomain !== fromDomainH && !heloDomain.endsWith('.' + fromDomainH) && !fromDomainH.endsWith('.' + heloDomain)) {
+        score += 1;
+        reasons.push(`HELO-Domain abweichend (${heloDomain} ≠ ${fromDomainH})`);
+      }
+    }
+
     // DKIM signing domain ≠ From domain — legitimate senders always align these.
     // A pass with a mismatched d= means the signing domain was hijacked/borrowed.
     const dkimSig   = this._getHeader(headers, 'DKIM-Signature') || '';
@@ -132,7 +146,7 @@ class SpamAnalyzer {
       { re: /dringend|urgent|sofort\s*handeln|act\s*now|limited\s*time|angebot\s*endet/i, w: 0.5, label: 'Künstliche Dringlichkeit' },
       { re: /100\s*%\s*(kostenlos|gratis|free)|völlig\s*kostenlos/i,                      w: 0.8, label: 'Gratis-Versprechen' },
       { re: /sie\s*wurden\s*ausgewählt|you\s*have\s*been\s*selected/i,                    w: 1.5, label: 'Pseudo-Auszeichnung' },
-      { re: /\bcrypto|bitcoin|kryptowährun|invest.{0,30}rendite|hohe\s*rendite/i,         w: 1,   label: 'Crypto/Investment-Spam' },
+      { re: /\bcrypto|bitcoin|kryptowährun|invest.{0,30}(rendite|gewinne?|robot)|hohe\s*rendite|trading.{0,20}(auto|bot|signal)|warum\s+alle.{0,20}invest|fibonacci|forex\s+signal/i, w: 1.5, label: 'Crypto/Investment-Spam' },
       { re: /ihre\s*(daten|informationen)\s*(wurden\s*)?bestätigen|verify\s*your\s*info/i, w: 1.5, label: 'Datenmissbrauch-Phishing' },
       { re: /lions?\s*(mane|spray)|körper\s*reset|nahrungsergänzung|supplement\b|fettverbrenner|schlank(heits)?|kräuter.{0,25}(spray|tropfen|kapsel)|testosteron.{0,20}boost|abnehm/i, w: 1.5, label: 'Supplement/Gesundheits-Spam' },
     ];
@@ -159,9 +173,16 @@ class SpamAnalyzer {
       reasons.push(`${exclCount} Ausrufezeichen`);
     }
 
-    // Link analysis — inspect URLs textually, never follow them
-    const links = (bodyHtml || '').match(/https?:\/\/[^\s"'<>)]+/gi) || [];
-    const linkCount = links.length;
+    // Link analysis — inspect URLs textually, never follow them.
+    // Also extract originalsrc from Microsoft Safe Links to get the REAL destination URL.
+    const rawLinks   = (bodyHtml || '').match(/https?:\/\/[^\s"'<>)]+/gi) || [];
+    const origSrcRe  = /originalsrc="([^"]+)"/gi;
+    const origSrcs   = [];
+    let osm;
+    while ((osm = origSrcRe.exec(bodyHtml || '')) !== null) origSrcs.push(osm[1]);
+    // Combine, de-duplicate; prefer originalsrc for TLD/shortener checks
+    const links      = [...new Set([...rawLinks, ...origSrcs])];
+    const linkCount  = rawLinks.length;   // count visible links, not originalsrc copies
 
     // URL shorteners hide destination — always suspicious
     const shortenerRe = /bit\.ly\/|tinyurl\.com\/|t\.co\/|goo\.gl\/|ow\.ly\/|cutt\.ly\/|rb\.gy\//i;
@@ -170,11 +191,20 @@ class SpamAnalyzer {
       reasons.push('URL-Verkürzer gefunden (versteckt Ziel-URL)');
     }
 
-    // Suspicious free/throwaway TLDs commonly used for spam campaigns
-    const suspiciousTLD = /\.(tk|cf|ga|ml|gq|xyz|top|click|download|stream|loan|win|racing|buzz)\//i;
+    // Suspicious free/throwaway TLDs — also checked on unwrapped originalsrc
+    const suspiciousTLD = /\.(tk|cf|ga|ml|gq|xyz|top|click|download|stream|loan|win|racing|buzz|la)\//i;
     if (links.some(l => suspiciousTLD.test(l))) {
+      const match = links.find(l => suspiciousTLD.test(l)) || '';
+      const tld   = (match.match(/\.([\w]+)\//) || [])[1] || '?';
       score += 1;
-      reasons.push('Verdächtige Link-TLD (.tk, .xyz, .top …)');
+      reasons.push(`Verdächtige Link-TLD (.${tld}) — auch in Safe-Link-Original`);
+    }
+
+    // Excessive safe-link wrapping on ALL links — bulk mailer or phishing campaign
+    const safeLinksCount = (bodyHtml || '').match(/safelinks\.protection\.outlook\.com/gi)?.length || 0;
+    if (safeLinksCount > 0 && origSrcs.length > 0 && origSrcs.length === safeLinksCount) {
+      // Every link is safe-link wrapped — normal for OWA, not a spam signal by itself
+      // But if real destinations are suspicious, that matters (already caught above)
     }
 
     if (linkCount > 0) {
@@ -189,9 +219,25 @@ class SpamAnalyzer {
     }
 
     // Hidden / invisible text — classic spam obfuscation technique
-    if (/color\s*:\s*(white|#fff\b|#ffffff)|font-size\s*:\s*[01]px|display\s*:\s*none/i.test(bodyHtml || '')) {
+    if (/color\s*:\s*(white|#fff\b|#ffffff)|font-size\s*:\s*[01]px|display\s*:\s*none|visibility\s*:\s*hidden/i.test(bodyHtml || '')) {
       score += 1.5;
       reasons.push('Versteckter/unsichtbarer Text gefunden');
+    }
+
+    // Quoted-Printable obfuscation in HTML body — spam pipelines encode content to evade filters
+    // Legitimate email rarely has dense QP encoding embedded in HTML markup
+    const qpMatches = ((bodyHtml || '').match(/=[0-9A-Fa-f]{2}/g) || []).length;
+    const htmlLen   = (bodyHtml || '').length;
+    if (qpMatches > 30 && htmlLen > 0 && (qpMatches / (htmlLen / 100)) > 1.5) {
+      score += 1;
+      reasons.push(`Quoted-Printable-Verschlüsselung im HTML (${qpMatches} Sequenzen) — Spam-Pipeline-Merkmal`);
+    }
+
+    // Image-only body — no visible text, just image links (common for image-spam evading text filters)
+    const imgCount = ((bodyHtml || '').match(/<img\b/gi) || []).length;
+    if (imgCount >= 2 && plainText.length < 60) {
+      score += 1.5;
+      reasons.push(`Nur-Bild-E-Mail (${imgCount} Bilder, kaum Text) — umgeht Text-basierte Spamfilter`);
     }
 
     // Unsubstituted merge tag in subject, e.g. {Name}, {Felber} — bulk mailer didn't replace placeholder
@@ -219,6 +265,27 @@ class SpamAnalyzer {
     }
 
     return score;
+  }
+
+  // Clean body for display / copy — removes MIME artifacts, QP encoding, hidden blocks
+  _cleanBody(html) {
+    if (!html) return '';
+
+    // Truncate at first MIME multipart boundary (base64 bleed-through, PDF attachments, etc.)
+    html = html.replace(/(\r?\n|^)(--[A-Za-z0-9][A-Za-z0-9_.-]{6,})[\s\S]*$/m, '');
+
+    // Remove visibility:hidden and display:none blocks (obfuscation content not relevant for copy)
+    // Match opening tag + content + matching closing tag (up to 60 KB, non-greedy)
+    html = html
+      .replace(/<[^>]+style\s*=\s*"[^"]*visibility\s*:\s*hidden[^"]*"[^>]*>[\s\S]{0,60000}?<\/(?:div|span|td|section|p)>/gi, ' ')
+      .replace(/<[^>]+style\s*=\s*"[^"]*display\s*:\s*none[^"]*"[^>]*>[\s\S]{0,60000}?<\/(?:div|span|td|section|p)>/gi, ' ');
+
+    // Decode Quoted-Printable: soft line breaks first, then encoded chars
+    html = html
+      .replace(/=\r?\n/g, '')
+      .replace(/=([0-9A-Fa-f]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+
+    return this._stripHtml(html);
   }
 
   // Handles RFC 2822 header folding (continuation lines starting with whitespace)
@@ -252,13 +319,14 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '1.6.0';
+const VERSION    = '1.7.0';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 const analyzer = new SpamAnalyzer();
 let currentScore   = null;
 let lastHeaders    = '';
-let lastBodyText   = '';
+let lastBodyHtml   = '';   // raw HTML — for originalsrc extraction sent to worker
+let lastBodyText   = '';   // cleaned plain text — for copy button
 
 // ─── Office init ───────────────────────────────────────────────────────────────
 
@@ -320,7 +388,8 @@ function analyzeCurrentItem() {
     }),
   ]).then(([headers, bodyHtml]) => {
     lastHeaders  = headers;
-    lastBodyText = analyzer._stripHtml(bodyHtml);
+    lastBodyHtml = bodyHtml;
+    lastBodyText = analyzer._cleanBody(bodyHtml);
     const result = analyzer.analyze(headers, bodyHtml, subject, senderEmail);
     currentScore = result.score;
     renderResult(result, headers, subject, senderName || senderEmail);
@@ -680,10 +749,16 @@ async function runClaudeCheck() {
   const senderEmail = item?.from?.emailAddress || '';
 
   try {
+    // Extract real URLs from Microsoft Safe Links (originalsrc attribute)
+    const origSrcRe2  = /originalsrc="([^"]+)"/gi;
+    const origSrcUrls = [];
+    let osm2;
+    while ((osm2 = origSrcRe2.exec(lastBodyHtml)) !== null) origSrcUrls.push(osm2[1]);
+
     const res = await fetch(WORKER_URL, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ headers: lastHeaders, bodyText: lastBodyText, subject, senderEmail }),
+      body: JSON.stringify({ headers: lastHeaders, bodyText: lastBodyText, subject, senderEmail, origSrcUrls }),
     });
 
     if (!res.ok) {

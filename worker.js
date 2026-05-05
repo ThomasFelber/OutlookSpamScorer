@@ -34,7 +34,7 @@ export default {
       return json({ error: 'Invalid JSON body' }, 400);
     }
 
-    const { headers = '', bodyText = '', subject = '', senderEmail = '' } = payload;
+    const { headers = '', bodyText = '', subject = '', senderEmail = '', origSrcUrls = [] } = payload;
 
     if (!headers && !bodyText) {
       return json({ error: 'No email data provided' }, 400);
@@ -44,7 +44,7 @@ export default {
     const trimmedHeaders  = headers.slice(0, 4000);
     const trimmedBodyText = bodyText.slice(0, 3000);
 
-    const userPrompt = buildPrompt(trimmedHeaders, trimmedBodyText, subject, senderEmail);
+    const userPrompt = buildPrompt(trimmedHeaders, trimmedBodyText, subject, senderEmail, origSrcUrls);
 
     let claudeResponse;
     try {
@@ -130,7 +130,7 @@ function extractDomain(str) {
 
 // ── Prompt builder ────────────────────────────────────────────────────────────
 
-function buildPrompt(headers, bodyText, subject, senderEmail) {
+function buildPrompt(headers, bodyText, subject, senderEmail, origSrcUrls = []) {
   // ── Extract key signals ───────────────────────────────────────────────────
   const fromHeader       = getHdr(headers, 'From')        || '';
   const returnPath       = getHdr(headers, 'Return-Path') || '';
@@ -182,12 +182,32 @@ function buildPrompt(headers, bodyText, subject, senderEmail) {
                 : sclN <= 6          ? `${sclN} → JUNK (threshold 5–6)`
                 :                     `${sclN} → SPAM (threshold 7–9)`;
 
+  // ── HELO mismatch ─────────────────────────────────────────────────────────
+  const receivedSpf2 = getHdr(headers, 'Received-SPF') || '';
+  const heloM2       = receivedSpf2.match(/helo=([\w.-]+)/i);
+  const heloDomain   = heloM2?.[1]?.toLowerCase() ?? null;
+  const heloMismatch = heloDomain && fromDomain
+    && heloDomain !== fromDomain
+    && !heloDomain.endsWith('.' + fromDomain)
+    && !fromDomain.endsWith('.' + heloDomain);
+
+  // ── originalsrc (real URLs behind Microsoft Safe Links) ───────────────────
+  const origSrcSection = origSrcUrls.length > 0
+    ? `\n=== REAL LINK DESTINATIONS (unwrapped from Safe Links) ===\n${origSrcUrls.slice(0, 10).join('\n')}`
+    : '';
+
+  // ── Alignment (extended with HELO) ────────────────────────────────────────
+  const alignLinesExt = [
+    ...alignLines.split('\n').filter(Boolean),
+    heloDomain ? `${'HELO'.padEnd(16)} ${heloDomain.padEnd(40)} ${heloMismatch ? '⚠ MISMATCH' : '✓ aligned'}` : null,
+  ].filter(Boolean).join('\n');
+
   // ── Compose prompt ────────────────────────────────────────────────────────
   return `Analyse this email for spam. Return ONLY a JSON object:
 { "verdict": "spam"|"ham"|"uncertain", "confidence": 0-100, "score": 0-10, "signals": ["..."], "summary": "1-2 sentences in German" }
 
 === SENDER DOMAIN ALIGNMENT ===
-${alignLines || '(no domain data)'}
+${alignLinesExt || '(no domain data)'}
 
 === SERVER VERDICTS ===
 Microsoft SCL:          ${sclDesc}
@@ -197,14 +217,16 @@ X-Spam-Status:          ${xSpamStatus || 'not present'}
 
 === AUTHENTICATION RESULTS ===
 ${authResults || '(not present)'}
-${receivedSpf ? `\nReceived-SPF: ${receivedSpf}` : ''}
+${receivedSpf ? `Received-SPF: ${receivedSpf}` : ''}
 
 === DETECTED PATTERNS ===
 Unsubstituted merge tag in subject : ${mergeTag       ? `YES → "${subject}"` : 'no'}
 Broken UTF-8 encoding (Ã¶/Ã¼)     : ${brokenEncoding ? 'YES — spam pipeline indicator' : 'no'}
+HELO domain mismatch               : ${heloMismatch   ? `YES — HELO=${heloDomain}, From=${fromDomain}` : 'no'}
 URL shortener in body              : ${hasShortener   ? 'YES' : 'no'}
 CAN-SPAM virtual mailbox address   : ${canSpamBox     ? 'YES' : 'no'}
 Affiliate disclaimer               : ${affiliateDiscl ? 'YES' : 'no'}
+${origSrcSection}
 
 === SUBJECT ===
 ${subject}
