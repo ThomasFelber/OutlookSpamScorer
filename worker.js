@@ -114,15 +114,110 @@ function json(data, status = 200) {
   });
 }
 
+// ── Header helpers ────────────────────────────────────────────────────────────
+
+function getHdr(headers, name) {
+  const re = new RegExp(`^${name}:\\s*(.+(?:\\r?\\n[ \\t].+)*)`, 'im');
+  const m  = headers.match(re);
+  return m ? m[1].replace(/\r?\n[ \t]+/g, ' ').trim() : null;
+}
+
+function extractDomain(str) {
+  if (!str) return null;
+  const m = str.match(/@([\w.-]+)/);
+  return m ? m[1].toLowerCase() : null;
+}
+
+// ── Prompt builder ────────────────────────────────────────────────────────────
+
 function buildPrompt(headers, bodyText, subject, senderEmail) {
-  return `Analyse this email and return a JSON verdict.
+  // ── Extract key signals ───────────────────────────────────────────────────
+  const fromHeader       = getHdr(headers, 'From')        || '';
+  const returnPath       = getHdr(headers, 'Return-Path') || '';
+  const replyTo          = getHdr(headers, 'Reply-To')    || '';
+  const dkimSig          = getHdr(headers, 'DKIM-Signature') || '';
+  const authResults      = getHdr(headers, 'Authentication-Results')
+                        || getHdr(headers, 'ARC-Authentication-Results') || '';
+  const receivedSpf      = getHdr(headers, 'Received-SPF') || '';
+  const xSpamStatus      = getHdr(headers, 'X-Spam-Status') || '';
 
-SUBJECT:  ${subject}
-FROM:     ${senderEmail}
+  const fromDomain       = extractDomain(fromHeader);
+  const returnPathDomain = extractDomain(returnPath);
+  const replyToDomain    = extractDomain(replyTo);
+  const dkimDomain       = (dkimSig.match(/\bd=([\w.-]+)/i) || [])[1]?.toLowerCase() ?? null;
 
-=== RAW HEADERS ===
-${headers}
+  // Microsoft Exchange verdicts
+  const scl        = getHdr(headers, 'X-MS-Exchange-Organization-SCL');
+  const antispam   = getHdr(headers, 'X-Microsoft-Antispam') || '';
+  const bcl        = (antispam.match(/BCL:(\d+)/) || [])[1] ?? null;
+  const delivery   = getHdr(headers, 'X-Microsoft-Antispam-Mailbox-Delivery') || '';
+  const destJunk   = /dest:J/i.test(delivery);
+  const ofrJunk    = /OFR:SpamFilter/i.test(delivery);
 
-=== BODY (plain text) ===
-${bodyText}`;
+  // Pattern signals
+  const mergeTag       = /\{[A-Za-z][^}]{0,25}\}/.test(subject);
+  const brokenEncoding = /Ã¶|Ã¼|Ã¤|Ã–/.test(bodyText + subject);
+  const hasShortener   = /bit\.ly|tinyurl|t\.co|goo\.gl|ow\.ly/i.test(bodyText);
+  const canSpamBox     = /\bSte\.?\s+\d+\s*#\s*\d+|\bPMB\s*\d+/i.test(bodyText);
+  const affiliateDiscl = /verwaltet\s+ihr\s+abonnement\s+nicht|does not manage your subscri/i.test(bodyText);
+
+  // ── Alignment section ─────────────────────────────────────────────────────
+  const align = (domain, label) => {
+    if (!domain) return null;
+    const match = domain === fromDomain;
+    return `${label.padEnd(16)} ${domain.padEnd(40)} ${match ? '✓ aligned' : '⚠ MISMATCH'}`;
+  };
+
+  const alignLines = [
+    fromDomain       ? `${'Von (From)'.padEnd(16)} ${fromDomain.padEnd(40)} (reference)` : null,
+    align(returnPathDomain, 'Return-Path'),
+    align(dkimDomain,       'DKIM d='),
+    align(replyToDomain,    'Reply-To'),
+  ].filter(Boolean).join('\n');
+
+  // ── SCL description ───────────────────────────────────────────────────────
+  const sclN   = scl ? parseInt(scl, 10) : null;
+  const sclDesc = sclN == null       ? 'not present'
+                : sclN <= 4          ? `${sclN} (clean)`
+                : sclN <= 6          ? `${sclN} → JUNK (threshold 5–6)`
+                :                     `${sclN} → SPAM (threshold 7–9)`;
+
+  // ── Compose prompt ────────────────────────────────────────────────────────
+  return `Analyse this email for spam. Return ONLY a JSON object:
+{ "verdict": "spam"|"ham"|"uncertain", "confidence": 0-100, "score": 0-10, "signals": ["..."], "summary": "1-2 sentences in German" }
+
+=== SENDER DOMAIN ALIGNMENT ===
+${alignLines || '(no domain data)'}
+
+=== SERVER VERDICTS ===
+Microsoft SCL:          ${sclDesc}
+Microsoft BCL:          ${bcl != null ? `${bcl} (4+=bulk, 7+=high complaints)` : 'not present'}
+Exchange junk delivery: ${destJunk ? `YES — dest:J${ofrJunk ? ', OFR:SpamFilterAuthJ' : ''}` : 'no'}
+X-Spam-Status:          ${xSpamStatus || 'not present'}
+
+=== AUTHENTICATION RESULTS ===
+${authResults || '(not present)'}
+${receivedSpf ? `\nReceived-SPF: ${receivedSpf}` : ''}
+
+=== DETECTED PATTERNS ===
+Unsubstituted merge tag in subject : ${mergeTag       ? `YES → "${subject}"` : 'no'}
+Broken UTF-8 encoding (Ã¶/Ã¼)     : ${brokenEncoding ? 'YES — spam pipeline indicator' : 'no'}
+URL shortener in body              : ${hasShortener   ? 'YES' : 'no'}
+CAN-SPAM virtual mailbox address   : ${canSpamBox     ? 'YES' : 'no'}
+Affiliate disclaimer               : ${affiliateDiscl ? 'YES' : 'no'}
+
+=== SUBJECT ===
+${subject}
+
+=== FROM / SENDER ===
+${fromHeader || senderEmail}
+${returnPath ? `Return-Path: ${returnPath}` : ''}
+${replyTo    ? `Reply-To:    ${replyTo}`    : ''}
+${dkimSig    ? `DKIM-Signature (d=): ${dkimDomain}` : ''}
+
+=== KEY HEADERS (truncated to 3000 chars) ===
+${headers.slice(0, 3000)}
+
+=== BODY TEXT (truncated to 2000 chars) ===
+${bodyText.slice(0, 2000)}`;
 }

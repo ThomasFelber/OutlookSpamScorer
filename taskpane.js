@@ -252,7 +252,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '1.5.0';
+const VERSION    = '1.6.0';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 const analyzer = new SpamAnalyzer();
@@ -284,6 +284,7 @@ Office.onReady(info => {
   // Also hides the pin hint — ItemChanged only fires when the pane IS pinned
   Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, () => {
     hidePinHint();
+    resetClaudeResult();
     analyzeCurrentItem();
   });
 
@@ -519,7 +520,9 @@ function renderResult(result, headers, subject, senderDisplay) {
     });
   }
 
-  document.getElementById('auth-summary').innerHTML = buildAuthBadges(headers);
+  const auth = buildAuthBadges(headers);
+  document.getElementById('auth-section').classList.toggle('hidden', auth.allPass);
+  document.getElementById('auth-summary').innerHTML = auth.html;
 }
 
 function renderScanResults(results) {
@@ -544,12 +547,14 @@ function renderScanResults(results) {
 }
 
 function buildAuthBadges(headers) {
-  if (!headers) return '<span class="auth-badge auth-none">Keine Headers</span>';
+  const none = { html: '', allPass: false };
+  if (!headers) return none;
 
+  // ── SPF / DKIM / DMARC results ─────────────────────────────────────────────
   const authLine = headers.match(/^Authentication-Results:(.+(?:\r?\n[ \t].+)*)/im)
                 || headers.match(/^ARC-Authentication-Results:(.+(?:\r?\n[ \t].+)*)/im);
 
-  if (!authLine) return '<span class="auth-badge auth-none">Keine Authentication-Results</span>';
+  if (!authLine) return none;
 
   const str    = authLine[1];
   const checks = [
@@ -558,16 +563,60 @@ function buildAuthBadges(headers) {
     { label: 'DMARC', re: /dmarc=(pass|fail|none|bestguesspass)/i },
   ];
 
-  return checks.map(({ label, re }) => {
+  const results = checks.map(({ label, re }) => {
     const m   = str.match(re);
-    if (!m) return `<span class="auth-badge auth-none">${label} —</span>`;
-    const val = m[1].toLowerCase();
+    const val = m ? m[1].toLowerCase() : null;
+    return { label, val };
+  });
+
+  // If every result that exists is 'pass' → hide the whole section
+  const allPass = results.every(r => r.val === 'pass');
+  if (allPass) return { html: '', allPass: true };
+
+  const badgesHtml = results.map(({ label, val }) => {
+    if (!val) return `<span class="auth-badge auth-none">${label} —</span>`;
     const cls = val === 'pass'     ? 'auth-pass'
               : val === 'softfail' ? 'auth-softfail'
               : val === 'fail'     ? 'auth-fail'
               :                     'auth-warn';
     return `<span class="auth-badge ${cls}">${label} ${val.toUpperCase()}</span>`;
   }).join('');
+
+  // ── Domain-path alignment ───────────────────────────────────────────────────
+  const hdr = name => {
+    const re = new RegExp(`^${name}:\\s*(.+(?:\\r?\\n[ \\t].+)*)`, 'im');
+    const m  = headers.match(re);
+    return m ? m[1].replace(/\r?\n[ \t]+/g, ' ').trim() : '';
+  };
+  const dom = str => { const m = str.match(/@([\w.-]+)/); return m ? m[1].toLowerCase() : null; };
+
+  const fromDomain       = dom(hdr('From'));
+  const returnPathDomain = dom(hdr('Return-Path'));
+  const replyToDomain    = dom(hdr('Reply-To'));
+  const dkimDomain       = (hdr('DKIM-Signature').match(/\bd=([\w.-]+)/i) || [])[1]?.toLowerCase() ?? null;
+
+  const rows = [
+    { label: 'Von (From)',   domain: fromDomain,       ref: true },
+    { label: 'Return-Path',  domain: returnPathDomain, ref: false },
+    { label: 'DKIM d=',      domain: dkimDomain,       ref: false },
+    { label: 'Reply-To',     domain: replyToDomain,    ref: false },
+  ].filter(r => r.domain);
+
+  let alignHtml = '';
+  if (rows.length > 1) {
+    const rowsHtml = rows.map(r => {
+      if (r.ref) return `<tr><td class="ap-label">Von (From)</td><td class="ap-domain">${escapeHtml(r.domain)}</td><td class="ap-icon ap-ref">—</td></tr>`;
+      const ok  = r.domain === fromDomain;
+      return `<tr class="${ok ? 'ap-ok' : 'ap-warn'}">
+        <td class="ap-label">${r.label}</td>
+        <td class="ap-domain">${escapeHtml(r.domain)}</td>
+        <td class="ap-icon">${ok ? '✓' : '⚠'}</td>
+      </tr>`;
+    }).join('');
+    alignHtml = `<table class="auth-paths">${rowsHtml}</table>`;
+  }
+
+  return { html: badgesHtml + alignHtml, allPass: false };
 }
 
 // ─── UI helpers ────────────────────────────────────────────────────────────────
@@ -687,6 +736,11 @@ function renderClaudeResult(data) {
     ${signalsHtml}
   `;
   resultEl.classList.remove('hidden');
+}
+
+function resetClaudeResult() {
+  const el = document.getElementById('claude-result');
+  if (el) { el.innerHTML = ''; el.classList.add('hidden'); }
 }
 
 function initPinHint() {

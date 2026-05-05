@@ -251,6 +251,27 @@ body {
 .auth-warn     { background: var(--medium-bg);   color: var(--medium);   border-color: var(--medium-border); }
 .auth-none     { background: #f3f2f1;            color: var(--subtle);   border-color: #c8c6c4; }
 
+/* ── Auth domain-path alignment table ───────────────────────────────────── */
+
+.auth-paths {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.auth-paths td { padding: 3px 4px; vertical-align: middle; }
+
+.ap-label  { color: var(--subtle); white-space: nowrap; width: 90px; }
+.ap-domain { font-family: 'Cascadia Code', 'Consolas', monospace; word-break: break-all; }
+.ap-icon   { width: 18px; text-align: center; font-weight: 700; }
+.ap-ref    { color: var(--subtle); font-weight: 400; }
+
+.ap-ok   .ap-icon   { color: var(--low); }
+.ap-ok   .ap-domain { color: var(--text); }
+.ap-warn .ap-icon   { color: var(--high); }
+.ap-warn .ap-domain { color: var(--high); font-weight: 600; }
+
 /* ── Scan controls (sticky footer) ──────────────────────────────────────── */
 
 .scan-controls {
