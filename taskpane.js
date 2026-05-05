@@ -64,19 +64,23 @@ class SpamAnalyzer {
     }
 
     // BCL (Bulk Complaint Level) in X-Microsoft-Antispam: 0 = not bulk, 4–7 = bulk, 8–9 = high complaints
+    // bclVal is hoisted so it can gate the dest:J reduction below and be shared with _analyzeBody.
     const msAntispam = this._getHeader(headers, 'X-Microsoft-Antispam') || '';
-    const bclM = msAntispam.match(/BCL:(\d+)/);
+    const bclM   = msAntispam.match(/BCL:(\d+)/);
+    const bclVal = bclM ? parseInt(bclM[1], 10) : 0;
     if (bclM) {
-      const bcl = parseInt(bclM[1], 10);
-      if (bcl >= 8)      { score += 2;   reasons.push(`Microsoft BCL ${bcl}: sehr hohe Beschwerderate`); }
-      else if (bcl >= 7) { score += 2.5; reasons.push(`Microsoft BCL ${bcl}: hohe Beschwerderate (Bulk-Mail)`); }
-      else if (bcl >= 4) { score += 0.8; reasons.push(`Microsoft BCL ${bcl}: erhöhte Beschwerderate`); }
+      if (bclVal >= 8)      { score += 2;   reasons.push(`Microsoft BCL ${bclVal}: sehr hohe Beschwerderate`); }
+      else if (bclVal >= 7) { score += 2.5; reasons.push(`Microsoft BCL ${bclVal}: hohe Beschwerderate (Bulk-Mail)`); }
+      else if (bclVal >= 4) { score += 0.8; reasons.push(`Microsoft BCL ${bclVal}: erhöhte Beschwerderate`); }
     }
 
-    // dest:J = Exchange delivered to Junk — the server already classified it as spam
+    // dest:J = Exchange delivered to Junk — the server already classified it as spam.
+    // The authFullyPasses reduction only applies when BCL < 7: a confirmed bulk complaint sender
+    // (BCL 7–9, e.g. energy-leads-marketing) doesn't deserve the ESP benefit of the doubt
+    // regardless of clean authentication records.
     const msDelivery = this._getHeader(headers, 'X-Microsoft-Antispam-Mailbox-Delivery') || '';
     if (/dest:J/i.test(msDelivery)) {
-      if (authFullyPasses) {
+      if (authFullyPasses && bclVal < 7) {
         score += 0.5; reasons.push('Microsoft Exchange: Junk-Zustellung (aber vollständige Authentifizierung — evtl. ESP)');
       } else {
         score += 2; reasons.push('Microsoft Exchange: an Junk-Ordner zugestellt');
@@ -230,8 +234,9 @@ class SpamAnalyzer {
       reasons.push(`Spam-Keyword im Absender-Nutzernamen: "${fromLocalPart}"`);
     }
 
-    // Expose authFullyPasses to _analyzeBody via instance state (avoids parameter threading)
+    // Expose auth state and BCL to _analyzeBody via instance state (avoids parameter threading)
     this._lastAuthFullyPasses = authFullyPasses;
+    this._lastBclVal          = bclVal;
 
     return score;
   }
@@ -239,9 +244,11 @@ class SpamAnalyzer {
   _analyzeBody(bodyHtml, subject, reasons) {
     let score = 0;
 
-    // Read auth state set by _analyzeHeaders — used to reduce penalties for
-    // authenticated bulk/transactional senders (e.g. Deutsche Bahn, Anthropic invoices)
+    // Read auth/BCL state set by _analyzeHeaders.
+    // authFullyPasses reductions are overridden when BCL ≥ 7 (confirmed bulk complaint sender).
     const authFullyPasses = this._lastAuthFullyPasses || false;
+    const bclVal          = this._lastBclVal          || 0;
+    const highBcl         = bclVal >= 7;   // BCL 7–9 = mass complaint sender, no ESP exemption
 
     const plainText   = this._stripHtml(bodyHtml || '');
     const fullText    = (subject || '') + ' ' + plainText;
@@ -253,6 +260,7 @@ class SpamAnalyzer {
       { re: /nigeria|prince|inheritance|erbschaft|million[s]?\s*dollar/i,                  w: 2.5, label: 'Nigeria-/Vorschussbetrug' },
       { re: /viagra|cialis|levitra|pharmacy|apotheke\s*ohne\s*rezept/i,                    w: 2.5, label: 'Pharma-Spam' },
       { re: /casino|online.?wett(en|büro)|glücksspiel|freispiel(e)?|\bslots?\b|roulette|blackjack|poker\s*bonus/i, w: 1.5, label: 'Glücksspiel/Casino' },
+      { re: /\d[\d.,]*\s*€\s*(zum|bei)\s+(niedrig|günstig|tief)zins|kreditangebot|sofortkredit|kredit\s+ohne\s+(schufa|bonitätsprüfung)|umschuldung|privat(kredit|darlehen)|effektiver\s+jahreszins|sollzinssatz/i, w: 1.5, label: 'Finanzangebot-Spam (Kredit/Darlehen)' },
       { re: /ihr\s+(konto|paypal|amazon|apple|microsoft).{0,30}(gesperrt|deaktiviert)/i,   w: 2,   label: 'Phishing: Konto gesperrt' },
       { re: /passwort\s*(ablaufen|bestätigen|verifizieren|erneuern|expired)/i,             w: 2,   label: 'Phishing: Passwort-Anfrage' },
       { re: /klicken\s*sie\s*hier|click\s*here|jetzt\s*klicken/i,                         w: 0.5, label: 'Generische Klick-Aufforderung' },
@@ -365,10 +373,10 @@ class SpamAnalyzer {
         score += 1;
         reasons.push('Sehr kurzer Text mit mehreren Links');
       } else if (textLen > 0 && (linkCount / (textLen / 100)) > 0.4) {
-        // Reduce link-density penalty for fully-authenticated senders (transactional mail
-        // legitimately contains many tracked links)
+        // Reduce link-density penalty for fully-authenticated, low-BCL senders only.
+        // High BCL (≥7) means confirmed bulk complaint sender — no reduction.
         const raw     = Math.min(1, linkCount * 0.12);
-        const penalty = authFullyPasses ? raw * 0.3 : raw;
+        const penalty = (authFullyPasses && !highBcl) ? raw * 0.3 : raw;
         if (penalty >= 0.1) {
           score += penalty;
           reasons.push(`Hohe Link-Dichte (${linkCount} Links)`);
@@ -384,11 +392,11 @@ class SpamAnalyzer {
       if (hiddenContent.length > 60) {
         score += 1.5;
         reasons.push('Versteckter/unsichtbarer Text gefunden (substantiell)');
-      } else if (!authFullyPasses) {
+      } else if (!authFullyPasses || highBcl) {
         score += 0.5;
         reasons.push('Versteckte Elemente gefunden (Tracking-Pixel o.ä.)');
       }
-      // authFullyPasses + minimal hidden content → no penalty (normal transactional mail)
+      // authFullyPasses + low BCL + minimal hidden content → no penalty (normal transactional mail)
     }
 
     // Quoted-Printable obfuscation in HTML body — spam pipelines encode content to evade filters
@@ -400,11 +408,27 @@ class SpamAnalyzer {
       reasons.push(`Quoted-Printable-Verschlüsselung im HTML (${qpMatches} Sequenzen) — Spam-Pipeline-Merkmal`);
     }
 
+    // Zero-width spaces / invisible Unicode characters — inserted between words to break
+    // tokenization and evade keyword-based filters (U+200B ZWSP, U+200C ZWNJ, U+200D ZWJ,
+    // U+FEFF BOM, U+00AD soft hyphen). Legitimate email never contains >5 of these.
+    const zwsCount = ((bodyHtml || '').match(/[​‌‍﻿­]/g) || []).length;
+    if (zwsCount > 5) {
+      score += 1.5;
+      reasons.push(`Zero-Width-Space-Obfuskation (${zwsCount} unsichtbare Zeichen) — Spam-Filter-Umgehung`);
+    }
+
     // Image-only body — no visible text, just image links (common for image-spam evading text filters)
     const imgCount = ((bodyHtml || '').match(/<img\b/gi) || []).length;
     if (imgCount >= 2 && plainText.length < 60) {
       score += 1.5;
       reasons.push(`Nur-Bild-E-Mail (${imgCount} Bilder, kaum Text) — umgeht Text-basierte Spamfilter`);
+    }
+
+    // Generic mass-mailing salutation — no recipient name, clearly impersonal bulk mail.
+    // "Liebe Leserinnen und liebe Leser", "Sehr geehrte Damen und Herren", "Dear Customer" etc.
+    if (/^(liebe[rs]?\s+leser(innen)?(\s+und\s+(liebe\s+)?leser)?|sehr\s+geehrte[rs]?\s+(damen?\s+und\s+herren?|dame|herr[,.])|dear\s+(customer|subscriber|reader|member|valued\s+customer))/im.test(plainText)) {
+      score += 0.5;
+      reasons.push('Generische Massen-Anrede (kein personalisierter Empfänger)');
     }
 
     // Unsubstituted merge tag in subject, e.g. {Name}, {Felber} — bulk mailer didn't replace placeholder
@@ -438,10 +462,12 @@ class SpamAnalyzer {
       reasons.push('CAN-SPAM-Adresse: virtueller Briefkasten (kein echtes Büro)');
     }
 
-    // Affiliate-spam responsibility deflection: "advertiser does not manage your subscription"
-    if (/verwaltet\s+(ihr|dein)\s+abonnement\s+nicht|does\s+not\s+manage\s+your\s+subscri/i.test(plainText)) {
+    // Affiliate-spam indicators: responsibility deflection or third-party consent claims.
+    // "advertiser does not manage your subscription", "you registered via cooperation partner",
+    // "your consent was provided through a partner network" — all classic affiliate spam patterns.
+    if (/verwaltet\s+(ihr|dein)\s+abonnement\s+nicht|does\s+not\s+manage\s+your\s+subscri|kooperationspartner|cooperation\s+partner|(einwilligung|registriert|angemeldet)\s+(über|via|durch)\s+(einen?\s+)?(partner|kooperation|affiliate)/i.test(plainText)) {
       score += 0.8;
-      reasons.push('Affiliate-Spam-Disclaimer: Verantwortungs-Ablehnung für Abonnement');
+      reasons.push('Affiliate-Spam: Drittpartei-Einwilligung oder Verantwortungs-Ablehnung');
     }
 
     return score;
@@ -536,7 +562,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '1.9.3';
+const VERSION    = '1.9.4';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 const analyzer = new SpamAnalyzer();
