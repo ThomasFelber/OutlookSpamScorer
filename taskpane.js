@@ -193,7 +193,9 @@ class SpamAnalyzer {
 // ─── Global state ──────────────────────────────────────────────────────────────
 
 const analyzer = new SpamAnalyzer();
-let currentScore = null;
+let currentScore   = null;
+let lastHeaders    = '';
+let lastBodyText   = '';
 
 // ─── Office init ───────────────────────────────────────────────────────────────
 
@@ -203,6 +205,8 @@ Office.onReady(info => {
   document.getElementById('btn-apply').addEventListener('click', applyCategory);
   document.getElementById('btn-retry').addEventListener('click', analyzeCurrentItem);
   document.getElementById('btn-scan').addEventListener('click', scanJunkFolder);
+  document.getElementById('btn-copy-headers').addEventListener('click', () => copyToClipboard(lastHeaders, 'Header kopiert'));
+  document.getElementById('btn-copy-body').addEventListener('click',    () => copyToClipboard(lastBodyText, 'Body-Text kopiert'));
 
   // Stay open automatically for every email from now on
   if (Office.addin?.setStartupBehavior) {
@@ -243,6 +247,8 @@ function analyzeCurrentItem() {
       });
     }),
   ]).then(([headers, bodyHtml]) => {
+    lastHeaders  = headers;
+    lastBodyText = analyzer._stripHtml(bodyHtml);
     const result = analyzer.analyze(headers, bodyHtml, subject, senderEmail);
     currentScore = result.score;
     renderResult(result, headers, subject, senderName || senderEmail);
@@ -531,6 +537,14 @@ function verdictText(score) {
   if (score <= 6)  return 'Verdächtig';
   if (score <= 8)  return 'Wahrscheinlich Spam';
   return 'Sehr wahrscheinlich Spam';
+}
+
+function copyToClipboard(text, successMsg) {
+  if (!text) { showToast('Keine Daten verfügbar', true); return; }
+  navigator.clipboard.writeText(text).then(
+    ()  => showToast(successMsg, false),
+    ()  => showToast('Kopieren fehlgeschlagen', true)
+  );
 }
 
 function escapeHtml(str) {

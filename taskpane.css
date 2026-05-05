@@ -170,6 +170,27 @@ body {
 .btn-secondary { background: #f3f2f1; color: var(--text); border-color: #8a8886; }
 .btn-secondary:hover:not(:disabled) { background: #edebe9; }
 
+.copy-row { display: flex; gap: 8px; }
+
+.btn-copy {
+  flex: 1;
+  display: block;
+  padding: 6px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid #8a8886;
+  background: #f3f2f1;
+  color: var(--text);
+  cursor: pointer;
+  margin-bottom: 0;
+  transition: background 0.12s;
+}
+
+.btn-copy:hover { background: #edebe9; }
+.btn-copy:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
 /* ── Sections ────────────────────────────────────────────────────────────── */
 
 .section { margin-bottom: 16px; }
