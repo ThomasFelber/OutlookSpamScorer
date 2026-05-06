@@ -234,6 +234,22 @@ class SpamAnalyzer {
       reasons.push(`Spam-Keyword im Absender-Nutzernamen: "${fromLocalPart}"`);
     }
 
+    // Spam keywords in the From display name (e.g. "Detox Nachrichten" <alert@andressacupuncture.com>).
+    // Spammers set an enticing display name that has nothing to do with the sender domain.
+    // Only fires when the display name exists and is distinct from the domain name.
+    const fromDisplayName = (fromHeader.match(/^"?([^"<@\n]+?)"?\s*</) || [])[1]?.trim() || '';
+    if (fromDisplayName) {
+      const displayLower = fromDisplayName.toLowerCase();
+      const domainRoot   = this._extractRootDomain(fromDomain) || '';
+      // Skip if the display name is just the company name embedded in the domain
+      const domainWord   = domainRoot.split('.')[0];
+      if (!displayLower.includes(domainWord) &&
+          /detox|abnehm|gewicht\s*(verlier|verlor|abgenomm)|schlank|fettverbrenner|keto\b|nahrungsergänzung|supplement|casino|jackpot|gewinn(?!chein)|lotterie|crypto|bitcoin|kredit(?!karte)|darlehen|niedrigzins|pharma|viagra|glück.{0,10}spiel/i.test(fromDisplayName)) {
+        score += 1.5;
+        reasons.push(`Spam-Keyword im Absender-Anzeigename: "${fromDisplayName}"`);
+      }
+    }
+
     // Expose auth state and BCL to _analyzeBody via instance state (avoids parameter threading)
     this._lastAuthFullyPasses = authFullyPasses;
     this._lastBclVal          = bclVal;
@@ -269,7 +285,7 @@ class SpamAnalyzer {
       { re: /sie\s*wurden\s*ausgewählt|you\s*have\s*been\s*selected/i,                    w: 1.5, label: 'Pseudo-Auszeichnung' },
       { re: /\bcrypto|bitcoin|kryptowährun|invest.{0,30}(rendite|gewinne?|robot)|hohe\s*rendite|trading.{0,20}(auto|bot|signal)|warum\s+alle.{0,20}invest|fibonacci|forex\s+signal/i, w: 1.5, label: 'Crypto/Investment-Spam' },
       { re: /ihre\s*(daten|informationen)\s*(wurden\s*)?bestätigen|verify\s*your\s*info/i, w: 1.5, label: 'Datenmissbrauch-Phishing' },
-      { re: /lions?\s*(mane|spray)|körper\s*reset|nahrungsergänzung|supplement\b|fettverbrenner|schlank(heits)?|kräuter.{0,25}(spray|tropfen|kapsel)|testosteron.{0,20}boost|abnehm/i, w: 1.5, label: 'Supplement/Gesundheits-Spam' },
+      { re: /lions?\s*(mane|spray)|körper\s*reset|nahrungsergänzung|supplement\b|fettverbrenner|schlank(heits)?|kräuter.{0,25}(spray|tropfen|kapsel)|testosteron.{0,20}boost|abnehm|\bdetox\b|keto\s*(diät|plan|programm|rezept|\b)|\d+\s*kg\s*(verloren?|abgenommen)|gewicht\s*(verloren?|verlier|abgenomm)|bauchfett|taille\s*(reduzier|weg|schmaler)/i, w: 1.5, label: 'Supplement/Gewichtsabnahme-Spam' },
       { re: /wechat|微信|telegram\s*(channel|contact|group|id)|whatsapp\s*(contact|number|group)|line\s*id\s*:/i, w: 1.5, label: 'Messenger-Kontakt-Solicitation (WeChat/Telegram/WhatsApp)' },
       { re: /bundeszentralamt|finanzamt\b|bundeszoll|steuerpr[üu]fung.*krypto|amtliche?\s+(mahnung|aufforderung|mitteilung).*steuer/i, w: 2.5, label: 'Behörden-Impersonation (Finanzamt/BZSt)' },
       { re: /\b(UPS|DHL|FedEx|Hermes|DPD|GLS|Yodel|Evri)\b.{0,40}(paket|lieferung|sendung|delivery|tracking|notification|nicht\s*zugestellt)/i, w: 1.5, label: 'Kurierdienst-Erwähnung (auf Domain-Mismatch prüfen)' },
@@ -376,6 +392,22 @@ class SpamAnalyzer {
       const tld   = (match.match(/\.([\w]+)\//) || [])[1] || '?';
       score += 1;
       reasons.push(`Verdächtige Link-TLD (.${tld}) — auch in Safe-Link-Original`);
+    }
+
+    // Suspicious URL structures used by spam redirect/obfuscation systems.
+    // .jspx files: a Java Server Page variant almost never served in legitimate email links;
+    // spammers use random-string .jspx filenames (e.g. "8O9DpCvO5e.jspx") as redirect handlers.
+    if (links.some(l => /\/[A-Za-z0-9]{5,15}\.jspx(\?|$)/i.test(l))) {
+      score += 1.5;
+      reasons.push('Verdächtige URL-Dateiendung (.jspx) — Spam-Redirect-System');
+    }
+
+    // Exclamation marks (!) inside URL parameter values are not valid unencoded in URLs (RFC 3986
+    // permits ! in paths but spam trackers use garbled strings like "ev7jtp!jhhhjhwwl1t!j!j21t5"
+    // as obfuscated tracking tokens). Legitimate ESPs use proper base64/hex encoding.
+    if (links.some(l => /[?&][a-z]{1,6}=[a-z0-9]{4,}![a-z0-9!]{4,}/i.test(l))) {
+      score += 1;
+      reasons.push('Obfuskierte URL-Parameter mit Sonderzeichen — Spam-Tracking-Token');
     }
 
     if (linkCount > 0) {
@@ -573,7 +605,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '1.9.5';
+const VERSION    = '1.9.6';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 const analyzer = new SpamAnalyzer();
