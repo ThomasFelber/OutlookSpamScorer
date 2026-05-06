@@ -341,15 +341,26 @@ class SpamAnalyzer {
     }
 
     // Link analysis — inspect URLs textually, never follow them.
-    // Also extract originalsrc from Microsoft Safe Links to get the REAL destination URL.
-    const rawLinks   = (bodyHtml || '').match(/https?:\/\/[^\s"'<>)]+/gi) || [];
-    const origSrcRe  = /originalsrc="([^"]+)"/gi;
-    const origSrcs   = [];
+    //
+    // Only href="https://…" attributes count as visible links for density purposes.
+    // A global /https?:\/\//g match on the whole HTML also hits originalsrc values,
+    // img src, CSS backgrounds, etc. — inflating the count (e.g. 4 Safe-Links hrefs
+    // would report 11 because each href/originalsrc pair is matched separately).
+    const hrefRe   = /\bhref="(https?:\/\/[^"]+)"/gi;
+    const rawLinks = [];
+    let hlm;
+    while ((hlm = hrefRe.exec(bodyHtml || '')) !== null) rawLinks.push(hlm[1]);
+
+    // Separately extract Microsoft Safe Links originalsrc — the real destination URL.
+    // Used only for TLD / shortener checks, not for link counting.
+    const origSrcRe = /originalsrc="([^"]+)"/gi;
+    const origSrcs  = [];
     let osm;
     while ((osm = origSrcRe.exec(bodyHtml || '')) !== null) origSrcs.push(osm[1]);
-    // Combine, de-duplicate; prefer originalsrc for TLD/shortener checks
-    const links      = [...new Set([...rawLinks, ...origSrcs])];
-    const linkCount  = rawLinks.length;   // count visible links, not originalsrc copies
+
+    // For suspicious-URL checks use unwrapped destinations first, fall back to raw hrefs.
+    const links     = [...new Set([...origSrcs, ...rawLinks])];
+    const linkCount = rawLinks.length;   // visible href links only
 
     // URL shorteners hide destination — always suspicious
     const shortenerRe = /bit\.ly\/|tinyurl\.com\/|t\.co\/|goo\.gl\/|ow\.ly\/|cutt\.ly\/|rb\.gy\//i;
@@ -562,7 +573,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '1.9.4';
+const VERSION    = '1.9.5';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 const analyzer = new SpamAnalyzer();
