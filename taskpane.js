@@ -886,7 +886,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '2.0.17';
+const VERSION    = '2.0.18';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 /**
@@ -1343,15 +1343,21 @@ function renderClaudeResult(data, subject, senderEmail) {
     ${comparisonHtml}
     ${data.summary ? `<p class="claude-summary">${escapeHtml(data.summary)}</p>` : ''}
     ${signalsHtml}
-    ${promptHtml}
   `;
-
-  // Wire up the copy button after inserting HTML
-  document.getElementById('btn-copy-prompt')?.addEventListener('click', () => {
-    copyToClipboard(promptText, 'Prompt kopiert');
-  });
-
   resultEl.classList.remove('hidden');
+
+  // LLM-Prompt below advice-result
+  const promptContainer = document.getElementById('llm-prompt-container');
+  if (promptContainer) {
+    promptContainer.innerHTML = promptHtml;
+    promptContainer.classList.remove('hidden');
+    promptContainer.querySelector('#btn-copy-prompt')?.addEventListener('click', () => {
+      copyToClipboard(promptText, 'Prompt kopiert');
+    });
+  }
+
+  // Hide the trigger button — result is now visible
+  document.getElementById('btn-claude')?.classList.add('hidden');
 }
 
 function buildImprovementPrompt(claudeData, subject, senderEmail) {
@@ -1405,6 +1411,9 @@ False Negatives (Spam-E-Mails nicht erkannt). Liefere konkreten JavaScript-Code.
 function resetClaudeResult() {
   const el = document.getElementById('claude-result');
   if (el) { el.innerHTML = ''; el.classList.add('hidden'); }
+  const promptContainer = document.getElementById('llm-prompt-container');
+  if (promptContainer) { promptContainer.innerHTML = ''; promptContainer.classList.add('hidden'); }
+  document.getElementById('btn-claude')?.classList.remove('hidden');
   lastClaudeResult = null;
 }
 

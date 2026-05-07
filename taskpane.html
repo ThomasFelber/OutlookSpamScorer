@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
   <title>Spam-Bewerter</title>
-  <link rel="stylesheet" href="taskpane.css?v=2.0.17">
+  <link rel="stylesheet" href="taskpane.css?v=2.0.18">
   <!-- Office.js muss synchron geladen werden (kein defer) -->
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-  <script src="taskpane.js?v=2.0.17" defer></script>
+  <script src="taskpane.js?v=2.0.18" defer></script>
 </head>
 <body>
 
@@ -72,12 +72,18 @@
       <div id="auth-summary" class="auth-summary"></div>
     </section>
 
-    <!-- AI Analyse -->
+    <!-- AI Analyse (button hides after use) -->
     <section class="section">
       <h2>AI Analyse</h2>
       <button id="btn-claude" class="btn btn-claude">Mit AI prüfen</button>
       <div id="claude-result" class="claude-result hidden" aria-live="polite"></div>
     </section>
+
+    <!-- Verbesserungsvorschläge (inline, nach Klick sichtbar) -->
+    <div id="advice-result" class="advice-result hidden" aria-live="polite"></div>
+
+    <!-- LLM-Prompt (unterhalb der Empfehlungen, nach AI-Check sichtbar) -->
+    <div id="llm-prompt-container" class="hidden"></div>
 
     <!-- Dokumente generieren -->
     <section class="section" id="artifacts-section">
@@ -88,7 +94,6 @@
         <button id="btn-action-plan"     class="btn btn-artifact">📋 Aktionsplan</button>
         <button id="btn-anschreiben"     class="btn btn-artifact">✉ Anschreiben</button>
       </div>
-      <div id="advice-result" class="advice-result hidden" aria-live="polite"></div>
     </section>
 
     <!-- Kopieren -->
