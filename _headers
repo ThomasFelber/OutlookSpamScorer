@@ -1,0 +1,15 @@
+# HTML-Seiten: immer beim Server nachfragen (kein stiller Cache-Hit)
+# Bei unverändertem ETag → 304, Browser nutzt eigenen Cache → kein extra Download
+# Bei neuem Deploy → neuer ETag → 200, Browser lädt frischen Stand
+/*.html
+  Cache-Control: no-cache, must-revalidate
+
+/Delivery-Reports/*.html
+  Cache-Control: no-cache, must-revalidate
+
+# Statische Assets (CSS, JS, Bilder) können ruhig lange gecacht werden
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.css
+  Cache-Control: public, max-age=31536000, immutable

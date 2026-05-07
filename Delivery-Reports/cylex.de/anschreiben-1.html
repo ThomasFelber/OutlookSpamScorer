@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zustellbarkeitsbericht – Cylex Deutschland</title>
+    <title>E-Mail-Zustellbarkeit – Cylex</title>
     <style>
         * {
             margin: 0;
@@ -11,196 +11,170 @@
             box-sizing: border-box;
         }
         body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333;
-            background-color: #f5f5f5;
+            background: #f5f5f5;
             padding: 20px;
         }
         .container {
             max-width: 700px;
             margin: 0 auto;
-            background-color: #fff;
-            padding: 40px;
+            background: #ffffff;
+            padding: 50px 40px;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
-        .header {
+        .header-contact {
             margin-bottom: 30px;
-            border-bottom: 3px solid #0066cc;
-            padding-bottom: 15px;
+            text-align: left;
+            font-size: 14px;
         }
-        .header h1 {
-            font-size: 24px;
+        .header-contact a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        .header-contact a:hover {
+            text-decoration: underline;
+        }
+        .datum {
+            margin-top: 8px;
+            color: #666;
+            font-size: 13px;
+        }
+        .anrede {
+            margin: 35px 0 25px 0;
+            font-size: 15px;
+        }
+        .body-text {
+            margin-bottom: 18px;
+            text-align: justify;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+        .highlight {
+            background: #fffbea;
+            padding: 20px;
+            border-left: 4px solid #ff9800;
+            margin: 25px 0;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        .offer-section {
+            margin: 30px 0;
+            padding: 0;
+        }
+        .offer-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 15px;
+            color: #222;
+        }
+        .option {
+            margin-bottom: 18px;
+            padding-left: 0;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        .option-label {
+            font-weight: 600;
             color: #0066cc;
             margin-bottom: 5px;
         }
-        .header p {
-            font-size: 13px;
-            color: #666;
-        }
-        .recipient {
-            margin-bottom: 25px;
-            padding: 12px;
-            background-color: #f9f9f9;
-            border-left: 4px solid #0066cc;
-            border-radius: 4px;
-        }
-        .recipient a {
-            color: #0066cc;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .recipient a:hover {
-            text-decoration: underline;
-        }
-        .date {
-            margin-bottom: 25px;
-            font-size: 14px;
-            color: #666;
-        }
-        .greeting {
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-        .content {
+        .closing {
+            margin-top: 35px;
             margin-bottom: 25px;
             font-size: 15px;
-            line-height: 1.8;
-        }
-        .content p {
-            margin-bottom: 15px;
-        }
-        .problem-highlight {
-            background-color: #fff3cd;
-            padding: 15px;
-            border-left: 4px solid #ffc107;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        .problem-highlight p {
-            margin: 0;
-            font-size: 15px;
-            color: #333;
-        }
-        .solution-box {
-            background-color: #e8f4f8;
-            padding: 20px;
-            border-radius: 6px;
-            margin: 25px 0;
-            border-left: 4px solid #0066cc;
-        }
-        .solution-box h3 {
-            font-size: 16px;
-            color: #0066cc;
-            margin-bottom: 12px;
-        }
-        .solution-box p {
-            font-size: 15px;
-            margin-bottom: 10px;
             line-height: 1.7;
         }
-        .option {
-            margin-bottom: 12px;
-            padding-left: 20px;
-            position: relative;
-        }
-        .option::before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: #0066cc;
-            font-weight: bold;
-        }
-        .closing {
-            margin-top: 25px;
-            margin-bottom: 25px;
-            font-size: 15px;
+        .signature {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 14px;
             line-height: 1.8;
         }
-        .closing p {
-            margin-bottom: 12px;
-        }
-        .signature {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-            font-size: 14px;
-        }
-        .signature p {
-            margin-bottom: 8px;
-        }
-        .signature strong {
-            color: #0066cc;
+        .signature-name {
             font-weight: 600;
+            margin-bottom: 10px;
         }
-        .contact {
-            margin-top: 15px;
-            font-size: 14px;
+        .contact-info {
+            margin-top: 12px;
         }
-        .contact a {
+        .contact-info a {
             color: #0066cc;
             text-decoration: none;
-            font-weight: 500;
+            display: block;
+            margin-bottom: 4px;
         }
-        .contact a:hover {
+        .contact-info a:hover {
             text-decoration: underline;
-        }
-        .divider {
-            margin: 8px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Zustellbarkeitsbericht</h1>
-            <p>Analyse Ihrer geschäftskritischen E-Mails</p>
+
+        <div class="header-contact">
+            <a href="mailto:info@cylex.de">info@cylex.de</a>
+            <div class="datum">München, 7. Mai 2026</div>
         </div>
 
-        <div class="recipient">
-            Adressat: <a href="mailto:info@cylex.de">info@cylex.de</a>
-        </div>
-
-        <div class="date">
-            München, 19. Januar 2025
-        </div>
-
-        <div class="greeting">
+        <div class="anrede">
             Liebe Damen und Herren,
         </div>
 
-        <div class="content">
-            <p>
-                mein Name ist Thomas Felber. Ich habe Ihre letzten ausgehenden E-Mails analysiert und möchte Sie auf ein ernstes Zustellungsproblem hinweisen, das wahrscheinlich viele Ihrer Empfänger betrifft.
-            </p>
-
-            <div class="problem-highlight">
-                <p>
-                    <strong>Das Kernproblem:</strong> Ihre E-Mails landen bei vielen Empfängern automatisch im Spam- oder Junk-Ordner – nicht, weil sie bösartig sind, sondern weil die technische Infrastruktur sendet, ohne dass Mailserver Ihnen vollständig vertrauen.
-                </p>
-            </div>
-
-            <p>
-                Konkret wurde Ihre E-Mail vom 19. Januar (Betreff: „Firmenprofil gelöscht") bei Microsoft-Systemen als Spam gekennzeichnet, obwohl der Inhalt legitim ist und alle grundlegenden Sicherheitschecks bestanden wurden.
-            </p>
-
-            <p>
-                <strong>Warum passiert das?</strong>
-            </p>
-            <p>
-                Sie nutzen einen Mailing-Dienstleister (Mandrill), um E-Mails zu versenden. Das ist völlig normal und spart Zeit. Allerdings ist der Mailserver dieses Dienstleisters nicht so stark mit Ihrer Domain (cylex.de) verbunden, wie die großen Mail-Anbieter es erwarten. Das führt dazu, dass ihre Nachrichten verdächtig wirken – obwohl sie es nicht sind.
-            </p>
-
-            <p>
-                Das Resultat: Wichtige Transaktions-E-Mails, Benachrichtigungen und Kundenbestätigungen erreichen die Posteingänge nicht zuverlässig. Kunden sehen Ihre Mails verspätet oder gar nicht.
-            </p>
+        <div class="body-text">
+            ich habe Ihre E-Mails zur Firmenprofilverwaltung analysiert und möchte Sie auf ein Problem hinweisen, das ich bei der technischen Auswertung festgestellt habe: Ihre E-Mails landen derzeit mit hoher Wahrscheinlichkeit regelmäßig im Spam-Ordner Ihrer Empfänger — vor allem bei Microsoft Outlook.
         </div>
 
-        <div class="solution-box">
-            <h3>Ich kann das beheben</h3>
-            <p>
-                Ich spezialisiere mich darauf, genau solche Probleme zu lösen. Gemeinsam werden wir die Konfiguration optimieren, damit Ihre E-Mails wieder zuverlässig ankommen.
-            </p>
-            <p>
-                <strong>Ich
+        <div class="highlight">
+            <strong>Das Ergebnis meiner Analyse (Report #0032):</strong> Add-in-Score 9/10 — „Almost certainly spam". SPF, DKIM und DMARC bestehen alle, dennoch überstimmt Microsoft Exchange den Auth-Pass (OFR:SpamFilter). PTR-Record der sendenden IP zeigt auf <code>localhost</code> statt auf einen professionellen Hostnamen — ein starkes Reputationssignal, das Microsoft-Filter direkt auslöst.
+        </div>
+
+        <div class="body-text">
+            Die gute Nachricht: Die Authentifizierung ist korrekt eingerichtet. Das Problem liegt an der Reputation Ihrer Versandinfrastruktur — Mandrill liefert mit einer IP, deren Reverse-DNS nicht konfiguriert ist, und mit einer Return-Path-Domain, die nicht zu cylex.de aligned ist. Das ist behebbar.
+        </div>
+
+        <div class="body-text">
+            Im Alltag bedeutet das: Löschbestätigungen, Profiländerungen und Transaktionsmails erreichen Ihre Nutzer nicht zuverlässig. Sie bekommen keine Fehlermeldung — die E-Mail landet still im Junk.
+        </div>
+
+                <div class="offer-section">
+            <div class="offer-title">Wie können wir zusammenarbeiten?</div>
+
+            <div class="option">
+                <div class="option-label">Option A: Festpreis</div>
+                <div>Ich analysiere Ihre E-Mail-Infrastruktur vollständig, identifiziere alle Konfigurationsfehler und setze die Korrekturen um — PTR-Fix, Custom Return-Path, Mandrill-Alignment. Honorar: <strong>€ 750</strong> (Festpreis, fällig bei Abschluss).</div>
+            </div>
+
+            <div class="option">
+                <div class="option-label">Option B: Erstanalyse</div>
+                <div>Ich überbringe Ihnen den vollständigen Analyse-Report mit allen identifizierten Problemen und priorisierten Handlungsempfehlungen. Die Umsetzung liegt dann bei Ihnen. Honorar: <strong>€ 200</strong> (einmalig, fällig bei Übergabe).</div>
+            </div>
+
+            <div class="option">
+                <div class="option-label">Option C: Kollegial</div>
+                <div>Ich glaube daran, dass Fachleute sich gegenseitig helfen. Wenn Sie lieber ohne formales Mandat beginnen möchten, sprechen Sie mich an — ich bin offen für ein Gespräch. Was daraus entsteht, entscheiden wir gemeinsam.</div>
+            </div>
+        </div>
+
+        <div class="closing">
+            Für ein kurzes Gespräch stehe ich jederzeit zur Verfügung — in 20 Minuten kann ich Ihnen zeigen, wo genau die Probleme liegen und was konkret zu tun ist.
+        </div>
+
+        <div style="margin-bottom: 8px;">Viele Grüße,</div>
+
+        <div class="signature">
+            <div class="signature-name">Thomas Felber</div>
+            <div style="margin-top: 15px; color: #666;">E-Mail-Deliverability Spezialist</div>
+            <div class="contact-info">
+                <a href="mailto:felber@live.de?subject=E-Mail-Zustellbarkeit%20Cylex">felber@live.de</a>
+                <a href="tel:+491709064924">+49 170 9064924</a>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

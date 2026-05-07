@@ -1,4 +1,4 @@
-name            = "spam-scorer-ai"
-main            = "worker.js"
+name               = "spam-scorer-ai"
+main               = "worker.js"
 compatibility_date = "2024-09-23"
-account_id      = "8edbb93852e6e7a4f23bb0cf7069516a"
+account_id         = "8edbb93852e6e7a4f23bb0cf7069516a"

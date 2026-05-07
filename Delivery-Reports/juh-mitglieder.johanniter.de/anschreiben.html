@@ -3,187 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zustellbarkeitsbericht – Johanniter-Unfall-Hilfe</title>
+    <title>E-Mail-Zustellbarkeit – Johanniter-Unfall-Hilfe</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f5f5f5;
-            padding: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        .contact-info {
-            background-color: #f9f9f9;
-            border-left: 4px solid #0066cc;
-            padding: 12px 15px;
-            margin-bottom: 25px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .contact-info a {
-            color: #0066cc;
-            text-decoration: none;
-        }
-        .contact-info a:hover {
-            text-decoration: underline;
-        }
-        .header {
-            margin-bottom: 30px;
-        }
-        .header-date {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 20px;
-        }
-        h1 {
-            font-size: 24px;
-            color: #0066cc;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-        .salutation {
-            font-size: 16px;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-        p {
-            margin-bottom: 16px;
-            text-align: justify;
-        }
-        .problem-box {
-            background-color: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 16px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        .problem-box p {
-            margin-bottom: 8px;
-            text-align: left;
-        }
-        .solution-section {
-            background-color: #e7f3ff;
-            border-left: 4px solid #0066cc;
-            padding: 16px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        .solution-section h3 {
-            color: #0066cc;
-            font-size: 16px;
-            margin-bottom: 12px;
-        }
-        .solution-section p {
-            margin-bottom: 12px;
-            text-align: left;
-        }
-        .offer {
-            margin: 25px 0;
-            padding: 16px;
-            background-color: #f0f8ff;
-            border-radius: 4px;
-        }
-        .offer h4 {
-            color: #0066cc;
-            font-size: 15px;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-        .offer-option {
-            margin-bottom: 12px;
-            padding-left: 20px;
-            position: relative;
-        }
-        .offer-option:before {
-            content: "▸";
-            position: absolute;
-            left: 0;
-            color: #0066cc;
-        }
-        .closing {
-            margin-top: 30px;
-            margin-bottom: 20px;
-        }
-        .signature {
-            margin-top: 30px;
-            font-weight: 500;
-        }
-        .signature-line {
-            margin-bottom: 15px;
-        }
-        .footer-contact {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e0e0e0;
-            font-size: 13px;
-            color: #666;
-        }
-        .footer-contact p {
-            margin-bottom: 8px;
-        }
-        .footer-contact a {
-            color: #0066cc;
-            text-decoration: none;
-        }
-        .footer-contact a:hover {
-            text-decoration: underline;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 700px; margin: 0 auto; background: #fff; padding: 50px 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .header-contact { margin-bottom: 30px; font-size: 14px; }
+        .header-contact a { color: #c8102e; text-decoration: none; }
+        .header-contact a:hover { text-decoration: underline; }
+        .datum { margin-top: 8px; color: #666; font-size: 13px; }
+        .anrede { margin: 35px 0 25px 0; font-size: 15px; }
+        .body-text { margin-bottom: 18px; text-align: justify; font-size: 15px; line-height: 1.7; }
+        .highlight { background: #fff3cd; padding: 20px; border-left: 4px solid #e8a000; margin: 25px 0; border-radius: 4px; font-size: 14px; line-height: 1.7; }
+        .offer-section { margin: 30px 0; }
+        .offer-title { font-weight: 600; margin-bottom: 15px; font-size: 15px; color: #222; }
+        .option { margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+        .option-label { font-weight: 600; color: #c8102e; margin-bottom: 5px; }
+        .closing { margin-top: 35px; margin-bottom: 25px; font-size: 15px; line-height: 1.7; }
+        .signature { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 14px; line-height: 1.8; }
+        .signature-name { font-weight: 600; margin-bottom: 10px; }
+        .contact-info { margin-top: 12px; }
+        .contact-info a { color: #0066cc; text-decoration: none; display: block; margin-bottom: 4px; }
+        .contact-info a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="contact-info">
-            <strong>Absender:</strong><br>
+
+        <div class="header-contact">
             <a href="mailto:mitgliederservice.sued@juh-mitglieder.johanniter.de">mitgliederservice.sued@juh-mitglieder.johanniter.de</a>
+            <div class="datum">München, 7. Mai 2026</div>
         </div>
 
-        <div class="header">
-            <div class="header-date">München, 15. Januar 2025</div>
-            <h1>Bericht zur E-Mail-Zustellbarkeit</h1>
-            <p style="color: #666; font-size: 14px; margin-bottom: 0;">Zuwendungsbestätigung Ihrer fördernden Mitgliedschaft</p>
-        </div>
-
-        <div class="salutation">
+        <div class="anrede">
             Liebe Damen und Herren,<br>
             sehr geehrtes Team der Johanniter-Unfall-Hilfe,
         </div>
 
-        <p>
-            ich habe Ihre Zuwendungsbestätigung analysiert, die an Ihre Mitglieder versendet wird. Das Ergebnis zeigt ein strukturelles Problem auf, das ich gerne mit Ihnen besprechen möchte: <strong>Ihre E-Mails landen derzeit bei Microsoft-Nutzern regelmäßig im Spam-Ordner</strong> – obwohl alles technisch in Ordnung ist.
-        </p>
-
-        <div class="problem-box">
-            <p><strong>Das zentrale Problem:</strong></p>
-            <p>
-                Die E-Mail wird von Microsoft Exchange automatisch als Spam klassifiziert und landet im Junk-Ordner. Dies geschieht, obwohl alle Sicherheitsprüfungen erfolgreich sind. Der Grund liegt nicht an Ihrer Domain oder Ihrem Inhalt, sondern an einer Kombination von Faktoren:
-            </p>
-            <p style="margin-top: 12px;">
-                <strong>1. Versandinfrastruktur:</strong> Ihre E-Mails werden über einen Mail-Dienstleister (Mailjet) versendet, dessen IP-Adresse von Microsoft als weniger vertrauenswürdig eingestuft wird.
-            </p>
-            <p>
-                <strong>2. Content-Trigger:</strong> Der Text enthält Begriffe (wie „Finanzamt"), die Spam-Filter automatisch als verdächtig markieren – auch wenn der Inhalt völlig legitim ist.
-            </p>
-            <p>
-                <strong>3. Link-Struktur:</strong> Die Anzahl und Anordnung der Links in der E-Mail werden vom Filter als risikobehaftet bewertet.
-            </p>
+        <div class="body-text">
+            ich habe Ihre Zuwendungsbestätigung analysiert, die an Ihre Fördermitglieder versendet wird. Das Ergebnis zeigt ein strukturelles Problem auf, das ich gerne mit Ihnen besprechen möchte: <strong>Ihre E-Mails landen bei Microsoft-Nutzern regelmäßig im Spam-Ordner</strong> — obwohl die Authentifizierung vollständig korrekt eingerichtet ist.
         </div>
 
-        <p>
-            <strong>Die gute Nachricht:</strong> Ihre E-Mail ist authentisch und legitim. Es ist kein Sicherheitsproblem und es geht nicht um Betrug. Das ist ein bekanntes, lösbares Problem im E-Mail-Marketing, das viele gemeinnützige Organisationen betrifft.
-        </p>
+        <div class="highlight">
+            <strong>Das Ergebnis meiner Analyse (Report #0030):</strong> Add-in-Score 7/10 — Junk-Zustellung bei Microsoft. SPF, DKIM und DMARC bestehen. Das Problem: Mailjet versendet über eine IP ohne PTR-Record — fehlende Reverse-DNS ist für Microsoft-Filter ein starkes Negativsignal, das den Auth-Pass überstimmt.
+        </div>
 
-        <div class="solution-section">
-            <h3>Wie ich helfen kann
+        <div class="body-text">
+            Das hat praktische Konsequenzen: Zuwendungsbestätigungen für die Steuererklärung, Spendenquittungen und Mitgliedskommunikation erreichen Ihre Förder&shy;mitglieder nicht zuverlässig. Die E-Mail wird einfach nicht gelesen — ohne jede Fehlermeldung auf Ihrer Seite.
+        </div>
+
+        <div class="body-text">
+            Das ist lösbar. Der Kern des Problems liegt bei der PTR-Konfiguration Ihres Mailjet-Kontos und dem Versandvolumen-Profil — beides ist ohne Systemwechsel behebbar.
+        </div>
+
+        <div class="offer-section">
+            <div class="offer-title">Wie können wir zusammenarbeiten?</div>
+
+            <div class="option">
+                <div class="option-label">Option A: Festpreis</div>
+                <div>Ich analysiere Ihre E-Mail-Infrastruktur vollständig, identifiziere alle Konfigurationsfehler und begleite die Umsetzung — von der PTR-Konfiguration bei Mailjet bis zum Monitoring. Honorar: <strong>€ 450</strong> (Festpreis, fällig bei Abschluss).</div>
+            </div>
+
+            <div class="option">
+                <div class="option-label">Option B: Erstanalyse</div>
+                <div>Ich überbringe Ihnen den vollständigen Analyse-Report mit allen identifizierten Problemen und priorisierten Handlungsempfehlungen. Die Umsetzung liegt dann bei Ihrem Team. Honorar: <strong>€ 200</strong> (einmalig, fällig bei Übergabe).</div>
+            </div>
+
+            <div class="option">
+                <div class="option-label">Option C: Kollegial</div>
+                <div>Ich glaube daran, dass Fachleute sich gegenseitig helfen. Wenn Sie lieber ohne formales Mandat beginnen möchten, sprechen Sie mich an — ich bin offen für ein Gespräch. Was daraus entsteht, entscheiden wir gemeinsam.</div>
+            </div>
+        </div>
+
+        <div class="closing">
+            Für ein kurzes Gespräch stehe ich jederzeit zur Verfügung. In 20 Minuten kann ich Ihnen zeigen, wo genau das Problem liegt und was zu tun ist.
+        </div>
+
+        <div style="margin-bottom: 8px;">Freundliche Grüße,</div>
+
+        <div class="signature">
+            <div class="signature-name">Thomas Felber</div>
+            <div style="margin-top: 15px; color: #666;">E-Mail-Deliverability Spezialist</div>
+            <div class="contact-info">
+                <a href="mailto:felber@live.de?subject=E-Mail-Zustellbarkeit%20Johanniter">felber@live.de</a>
+                <a href="tel:+491709064924">+49 170 9064924</a>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
