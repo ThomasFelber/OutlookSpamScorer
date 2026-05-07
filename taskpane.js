@@ -886,8 +886,9 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '2.0.20';
-const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
+const VERSION            = '2.0.21';
+const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
+const AUTHORIZED_ACCOUNT = 'felber@live.de';
 
 /**
  * Detect the Outlook UI language and return a two-letter BCP-47 base tag.
@@ -959,6 +960,7 @@ const REPORT_STRINGS = {
 function rStr() { return REPORT_STRINGS[UI_LANG] || REPORT_STRINGS.de; }
 
 const analyzer = new SpamAnalyzer();
+let isAuthorizedAccount = false;
 let currentScore    = null;
 let lastHeaders     = '';
 let lastBodyHtml    = '';   // raw HTML — for originalsrc extraction sent to worker
@@ -976,6 +978,9 @@ Office.onReady(info => {
 
   UI_LANG = detectUiLang();
 
+  const userEmail = (Office.context.mailbox?.userProfile?.emailAddress || '').toLowerCase();
+  isAuthorizedAccount = userEmail === AUTHORIZED_ACCOUNT;
+
   document.getElementById('btn-retry').addEventListener('click', analyzeCurrentItem);
   document.getElementById('btn-copy-headers').addEventListener('click', () => copyToClipboard(lastHeaders, 'Header kopiert'));
   document.getElementById('btn-copy-body').addEventListener('click',    () => copyToClipboard(lastBodyText, 'Body-Text kopiert'));
@@ -985,6 +990,7 @@ Office.onReady(info => {
   document.getElementById('btn-delivery-report').addEventListener('click', downloadDeliverabilityReport);
   document.getElementById('btn-action-plan').addEventListener('click', () => generateArtifact('action-plan'));
   document.getElementById('btn-anschreiben').addEventListener('click', () => generateArtifact('anschreiben'));
+  document.getElementById('btn-zip').addEventListener('click', downloadAssessmentZip);
 
   initPinHint();
   document.getElementById('version-label').textContent = 'v' + VERSION;
@@ -1102,6 +1108,13 @@ function renderResult(result, headers, subject, senderDisplay) {
   const auth = buildAuthBadges(headers);
   document.getElementById('auth-section').classList.toggle('hidden', auth.allPass);
   document.getElementById('auth-summary').innerHTML = auth.html;
+
+  applyAccountVisibility();
+}
+
+function applyAccountVisibility() {
+  document.getElementById('artifacts-section')?.classList.toggle('hidden', !isAuthorizedAccount);
+  document.getElementById('export-section')?.classList.toggle('hidden',    isAuthorizedAccount);
 }
 
 function buildAuthBadges(headers) {
@@ -1348,9 +1361,9 @@ function renderClaudeResult(data, subject, senderEmail) {
   `;
   resultEl.classList.remove('hidden');
 
-  // LLM-Prompt below advice-result
+  // LLM-Prompt below advice-result (authorized account only)
   const promptContainer = document.getElementById('llm-prompt-container');
-  if (promptContainer) {
+  if (promptContainer && isAuthorizedAccount) {
     promptContainer.innerHTML = promptHtml;
     promptContainer.classList.remove('hidden');
     promptContainer.querySelector('#btn-copy-prompt')?.addEventListener('click', () => {
@@ -1487,6 +1500,89 @@ async function generateArtifact(mode) {
     const a    = document.createElement('a');
     a.href     = url;
     a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showToast(`${filename} wird heruntergeladen…`, false);
+  } catch (err) {
+    showToast(`⚠ ${err.message}`, true);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = origLabel;
+  }
+}
+
+// ─── Assessment ZIP export ─────────────────────────────────────────────────────
+
+async function downloadAssessmentZip() {
+  const btn       = document.getElementById('btn-zip');
+  const origLabel = btn.textContent;
+  btn.disabled    = true;
+  btn.textContent = 'Erstelle ZIP…';
+
+  try {
+    const item        = Office.context.mailbox.item;
+    const senderEmail = item?.from?.emailAddress || 'sender';
+    const subject     = item?.subject || '';
+    const date        = new Date().toISOString().slice(0, 10);
+    const domain      = (senderEmail.match(/@([\w.-]+)/) || [])[1] || 'sender';
+
+    const zip = new JSZip(); // eslint-disable-line no-undef
+
+    // 1. Raw source: headers + body
+    const sourceText = lastHeaders
+      + '\n\n=== BODY ===\n\n'
+      + lastBodyText;
+    zip.file(`${domain}-source-${date}.txt`, sourceText);
+
+    // 2. Add-in assessment
+    const addinLines = [
+      `Spam Scorer v${VERSION} — Add-in Assessment`,
+      `Datum   : ${new Date().toLocaleString('de-DE')}`,
+      `Betreff : ${subject}`,
+      `Absender: ${senderEmail}`,
+      '',
+      `Score  : ${currentScore}/10 — ${verdictText(currentScore)}`,
+      '',
+      '=== Spam-Indikatoren ===',
+      ...(lastAnalysis?.reasons?.length
+        ? lastAnalysis.reasons.map(r => `  • ${r}`)
+        : ['  (keine)']),
+      '',
+      '=== Zustellbarkeits-Hinweise ===',
+      ...(lastAnalysis?.deliverabilityNotes?.length
+        ? lastAnalysis.deliverabilityNotes.map(r => `  • ${r}`)
+        : ['  (keine)']),
+    ];
+    zip.file(`${domain}-addin-assessment-${date}.txt`, addinLines.join('\n'));
+
+    // 3. AI assessment (only if Claude was already run)
+    if (lastClaudeResult) {
+      const aiLines = [
+        `Spam Scorer v${VERSION} — AI Assessment`,
+        `Datum   : ${new Date().toLocaleString('de-DE')}`,
+        '',
+        `Verdict   : ${lastClaudeResult.verdict || '?'}`,
+        `Konfidenz : ${lastClaudeResult.confidence ?? '—'}%`,
+        `Score     : ${lastClaudeResult.score ?? '—'}/10`,
+        '',
+        '=== Signale ===',
+        ...(lastClaudeResult.signals?.length
+          ? lastClaudeResult.signals.map(s => `  • ${s}`)
+          : ['  (keine)']),
+        '',
+        '=== Zusammenfassung ===',
+        lastClaudeResult.summary || '(keine)',
+      ];
+      zip.file(`${domain}-ai-assessment-${date}.txt`, aiLines.join('\n'));
+    }
+
+    const blob     = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+    const url      = URL.createObjectURL(blob);
+    const filename = `${domain}-Assessment-${date}.zip`;
+    const a        = document.createElement('a');
+    a.href         = url;
+    a.download     = filename;
     a.click();
     URL.revokeObjectURL(url);
 
