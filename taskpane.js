@@ -1899,7 +1899,9 @@ async function downloadDeliverabilityReport() {
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
-    a.download = s.filename(String(reportNum).padStart(4, '0'));
+    const date   = new Date().toISOString().slice(0, 10);
+    const domain = (senderEmail.match(/@([\w.-]+)/) || [])[1] || 'sender';
+    a.download = `${domain}-Report-${date}.html`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
