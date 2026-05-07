@@ -886,7 +886,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '2.0.14';
+const VERSION    = '2.0.15';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 /**
@@ -1846,38 +1846,58 @@ function parseHeaderMeta(headers) {
   return { from: get('From'), date: get('Date') };
 }
 
-/** Trigger the browser file download */
-function downloadDeliverabilityReport() {
-  const item        = Office.context.mailbox.item;
-  const subject     = item?.subject            || '';
-  const senderEmail = item?.from?.emailAddress || '';
-  const senderName  = item?.from?.displayName  || '';
+/** Trigger the browser file download — auto-chains AI check + advice if not yet run */
+async function downloadDeliverabilityReport() {
+  const btn = document.getElementById('btn-delivery-report');
+  btn.disabled = true;
 
-  const reportNum = (parseInt(localStorage.getItem('reportCount') || '0', 10) + 1);
-  localStorage.setItem('reportCount', String(reportNum));
+  try {
+    if (!lastClaudeResult) {
+      btn.textContent = 'AI analysiert…';
+      await runClaudeCheck();
+    }
 
-  const html = buildDeliverabilityHtml({
-    subject, senderEmail, senderName,
-    addinScore:   currentScore,
-    addinSignals: lastAnalysis?.reasons || [],
-    claudeResult: lastClaudeResult,
-    adviceResult: lastAdviceResult,
-    headers:      lastHeaders,
-    hiddenText:   lastHiddenText,
-    reportNum,
-  });
+    if (!lastAdviceResult) {
+      btn.textContent = 'Empfehlungen…';
+      await runAdviceCheck();
+    }
 
-  const s    = rStr();
-  const blob = new Blob([html], { type: 'text/html; charset=utf-8' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = s.filename(String(reportNum).padStart(4, '0'));
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast(s.toast, false);
+    btn.textContent = 'Erstelle Report…';
+
+    const item        = Office.context.mailbox.item;
+    const subject     = item?.subject            || '';
+    const senderEmail = item?.from?.emailAddress || '';
+    const senderName  = item?.from?.displayName  || '';
+
+    const reportNum = (parseInt(localStorage.getItem('reportCount') || '0', 10) + 1);
+    localStorage.setItem('reportCount', String(reportNum));
+
+    const html = buildDeliverabilityHtml({
+      subject, senderEmail, senderName,
+      addinScore:   currentScore,
+      addinSignals: lastAnalysis?.reasons || [],
+      claudeResult: lastClaudeResult,
+      adviceResult: lastAdviceResult,
+      headers:      lastHeaders,
+      hiddenText:   lastHiddenText,
+      reportNum,
+    });
+
+    const s    = rStr();
+    const blob = new Blob([html], { type: 'text/html; charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = s.filename(String(reportNum).padStart(4, '0'));
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(s.toast, false);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '📄 Report';
+  }
 }
 
 /** Assemble the full HTML document */
