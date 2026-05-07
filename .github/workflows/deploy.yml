@@ -25,6 +25,7 @@ jobs:
           mkdir -p dist
           cp taskpane.html taskpane.js taskpane.css dist/
           cp icon-*.png dist/
+          cp -r Samples dist/
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
