@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
   <title>Spam-Bewerter</title>
-  <link rel="stylesheet" href="taskpane.css?v=2.0.16">
+  <link rel="stylesheet" href="taskpane.css?v=2.0.17">
   <!-- Office.js muss synchron geladen werden (kein defer) -->
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-  <script src="taskpane.js?v=2.0.16" defer></script>
+  <script src="taskpane.js?v=2.0.17" defer></script>
 </head>
 <body>
 
@@ -79,21 +79,16 @@
       <div id="claude-result" class="claude-result hidden" aria-live="polite"></div>
     </section>
 
-    <!-- E-Mail-Reputations-Beratung (nur nach Analyse sichtbar) -->
-    <section class="section hidden" id="advice-section">
-      <h2>Reputations-Verbesserung</h2>
-      <button id="btn-advice" class="btn btn-advice">Verbesserungsvorschläge generieren</button>
-      <div id="advice-result" class="advice-result hidden" aria-live="polite"></div>
-    </section>
-
-    <!-- Dokumente generieren (sichtbar nach Analyse) -->
+    <!-- Dokumente generieren -->
     <section class="section" id="artifacts-section">
       <h2>Dokumente generieren</h2>
       <div class="artifact-row">
+        <button id="btn-advice"          class="btn btn-artifact">💡 Empfehlungen</button>
         <button id="btn-delivery-report" class="btn btn-artifact">📄 Report</button>
         <button id="btn-action-plan"     class="btn btn-artifact">📋 Aktionsplan</button>
         <button id="btn-anschreiben"     class="btn btn-artifact">✉ Anschreiben</button>
       </div>
+      <div id="advice-result" class="advice-result hidden" aria-live="polite"></div>
     </section>
 
     <!-- Kopieren -->

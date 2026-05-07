@@ -886,7 +886,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '2.0.16';
+const VERSION    = '2.0.17';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 /**
@@ -1243,7 +1243,6 @@ async function runClaudeCheck() {
     const cachedSubject = cachedItem?.subject            || '';
     const cachedSender  = cachedItem?.from?.emailAddress || '';
     renderClaudeResult(lastClaudeResult, cachedSubject, cachedSender);
-    document.getElementById('advice-section').classList.remove('hidden');
     return;
   }
 
@@ -1279,9 +1278,6 @@ async function runClaudeCheck() {
 
     lastClaudeResult = data;
     renderClaudeResult(data, subject, senderEmail);
-
-    // Reveal the advice section after a successful Claude analysis
-    document.getElementById('advice-section').classList.remove('hidden');
   } catch (err) {
     resultEl.innerHTML = `<p class="claude-error">⚠ ${escapeHtml(err.message)}</p>`;
     resultEl.classList.remove('hidden');
@@ -1512,6 +1508,12 @@ async function runAdviceCheck() {
     lastAdviceResult = null;
   }
 
+  if (!lastClaudeResult) {
+    btn.disabled    = true;
+    btn.textContent = 'AI analysiert…';
+    await runClaudeCheck();
+  }
+
   btn.disabled    = true;
   btn.textContent = 'Generiere Vorschläge…';
   resultEl.classList.add('hidden');
@@ -1657,9 +1659,7 @@ function renderAdviceResult(data) {
 }
 
 function resetAdviceResult() {
-  const section  = document.getElementById('advice-section');
   const resultEl = document.getElementById('advice-result');
-  if (section)  section.classList.add('hidden');
   if (resultEl) { resultEl.innerHTML = ''; resultEl.classList.add('hidden'); }
   lastAdviceResult = null;
 }

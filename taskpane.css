@@ -469,7 +469,8 @@ body {
 /* ── Artifact buttons ────────────────────────────────────────────────────── */
 
 .artifact-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
