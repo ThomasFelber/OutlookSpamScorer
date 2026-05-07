@@ -43,7 +43,7 @@
       display: flex; align-items: flex-start; gap: 16px;
       background: #1a1f2e; border: 1px solid #1e293b;
       border-radius: 10px; padding: 16px 20px;
-      text-decoration: none; color: inherit;
+      cursor: pointer;
       transition: border-color .15s, background .15s;
     }
     .report-card:hover { border-color: #334155; background: #1e2438; }
@@ -88,11 +88,74 @@
     .metric span.bad { color: #f87171; }
     .metric span.warn{ color: #fbbf24; }
 
-    .card-arrow { color: #334155; font-size: 18px; flex-shrink: 0; align-self: center; }
-    .report-card:hover .card-arrow { color: #64748b; }
+    /* New-tab button on each card */
+    .btn-card-newtab {
+      flex-shrink: 0; align-self: center;
+      font-size: 12px; font-weight: 500; color: #475569;
+      text-decoration: none; padding: 5px 10px;
+      border: 1px solid #1e293b; border-radius: 6px; background: #0f172a;
+      transition: color .15s, border-color .15s;
+      white-space: nowrap;
+    }
+    .btn-card-newtab:hover { color: #94a3b8; border-color: #334155; }
+
+    /* ── Modal ──────────────────────────────────────────────────────────── */
+    .modal {
+      position: fixed; inset: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal.hidden { display: none; }
+
+    .modal-bd {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,.8);
+      backdrop-filter: blur(4px);
+    }
+    .modal-win {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 960px; height: 90vh;
+      background: #0f1117; border: 1px solid #334155;
+      border-radius: 12px; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .modal-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; background: #1a1f2e;
+      border-bottom: 1px solid #1e293b; flex-shrink: 0;
+    }
+    .modal-title {
+      flex: 1; font-size: 13px; font-weight: 500; color: #cbd5e1;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .btn-newtab {
+      font-size: 12px; font-weight: 500; color: #94a3b8; text-decoration: none;
+      padding: 4px 10px; border: 1px solid #334155; border-radius: 6px;
+      background: #0f172a; flex-shrink: 0; transition: color .15s, border-color .15s;
+    }
+    .btn-newtab:hover { color: #f1f5f9; border-color: #64748b; }
+    .modal-close {
+      background: none; border: none; color: #64748b; font-size: 20px;
+      cursor: pointer; padding: 2px 6px; border-radius: 4px; flex-shrink: 0;
+      transition: color .15s, background .15s; line-height: 1;
+    }
+    .modal-close:hover { color: #f1f5f9; background: #1e293b; }
+    .modal-frame { flex: 1; width: 100%; border: none; background: #fff; }
   </style>
 </head>
 <body>
+
+  <!-- ── Modal ──────────────────────────────────────────────────────────────── -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-bd" onclick="closeModal()"></div>
+    <div class="modal-win">
+      <div class="modal-bar">
+        <span class="modal-title" id="modal-title"></span>
+        <a id="modal-newtab" href="#" target="_blank" class="btn-newtab"
+           onclick="event.stopPropagation()">↗ Neuer Tab</a>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <iframe id="modal-frame" class="modal-frame" src=""></iframe>
+    </div>
+  </div>
 
   <header>
     <a href="/">← Outlook Spam-Bewerter</a>
@@ -112,7 +175,7 @@
 
     <div class="report-grid">
 
-      <a href="lerntraining.de/report-2-erweitert.html" class="report-card">
+      <div class="report-card" onclick="openModal('lerntraining.de/report-2-erweitert.html','Report #2 — Erweiterte Analyse · lerntraining.de')">
         <div class="card-left">
           <div class="card-title">Report #2 — Erweiterte Analyse</div>
           <div class="card-meta">20. März 2026 · info@lerntraining.de via Amazon SES</div>
@@ -132,10 +195,11 @@
             <strong>Hauptproblem:</strong> Shared IP ohne eigene Reputation + fehlendes Custom MAIL FROM (Envelope-Domain: amazonses.com ≠ lerntraining.de) · Engagement-Raten wahrscheinlich zu niedrig (OFR:SpamFilterAuthJ trotz korrekter Auth)
           </div>
         </div>
-        <div class="card-arrow">›</div>
-      </a>
+        <a href="lerntraining.de/report-2-erweitert.html" target="_blank"
+           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+      </div>
 
-      <a href="lerntraining.de/report-1.html" class="report-card">
+      <div class="report-card" onclick="openModal('lerntraining.de/report-1.html','Report #1 — Erstanalyse · lerntraining.de')">
         <div class="card-left">
           <div class="card-title">Report #1 — Erstanalyse</div>
           <div class="card-meta">20. März 2026 · info@lerntraining.de via Amazon SES</div>
@@ -156,8 +220,9 @@
             <strong>Hauptproblem:</strong> 4 Ausrufezeichen + Emoji im Betreff · Return-Path-Mismatch (Amazon SES, kein Custom Return-Path) · niedrige Engagement-Rate vermutet
           </div>
         </div>
-        <div class="card-arrow">›</div>
-      </a>
+        <a href="lerntraining.de/report-1.html" target="_blank"
+           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+      </div>
 
     </div>
   </div>
@@ -174,7 +239,7 @@
 
     <div class="report-grid">
 
-      <a href="akademie-lernpaedagogik.de/report-1.html" class="report-card">
+      <div class="report-card" onclick="openModal('akademie-lernpaedagogik.de/report-1.html','Report #1 — Microsoft Junk-Analyse · akademie-lernpaedagogik.de')">
         <div class="card-left">
           <div class="card-title">Report #1 — Microsoft Junk-Analyse</div>
           <div class="card-meta">28. Januar 2026 · seminar@akademie-lernpaedagogik.de via ActiveCampaign</div>
@@ -194,11 +259,30 @@
             <strong>Kritisch:</strong> 128 Zero-Width-Spaces im Template (Obfuskationssignal) · BCL 5 = aktive Nutzerbeschwerden vorhanden · 7 Ausrufezeichen · Sternchen-Umrahmung im Betreff (<code style="font-size:11px">**...**</code>)
           </div>
         </div>
-        <div class="card-arrow">›</div>
-      </a>
+        <a href="akademie-lernpaedagogik.de/report-1.html" target="_blank"
+           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+      </div>
 
     </div>
   </div>
+
+  <script>
+    function openModal(url, title) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-frame').src = url;
+      document.getElementById('modal-newtab').href = url;
+      document.getElementById('modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+      document.getElementById('modal-frame').src = '';
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
 
 </body>
 </html>

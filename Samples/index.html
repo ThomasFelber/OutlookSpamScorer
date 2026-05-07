@@ -15,147 +15,126 @@
       padding: 40px 20px 80px;
     }
 
-    header {
-      max-width: 860px;
-      margin: 0 auto 48px;
-    }
-    header a {
-      font-size: 13px;
-      color: #64748b;
-      text-decoration: none;
-    }
+    header { max-width: 860px; margin: 0 auto 48px; }
+    header a { font-size: 13px; color: #64748b; text-decoration: none; }
     header a:hover { color: #94a3b8; }
-    header h1 {
-      font-size: 28px;
-      font-weight: 700;
-      color: #f8fafc;
-      margin-top: 16px;
-      line-height: 1.2;
-    }
-    header p {
-      margin-top: 8px;
-      font-size: 14px;
-      color: #64748b;
-    }
+    header h1 { font-size: 28px; font-weight: 700; color: #f8fafc; margin-top: 16px; line-height: 1.2; }
+    header p  { margin-top: 8px; font-size: 14px; color: #64748b; }
 
-    .client-block {
-      max-width: 860px;
-      margin: 0 auto 48px;
-    }
+    .client-block { max-width: 860px; margin: 0 auto 48px; }
 
     .client-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-      padding-bottom: 12px;
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px; padding-bottom: 12px;
       border-bottom: 1px solid #1e293b;
     }
     .client-logo {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      background: #1e293b;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
+      width: 36px; height: 36px; border-radius: 8px; background: #1e293b;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
     }
-    .client-name {
-      font-size: 18px;
-      font-weight: 600;
-      color: #f1f5f9;
-    }
-    .client-meta {
-      font-size: 12px;
-      color: #475569;
-      margin-top: 2px;
-    }
+    .client-name { font-size: 18px; font-weight: 600; color: #f1f5f9; }
+    .client-meta { font-size: 12px; color: #475569; margin-top: 2px; }
 
-    .sample-grid {
-      display: grid;
-      gap: 12px;
-    }
+    .sample-grid { display: grid; gap: 12px; }
 
     .sample-card {
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      background: #1a1f2e;
-      border: 1px solid #1e293b;
-      border-radius: 10px;
-      padding: 16px 20px;
-      text-decoration: none;
-      color: inherit;
+      display: flex; align-items: flex-start; gap: 16px;
+      background: #1a1f2e; border: 1px solid #1e293b;
+      border-radius: 10px; padding: 16px 20px;
+      cursor: pointer;
       transition: border-color .15s, background .15s;
     }
-    .sample-card:hover {
-      border-color: #334155;
-      background: #1e2438;
-    }
-    .sample-card.template {
-      opacity: .65;
-    }
+    .sample-card:hover { border-color: #334155; background: #1e2438; }
+    .sample-card.template { opacity: .65; }
     .sample-card.template:hover { opacity: .85; }
 
-    .card-icon {
-      font-size: 22px;
-      line-height: 1;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
+    .card-icon { font-size: 22px; line-height: 1; flex-shrink: 0; margin-top: 2px; }
     .card-body { flex: 1; min-width: 0; }
-    .card-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: #f1f5f9;
-      margin-bottom: 4px;
-    }
+    .card-title { font-size: 15px; font-weight: 600; color: #f1f5f9; margin-bottom: 4px; }
     .card-subject {
-      font-size: 12px;
-      color: #64748b;
-      margin-bottom: 6px;
-      font-style: italic;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 12px; color: #64748b; margin-bottom: 6px;
+      font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .card-desc {
-      font-size: 13px;
-      color: #94a3b8;
-      line-height: 1.5;
-    }
+    .card-desc { font-size: 13px; color: #94a3b8; line-height: 1.5; }
 
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
-    }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
     .tag {
-      font-size: 11px;
-      font-weight: 500;
-      padding: 2px 8px;
-      border-radius: 99px;
-      background: #0f172a;
-      color: #64748b;
-      border: 1px solid #1e293b;
+      font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 99px;
+      background: #0f172a; color: #64748b; border: 1px solid #1e293b;
     }
     .tag.green  { color: #4ade80; border-color: #14532d; background: #052e16; }
     .tag.yellow { color: #facc15; border-color: #713f12; background: #1c0a00; }
     .tag.blue   { color: #60a5fa; border-color: #1e3a5f; background: #0a1628; }
 
-    .card-arrow {
-      color: #334155;
-      font-size: 18px;
-      flex-shrink: 0;
-      align-self: center;
+    /* New-tab button on each card */
+    .btn-card-newtab {
+      flex-shrink: 0; align-self: center;
+      font-size: 12px; font-weight: 500; color: #475569;
+      text-decoration: none; padding: 5px 10px;
+      border: 1px solid #1e293b; border-radius: 6px; background: #0f172a;
+      transition: color .15s, border-color .15s;
+      white-space: nowrap;
     }
-    .sample-card:hover .card-arrow { color: #64748b; }
+    .btn-card-newtab:hover { color: #94a3b8; border-color: #334155; }
+
+    /* ── Modal ──────────────────────────────────────────────────────────── */
+    .modal {
+      position: fixed; inset: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal.hidden { display: none; }
+
+    .modal-bd {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,.8);
+      backdrop-filter: blur(4px);
+    }
+    .modal-win {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 960px; height: 90vh;
+      background: #0f1117; border: 1px solid #334155;
+      border-radius: 12px; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .modal-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; background: #1a1f2e;
+      border-bottom: 1px solid #1e293b; flex-shrink: 0;
+    }
+    .modal-title {
+      flex: 1; font-size: 13px; font-weight: 500; color: #cbd5e1;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .btn-newtab {
+      font-size: 12px; font-weight: 500; color: #94a3b8; text-decoration: none;
+      padding: 4px 10px; border: 1px solid #334155; border-radius: 6px;
+      background: #0f172a; flex-shrink: 0; transition: color .15s, border-color .15s;
+    }
+    .btn-newtab:hover { color: #f1f5f9; border-color: #64748b; }
+    .modal-close {
+      background: none; border: none; color: #64748b; font-size: 20px;
+      cursor: pointer; padding: 2px 6px; border-radius: 4px; flex-shrink: 0;
+      transition: color .15s, background .15s; line-height: 1;
+    }
+    .modal-close:hover { color: #f1f5f9; background: #1e293b; }
+    .modal-frame { flex: 1; width: 100%; border: none; background: #fff; }
   </style>
 </head>
 <body>
+
+  <!-- ── Modal ──────────────────────────────────────────────────────────────── -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-bd" onclick="closeModal()"></div>
+    <div class="modal-win">
+      <div class="modal-bar">
+        <span class="modal-title" id="modal-title"></span>
+        <a id="modal-newtab" href="#" target="_blank" class="btn-newtab"
+           onclick="event.stopPropagation()">↗ Neuer Tab</a>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <iframe id="modal-frame" class="modal-frame" src=""></iframe>
+    </div>
+  </div>
 
   <header>
     <a href="/">← Outlook Spam-Bewerter</a>
@@ -175,7 +154,7 @@
 
     <div class="sample-grid">
 
-      <a href="PPArena/PPArena-Variante-B-Slider2.html" class="sample-card">
+      <div class="sample-card" onclick="openModal('PPArena/PPArena-Variante-B-Slider2.html','Variante B – Slider (empfohlen)')">
         <div class="card-icon">🖼️</div>
         <div class="card-body">
           <div class="card-title">Variante B – Slider (empfohlen)</div>
@@ -189,10 +168,11 @@
             <span class="tag">AVIF/WebP</span>
           </div>
         </div>
-        <div class="card-arrow">›</div>
-      </a>
+        <a href="PPArena/PPArena-Variante-B-Slider2.html" target="_blank"
+           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+      </div>
 
-      <a href="PPArena/PPArena-Variante-B.html" class="sample-card">
+      <div class="sample-card" onclick="openModal('PPArena/PPArena-Variante-B.html','Variante B')">
         <div class="card-icon">📧</div>
         <div class="card-body">
           <div class="card-title">Variante B</div>
@@ -203,10 +183,11 @@
             <span class="tag">VML Button</span>
           </div>
         </div>
-        <div class="card-arrow">›</div>
-      </a>
+        <a href="PPArena/PPArena-Variante-B.html" target="_blank"
+           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+      </div>
 
-      <a href="PPArena/PPArena-Variante-A.html" class="sample-card">
+      <div class="sample-card" onclick="openModal('PPArena/PPArena-Variante-A.html','Variante A')">
         <div class="card-icon">📧</div>
         <div class="card-body">
           <div class="card-title">Variante A</div>
@@ -216,10 +197,11 @@
             <span class="tag">A/B-Test</span>
           </div>
         </div>
-        <div class="card-arrow">›</div>
-      </a>
+        <a href="PPArena/PPArena-Variante-A.html" target="_blank"
+           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+      </div>
 
-      <a href="PPArena/PPArena-Variante-C.html" class="sample-card">
+      <div class="sample-card" onclick="openModal('PPArena/PPArena-Variante-C.html','Variante C')">
         <div class="card-icon">📧</div>
         <div class="card-body">
           <div class="card-title">Variante C</div>
@@ -229,10 +211,11 @@
             <span class="tag">A/B-Test</span>
           </div>
         </div>
-        <div class="card-arrow">›</div>
-      </a>
+        <a href="PPArena/PPArena-Variante-C.html" target="_blank"
+           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+      </div>
 
-      <a href="PPArena/PPArena-Variante-B-Slider.html" class="sample-card">
+      <div class="sample-card" onclick="openModal('PPArena/PPArena-Variante-B-Slider.html','Variante B – Vollbild-Slider')">
         <div class="card-icon">🎠</div>
         <div class="card-body">
           <div class="card-title">Variante B – Vollbild-Slider</div>
@@ -243,10 +226,11 @@
             <span class="tag">Technik-Demo</span>
           </div>
         </div>
-        <div class="card-arrow">›</div>
-      </a>
+        <a href="PPArena/PPArena-Variante-B-Slider.html" target="_blank"
+           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+      </div>
 
-      <a href="PPArena/_template.html" class="sample-card template">
+      <div class="sample-card template" onclick="openModal('PPArena/_template.html','_template.html')">
         <div class="card-icon">📄</div>
         <div class="card-body">
           <div class="card-title">_template.html</div>
@@ -255,8 +239,9 @@
             <span class="tag">Template</span>
           </div>
         </div>
-        <div class="card-arrow">›</div>
-      </a>
+        <a href="PPArena/_template.html" target="_blank"
+           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+      </div>
 
     </div>
   </div>
@@ -273,7 +258,7 @@
 
     <div class="sample-grid">
 
-      <a href="AlexanderKrist/Muttertag-2026.html" class="sample-card">
+      <div class="sample-card" onclick="openModal('AlexanderKrist/Muttertag-2026.html','Muttertags-Edition – Embedded Adaptive Dark')">
         <div class="card-icon">📧</div>
         <div class="card-body">
           <div class="card-title">Muttertags-Edition – Embedded Adaptive Dark</div>
@@ -285,11 +270,30 @@
             <span class="tag">Embedded</span>
           </div>
         </div>
-        <div class="card-arrow">›</div>
-      </a>
+        <a href="AlexanderKrist/Muttertag-2026.html" target="_blank"
+           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+      </div>
 
     </div>
   </div>
+
+  <script>
+    function openModal(url, title) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-frame').src = url;
+      document.getElementById('modal-newtab').href = url;
+      document.getElementById('modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+      document.getElementById('modal-frame').src = '';
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
 
 </body>
 </html>
