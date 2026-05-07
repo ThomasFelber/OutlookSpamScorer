@@ -5,15 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
   <title>Spam-Bewerter</title>
-  <link rel="stylesheet" href="taskpane.css">
+  <link rel="stylesheet" href="taskpane.css?v=2.0.12">
   <!-- Office.js muss synchron geladen werden (kein defer) -->
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-  <script src="taskpane.js" defer></script>
+  <script src="taskpane.js?v=2.0.12" defer></script>
 </head>
 <body>
 
   <!-- Toast-Benachrichtigung -->
   <div id="toast" class="toast" aria-live="polite" role="status"></div>
+
+  <!-- Pin-Hinweis (verschwindet nach erstem Pinnen / nach Dismiss) -->
+  <div id="pin-hint" class="pin-hint">
+    📌 Pane oben anpinnen → bleibt bei jedem E-Mail-Wechsel offen
+    <button id="pin-hint-dismiss" class="pin-hint-dismiss" aria-label="Hinweis schließen">✕</button>
+  </div>
 
   <!-- Ladezustand -->
   <div id="state-loading" class="state-panel">
@@ -35,12 +41,6 @@
   <!-- Ergebnis -->
   <div id="state-result" class="hidden">
 
-    <!-- Betreff & Absender -->
-    <div id="item-meta" class="item-meta">
-      <div id="meta-subject" class="meta-subject" title=""></div>
-      <div id="meta-from" class="meta-from"></div>
-    </div>
-
     <!-- Score-Anzeige -->
     <div id="score-wrap" class="score-wrap">
       <div id="score-number" class="score-number">0</div>
@@ -60,24 +60,48 @@
       <ul id="reasons-list" class="reasons-list"></ul>
     </section>
 
-    <!-- E-Mail-Authentifizierung -->
-    <section class="section">
+    <!-- Versteckter Text (nur sichtbar wenn gefunden) -->
+    <section class="section hidden" id="hidden-text-section">
+      <h2>Versteckter Text</h2>
+      <button id="btn-toggle-hidden" class="btn-expander" aria-expanded="false">
+        <span class="expander-icon">▶</span> Anzeigen
+      </button>
+      <div id="hidden-text-content" class="hidden-text-content hidden" aria-live="polite"></div>
+    </section>
+
+    <!-- E-Mail-Authentifizierung (hidden when all pass) -->
+    <section class="section" id="auth-section">
       <h2>Authentifizierung</h2>
       <div id="auth-summary" class="auth-summary"></div>
     </section>
 
+    <!-- AI Analyse -->
+    <section class="section">
+      <h2>AI Analyse</h2>
+      <button id="btn-claude" class="btn btn-claude">Mit AI prüfen</button>
+      <div id="claude-result" class="claude-result hidden" aria-live="polite"></div>
+    </section>
+
+    <!-- E-Mail-Reputations-Beratung (nur nach Analyse sichtbar) -->
+    <section class="section hidden" id="advice-section">
+      <h2>Reputations-Verbesserung</h2>
+      <button id="btn-advice" class="btn btn-advice">Verbesserungsvorschläge generieren</button>
+      <div id="advice-result" class="advice-result hidden" aria-live="polite"></div>
+    </section>
+
+    <!-- Kopieren -->
+    <section class="section">
+      <h2>Rohdaten kopieren</h2>
+      <div class="copy-row">
+        <button id="btn-copy-headers" class="btn btn-copy">Header</button>
+        <button id="btn-copy-body"    class="btn btn-copy">Body-Text</button>
+      </div>
+    </section>
+
   </div>
 
-  <!-- Junk-Ordner scannen (immer sichtbar) -->
-  <div class="scan-controls">
-    <hr>
-    <button id="btn-scan" class="btn btn-secondary">Junk-Ordner scannen (max. 50)</button>
-  </div>
-
-  <section id="scan-section" class="section hidden">
-    <div id="scan-progress" class="scan-progress"></div>
-    <div id="scan-results" class="scan-results"></div>
-  </section>
+  <!-- Versionsnummer -->
+  <div id="version-label" class="version-label"></div>
 
 </body>
 </html>

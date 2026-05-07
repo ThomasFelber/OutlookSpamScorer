@@ -4,7 +4,7 @@
            xsi:type="MailApp">
 
   <Id>4f8e9a7b-3c2d-4e5f-a6b7-8c9d0e1f2a3b</Id>
-  <Version>1.0.0</Version>
+  <Version>1.3.0</Version>
   <ProviderName>Thomas Felber</ProviderName>
   <DefaultLocale>de-DE</DefaultLocale>
   <DisplayName DefaultValue="Spam-Bewerter"/>
@@ -23,7 +23,7 @@
 
   <Requirements>
     <Sets>
-      <Set Name="Mailbox" MinVersion="1.8"/>
+      <Set Name="Mailbox" MinVersion="1.1"/>
     </Sets>
   </Requirements>
 
@@ -31,7 +31,7 @@
     <Form xsi:type="ItemRead">
       <DesktopSettings>
         <SourceLocation DefaultValue="https://outlook-spam-scorer.pages.dev/taskpane.html"/>
-        <RequestedHeight>500</RequestedHeight>
+        <RequestedHeight>450</RequestedHeight>
       </DesktopSettings>
     </Form>
   </FormSettings>
@@ -41,5 +41,130 @@
   <Rule xsi:type="RuleCollection" Mode="Or">
     <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/>
   </Rule>
+
+  <!-- V1_0 wrapper required by schema — outer VersionOverrides must always be V1_0 -->
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+                    xsi:type="VersionOverridesV1_0">
+
+    <Requirements>
+      <bt:Sets>
+        <bt:Set Name="Mailbox" MinVersion="1.3"/>
+      </bt:Sets>
+    </Requirements>
+
+    <Hosts>
+      <Host xsi:type="MailHost">
+        <DesktopFormFactor>
+          <FunctionFile resid="Taskpane.Url"/>
+          <ExtensionPoint xsi:type="MessageReadCommandSurface">
+            <OfficeTab id="TabDefault">
+              <Group id="SpamGroup">
+                <Label resid="GroupLabel"/>
+                <Control xsi:type="Button" id="SpamButton">
+                  <Label resid="ButtonLabel"/>
+                  <Supertip>
+                    <Title resid="ButtonLabel"/>
+                    <Description resid="ButtonTooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon16"/>
+                    <bt:Image size="32" resid="Icon32"/>
+                    <bt:Image size="80" resid="Icon80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <SourceLocation resid="Taskpane.Url"/>
+                  </Action>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+
+    <Resources>
+      <bt:Images>
+        <bt:Image id="Icon16" DefaultValue="https://outlook-spam-scorer.pages.dev/icon-16.png"/>
+        <bt:Image id="Icon32" DefaultValue="https://outlook-spam-scorer.pages.dev/icon-32.png"/>
+        <bt:Image id="Icon80" DefaultValue="https://outlook-spam-scorer.pages.dev/icon-64.png"/>
+      </bt:Images>
+      <bt:Urls>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://outlook-spam-scorer.pages.dev/taskpane.html"/>
+      </bt:Urls>
+      <bt:ShortStrings>
+        <bt:String id="GroupLabel"    DefaultValue="Spam-Analyse"/>
+        <bt:String id="ButtonLabel"   DefaultValue="Spam-Bewerter"/>
+      </bt:ShortStrings>
+      <bt:LongStrings>
+        <bt:String id="ButtonTooltip" DefaultValue="E-Mail auf Spam analysieren (Score 0–10)"/>
+      </bt:LongStrings>
+    </Resources>
+
+    <!-- V1_1 nested inside V1_0 — adds SupportsPinning for clients that support it -->
+    <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides/1.1"
+                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                      xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+                      xsi:type="VersionOverridesV1_1">
+
+      <Requirements>
+        <bt:Sets>
+          <bt:Set Name="Mailbox" MinVersion="1.5"/>
+        </bt:Sets>
+      </Requirements>
+
+      <Hosts>
+        <Host xsi:type="MailHost">
+          <DesktopFormFactor>
+            <FunctionFile resid="Taskpane.Url"/>
+            <ExtensionPoint xsi:type="MessageReadCommandSurface">
+              <OfficeTab id="TabDefault">
+                <Group id="SpamGroup">
+                  <Label resid="GroupLabel"/>
+                  <Control xsi:type="Button" id="SpamButton">
+                    <Label resid="ButtonLabel"/>
+                    <Supertip>
+                      <Title resid="ButtonLabel"/>
+                      <Description resid="ButtonTooltip"/>
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="Icon16"/>
+                      <bt:Image size="32" resid="Icon32"/>
+                      <bt:Image size="80" resid="Icon80"/>
+                    </Icon>
+                    <Action xsi:type="ShowTaskpane">
+                      <SourceLocation resid="Taskpane.Url"/>
+                      <SupportsPinning>true</SupportsPinning>
+                    </Action>
+                  </Control>
+                </Group>
+              </OfficeTab>
+            </ExtensionPoint>
+          </DesktopFormFactor>
+        </Host>
+      </Hosts>
+
+      <Resources>
+        <bt:Images>
+          <bt:Image id="Icon16" DefaultValue="https://outlook-spam-scorer.pages.dev/icon-16.png"/>
+          <bt:Image id="Icon32" DefaultValue="https://outlook-spam-scorer.pages.dev/icon-32.png"/>
+          <bt:Image id="Icon80" DefaultValue="https://outlook-spam-scorer.pages.dev/icon-64.png"/>
+        </bt:Images>
+        <bt:Urls>
+          <bt:Url id="Taskpane.Url" DefaultValue="https://outlook-spam-scorer.pages.dev/taskpane.html"/>
+        </bt:Urls>
+        <bt:ShortStrings>
+          <bt:String id="GroupLabel"    DefaultValue="Spam-Analyse"/>
+          <bt:String id="ButtonLabel"   DefaultValue="Spam-Bewerter"/>
+        </bt:ShortStrings>
+        <bt:LongStrings>
+          <bt:String id="ButtonTooltip" DefaultValue="E-Mail auf Spam analysieren (Score 0–10)"/>
+        </bt:LongStrings>
+      </Resources>
+
+    </VersionOverrides>
+
+  </VersionOverrides>
 
 </OfficeApp>

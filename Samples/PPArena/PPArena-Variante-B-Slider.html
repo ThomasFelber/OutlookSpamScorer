@@ -1,0 +1,442 @@
+<!-- Betreff: Ostern mal anders: Paintball statt Schokolade 🎨 -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <title>Variante B (Slider) – Paintball statt Schokolade</title>
+  <!--[if mso]>
+  <xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+  <![endif]-->
+  <style type="text/css">
+
+    /* ── Resets ─────────────────────────────────────────────────────────── */
+    body  { margin:0; padding:0; background-color:#EBE2DA;
+            -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+    table { border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+    img   { border:0; height:auto; line-height:100%; outline:none;
+            text-decoration:none; -ms-interpolation-mode:bicubic; }
+    a     { text-decoration:none; }
+    p, h1, h2, h3 { margin:0; }
+
+    /* ── Preview label (browser only) ───────────────────────────────────── */
+    .preview-label {
+      font-family: Arial, sans-serif; font-size:11px;
+      background:#1e293b; color:#94a3b8;
+      text-align:center; padding:6px 15px; letter-spacing:.04em;
+    }
+    .preview-label strong { color:#f8fafc; }
+    .preview-label code   { color:#86efac; font-size:10px; }
+
+    /* ── Responsive ─────────────────────────────────────────────────────── */
+    @media only screen and (max-width:620px) {
+      .email-container { width:100% !important; }
+      .col-50          { width:100% !important; display:block !important; }
+      .img-full        { width:100% !important; height:auto !important; }
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       CSS-ONLY IMAGE CAROUSEL
+       Technique: hidden <input type="radio"> + :checked ~ sibling selector
+       Support:   Apple Mail, iOS Mail, Gmail Web, Samsung Mail, Outlook.com
+       Fallback:  Outlook Desktop → MSO conditional shows static image
+       ════════════════════════════════════════════════════════════════════ */
+
+    /* All slides hidden by default */
+    .crs-slide { display:none; }
+
+    /* Active slide: radio :checked triggers the matching slide */
+    #crs1:checked ~ .crs-wrap .crs-s1,
+    #crs2:checked ~ .crs-wrap .crs-s2,
+    #crs3:checked ~ .crs-wrap .crs-s3 { display:block; }
+
+    /* ── Navigation dots ────────────────────────────────────────────────── */
+    .crs-dots { text-align:center; padding:10px 0 8px 0; background:#fff; }
+    .crs-dot  {
+      display:inline-block; cursor:pointer;
+      width:10px; height:10px; border-radius:50%;
+      background:#ddd; margin:0 5px; font-size:0;
+      transition:background .2s;
+    }
+    /* Active dot gets PPArena yellow */
+    #crs1:checked ~ .crs-wrap .crs-d1,
+    #crs2:checked ~ .crs-wrap .crs-d2,
+    #crs3:checked ~ .crs-wrap .crs-d3 { background:#FACB2D; transform:scale(1.25); }
+
+    /* ── Prev / Next arrows ─────────────────────────────────────────────── */
+    .crs-arr {
+      display:none; position:absolute; top:50%; transform:translateY(-50%);
+      width:38px; height:38px; line-height:38px; text-align:center;
+      background:rgba(250,203,45,.88); color:#fff; font-size:26px; font-weight:700;
+      cursor:pointer; border-radius:50%; z-index:10;
+      user-select:none; -webkit-user-select:none;
+    }
+    .crs-prev { left:10px; }
+    .crs-next { right:10px; }
+
+    /* Show the two arrows that belong to the active slide */
+    #crs1:checked ~ .crs-wrap .arr-1-prev,
+    #crs1:checked ~ .crs-wrap .arr-1-next { display:block; }
+    #crs2:checked ~ .crs-wrap .arr-2-prev,
+    #crs2:checked ~ .crs-wrap .arr-2-next { display:block; }
+    #crs3:checked ~ .crs-wrap .arr-3-prev,
+    #crs3:checked ~ .crs-wrap .arr-3-next { display:block; }
+
+  </style>
+</head>
+<body>
+
+  <!-- Preheader (invisible in client, shown as preview text) -->
+  <div style="display:none;font-size:1px;color:#EBE2DA;line-height:1px;
+              max-height:0px;max-width:0px;opacity:0;overflow:hidden;">
+    Schnapp dir deine Freunde und buche jetzt deinen Termin &ndash; Pl&auml;tze sind begrenzt!
+  </div>
+
+  <!-- Subject label (browser only) -->
+  <div class="preview-label">
+    Variante B &ndash; Slider &nbsp;&mdash;&nbsp;
+    <strong>Betreff: Ostern mal anders: Paintball statt Schokolade 🎨</strong>
+    &nbsp;&nbsp;
+    <code>Slider: Apple Mail / iOS / Gmail Web &nbsp;|&nbsp; Outlook → statisches Bild</code>
+  </div>
+
+  <!-- ═══ OUTER WRAPPER ════════════════════════════════════════════════════ -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0"
+         style="background-color:#EBE2DA;">
+    <tr>
+      <td align="center" style="padding:24px 0 32px 0;">
+
+        <!-- ═══ EMAIL CONTAINER (600 px) ═════════════════════════════════ -->
+        <table class="email-container" width="600" cellpadding="0"
+               cellspacing="0" border="0" style="background-color:#FFFFFF;">
+
+          <!-- ══════════════════════════════════════════════════════════════
+               BILD-KARUSSELL
+               ══════════════════════════════════════════════════════════ -->
+          <tr>
+            <td style="padding:0; line-height:0;">
+
+              <!-- ── Outlook: zeigt nur Slide 1 statisch ─────────────── -->
+              <!--[if mso]>
+              <table border="0" cellpadding="0" cellspacing="0" width="600">
+                <tr><td>
+                  <img src="images/slide1.jpg" width="600" alt="PPArena Paintball"
+                       style="display:block;width:600px;">
+                </td></tr>
+                <tr><td style="font-size:11px;color:#888;text-align:center;
+                               padding:6px;font-family:Arial,sans-serif;">
+                  Bild 1 von 3 &mdash; Slider wird in Outlook nicht angezeigt.
+                </td></tr>
+              </table>
+              <![endif]-->
+
+              <!-- ── Alle anderen Clients: CSS Karussell ──────────────── -->
+              <!--[if !mso]><!-->
+
+              <!--
+                WICHTIG: Die <input>-Elemente MÜSSEN im DOM vor .crs-wrap stehen,
+                damit der "~" Geschwister-Selektor greift.
+                position:absolute + opacity:0 macht sie unsichtbar, aber auswählbar.
+              -->
+              <input id="crs1" type="radio" name="carousel" checked
+                     style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;">
+              <input id="crs2" type="radio" name="carousel"
+                     style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;">
+              <input id="crs3" type="radio" name="carousel"
+                     style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;">
+
+              <!-- Carousel wrapper: position:relative für die Pfeile -->
+              <div class="crs-wrap" style="position:relative;">
+
+                <!-- ── Slide 1: Header-Banner ─────────────────────────── -->
+                <div class="crs-slide crs-s1">
+                  <!--
+                    <picture> funktioniert im Browser (diese Datei).
+                    In echten E-Mail-Clients: Apple Mail zeigt AVIF/WebP,
+                    Gmail/Outlook sehen nur den <img>-Fallback (JPEG).
+                  -->
+                  <picture>
+                    <source type="image/avif" srcset="images/slide1.avif">
+                    <source type="image/webp" srcset="images/slide1.webp">
+                    <img src="images/slide1.jpg"
+                         width="600" class="img-full"
+                         alt="PPArena Paintball – Indoor-Arena"
+                         style="display:block;width:100%;">
+                  </picture>
+                </div>
+
+                <!-- ── Slide 2: Gutschein / Aktion ───────────────────── -->
+                <div class="crs-slide crs-s2">
+                  <picture>
+                    <source type="image/avif" srcset="images/slide2.avif">
+                    <source type="image/webp" srcset="images/slide2.webp">
+                    <img src="images/slide2.jpg"
+                         width="600" class="img-full"
+                         alt="Paintball Gutscheine &amp; Aktionen"
+                         style="display:block;width:100%;">
+                  </picture>
+                </div>
+
+                <!-- ── Slide 3: Spielfelder / Standorte ──────────────── -->
+                <div class="crs-slide crs-s3">
+                  <picture>
+                    <source type="image/avif" srcset="images/slide3.avif">
+                    <source type="image/webp" srcset="images/slide3.webp">
+                    <img src="images/slide3.jpg"
+                         width="600" class="img-full"
+                         alt="PPArena Spielfelder und Standorte"
+                         style="display:block;width:100%;">
+                  </picture>
+                </div>
+
+                <!-- ── Navigations-Punkte ──────────────────────────────── -->
+                <div class="crs-dots">
+                  <label for="crs1" class="crs-dot crs-d1" title="Bild 1"></label>
+                  <label for="crs2" class="crs-dot crs-d2" title="Bild 2"></label>
+                  <label for="crs3" class="crs-dot crs-d3" title="Bild 3"></label>
+                </div>
+
+                <!-- ── Pfeile (je Slide ein Prev + Next) ─────────────── -->
+                <!--
+                  Slide 1 → Prev geht zu Slide 3 (zirkulär), Next zu Slide 2
+                  Slide 2 → Prev geht zu Slide 1, Next zu Slide 3
+                  Slide 3 → Prev geht zu Slide 2, Next zu Slide 1 (zirkulär)
+                -->
+                <label for="crs3" class="crs-arr crs-prev arr-1-prev" title="Vorheriges Bild">&#8249;</label>
+                <label for="crs2" class="crs-arr crs-next arr-1-next" title="Nächstes Bild">&#8250;</label>
+
+                <label for="crs1" class="crs-arr crs-prev arr-2-prev" title="Vorheriges Bild">&#8249;</label>
+                <label for="crs3" class="crs-arr crs-next arr-2-next" title="Nächstes Bild">&#8250;</label>
+
+                <label for="crs2" class="crs-arr crs-prev arr-3-prev" title="Vorheriges Bild">&#8249;</label>
+                <label for="crs1" class="crs-arr crs-next arr-3-next" title="Nächstes Bild">&#8250;</label>
+
+              </div><!-- /.crs-wrap -->
+              <!--<![endif]-->
+
+            </td>
+          </tr>
+          <!-- ══ Ende Karussell ════════════════════════════════════════════ -->
+
+
+          <!-- ── RÄTSEL-HOOK ──────────────────────────────────────────────── -->
+          <tr>
+            <td style="padding:22px 20px 8px 20px;">
+              <h2 style="font-family:Arial,Helvetica,sans-serif;font-size:20px;
+                         font-weight:bold;text-align:center;color:#F1C40F;line-height:1.3;">
+                Wir haben ein R&auml;tsel f&uuml;r dich&hellip; 🤔
+              </h2>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 20px 8px 20px;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;
+                        text-align:center;color:#000;line-height:1.6;">
+                <strong>Es ist bunt, macht riesig Spa&szlig; und hat garantiert nichts
+                mit Schokolade zu tun.</strong>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 20px 8px 20px;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;
+                        text-align:center;color:#000;line-height:1.6;">
+                <strong>Was ist das?</strong>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 20px 20px 20px;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;
+                        text-align:center;color:#000;line-height:1.6;">
+                Na klar &mdash; Oster-Paintball in der PPArena! 🐣🐰
+              </p>
+            </td>
+          </tr>
+
+          <!-- ── TRENNLINIE ──────────────────────────────────────────────── -->
+          <tr>
+            <td style="padding:0 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="border-top:1px dotted #EBE2DA;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ── PAINTBALL-OSTERN ────────────────────────────────────────── -->
+          <tr>
+            <td style="padding:18px 20px 8px 20px;">
+              <h2 style="font-family:Arial,Helvetica,sans-serif;font-size:18px;
+                         font-weight:bold;text-align:center;color:#FACB2D;line-height:1.3;">
+                Paintball zu Ostern? Unbedingt! 🐣
+              </h2>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 20px 8px 20px;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;
+                        text-align:center;color:#000;line-height:1.6;">
+                Wir haben noch freie Pl&auml;tze und sind nat&uuml;rlich jeden Tag
+                f&uuml;r euch ge&ouml;ffnet.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 20px 20px 20px;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;
+                        text-align:center;color:#000;line-height:1.6;">
+                Schon einen Termin im Blick? Dann reserviere jetzt deinen Platz &mdash;
+                oder schreib uns auf
+                <a href="https://wa.me/4915731623943?text=Hallo%21%20Ich%20m%C3%B6chte%20gerne%20einen%20Paintball-Termin%20buchen."
+                   style="color:#25D366;font-weight:bold;">WhatsApp</a>
+                👉 <a href="tel:+4915731623943"
+                      style="color:#000;font-weight:bold;text-decoration:none;">+49&nbsp;157&nbsp;31623943</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- ── CTA-BUTTON ──────────────────────────────────────────────── -->
+          <tr>
+            <td align="center" style="padding:0 8px 28px 8px;">
+              <!--[if mso]>
+              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml"
+                href="https://wa.me/4915731623943?text=Hallo%21%20Ich%20m%C3%B6chte%20gerne%20einen%20Paintball-Termin%20buchen."
+                style="height:50px;v-text-anchor:middle;width:230px;"
+                arcsize="14%" stroke="f" fillcolor="#FACB2D">
+                <w:anchorlock/>
+                <center style="color:#fff;font-family:Arial,sans-serif;font-size:20px;font-weight:bold;">
+                  Jetzt buchen &rarr;
+                </center>
+              </v:roundrect>
+              <![endif]-->
+              <!--[if !mso]><!-->
+              <a href="https://wa.me/4915731623943?text=Hallo%21%20Ich%20m%C3%B6chte%20gerne%20einen%20Paintball-Termin%20buchen."
+                 style="display:inline-block;background-color:#FACB2D;color:#fff;
+                        font-family:Arial,Helvetica,sans-serif;font-size:20px;
+                        font-weight:bold;line-height:1;padding:14px 28px;
+                        border-radius:7px;text-decoration:none;">
+                Jetzt buchen &rarr;
+              </a>
+              <!--<![endif]-->
+            </td>
+          </tr>
+
+          <!-- ── TRENNLINIE ──────────────────────────────────────────────── -->
+          <tr>
+            <td style="padding:0 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="border-top:1px dotted #EBE2DA;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ── ABSCHLUSS ───────────────────────────────────────────────── -->
+          <tr>
+            <td style="padding:16px 20px 8px 20px;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:16px;
+                        font-weight:bold;text-align:center;color:#000;line-height:1.5;">
+                Bis bald auf dem Paintballfeld! 💋
+              </p>
+            </td>
+          </tr>
+
+          <!-- ── KONTAKT (2 Spalten) ─────────────────────────────────────── -->
+          <!--[if mso]><tr><td><table width="600" cellpadding="0" cellspacing="0" border="0"><tr>
+          <td width="300" valign="top"><![endif]-->
+          <tr>
+            <td style="padding:0 0 4px 0;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td class="col-50" width="50%"
+                      style="padding:14px 15px;text-align:center;vertical-align:top;">
+                    <p style="font-family:Arial,Helvetica,sans-serif;font-size:18px;
+                              font-weight:bold;margin:0;">
+                      <a href="tel:+4915731623943"
+                         style="color:#F8C228;text-decoration:none;">
+                        +49&nbsp;157&nbsp;31623943
+                      </a>
+                    </p>
+                    <p style="font-family:Arial,Helvetica,sans-serif;font-size:15px;
+                              color:#F8C228;margin:4px 0 0 0;">
+                      9:00&nbsp;&ndash;&nbsp;18:00&nbsp;Uhr
+                    </p>
+                  </td>
+                  <!--[if mso]></td><td width="300" valign="top"><![endif]-->
+                  <td class="col-50" width="50%"
+                      style="padding:14px 15px;text-align:center;vertical-align:top;">
+                    <a href="mailto:info@paintball-plzen.cz"
+                       style="font-family:Arial,Helvetica,sans-serif;font-size:17px;
+                              font-weight:bold;color:#F8C228;">
+                      info@paintball&#8209;plzen.cz
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!--[if mso]></td></tr></table></td></tr><![endif]-->
+
+          <!-- ── SOCIAL ICONS ────────────────────────────────────────────── -->
+          <tr>
+            <td align="center" style="padding:8px 0 16px 0;">
+              <table border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:4px;">
+                    <a href="#" title="Instagram">
+                      <img src="https://d70shl7vidtft.cloudfront.net/editor/social-icos/ikony-black/roundedblack/instagram.png"
+                           width="30" height="30" alt="Instagram"
+                           style="display:block;border-radius:3px;">
+                    </a>
+                  </td>
+                  <td style="padding:4px;">
+                    <a href="#" title="Facebook">
+                      <img src="https://d70shl7vidtft.cloudfront.net/editor/social-icos/ikony-black/roundedblack/facebook.png"
+                           width="30" height="30" alt="Facebook"
+                           style="display:block;border-radius:3px;">
+                    </a>
+                  </td>
+                  <td style="padding:4px;">
+                    <a href="#" title="YouTube">
+                      <img src="https://d70shl7vidtft.cloudfront.net/editor/social-icos/ikony-black/roundedblack/youtube.png"
+                           width="30" height="30" alt="YouTube"
+                           style="display:block;border-radius:3px;">
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ── FOOTER ──────────────────────────────────────────────────── -->
+          <tr>
+            <td style="padding:12px 20px 20px 20px;background-color:#fafafa;
+                       border-top:1px solid #f0f0f0;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:11px;
+                        text-align:center;color:#888;margin:0;line-height:1.6;">
+                M&ouml;chtest du diese E-Mails nicht mehr erhalten?<br>
+                Du kannst dich
+                <a href="#" style="color:#FACB2D;text-decoration:underline;">hier</a>
+                von unserem Newsletter abmelden.<br>
+                Aber wir werden dich vermissen!
+              </p>
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:10px;
+                        text-align:center;color:#aaa;margin:10px 0 0 0;line-height:1.5;">
+                PPArena s.r.o. | M&aacute;nesova 2a | 301&nbsp;00 Plze&#328;, Tschechien
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!-- ═══ Ende Email Container ══════════════════════════════════════ -->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
