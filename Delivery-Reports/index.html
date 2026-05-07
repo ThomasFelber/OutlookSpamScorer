@@ -148,6 +148,47 @@
     }
     .modal-close:hover { color: #f1f5f9; background: #1e293b; }
     .modal-frame { flex: 1; width: 100%; border: none; background: #fff; }
+
+    /* ── Company nav ─────────────────────────────────────────────────────── */
+    .company-nav {
+      position: sticky; top: 0; z-index: 90;
+      background: #0f1117; border-bottom: 1px solid #1e293b;
+      padding: 10px 20px; overflow-x: auto; white-space: nowrap;
+      scrollbar-width: none;
+    }
+    .company-nav::-webkit-scrollbar { display: none; }
+    .company-nav-inner {
+      max-width: 860px; margin: 0 auto;
+      display: flex; gap: 6px; align-items: center;
+    }
+    .company-nav a {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 500;
+      color: #94a3b8; text-decoration: none;
+      border: 1px solid #1e293b; background: #161b27;
+      transition: color .15s, border-color .15s, background .15s;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .company-nav a:hover  { color: #e2e8f0; border-color: #334155; background: #1e293b; }
+    .company-nav a:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
+    .company-nav-icon { font-size: 13px; line-height: 1; }
+
+    /* offset so sticky nav doesn't cover the section header on anchor jump */
+    .domain-block { scroll-margin-top: 58px; }
+
+    /* ── Scroll-to-top button ────────────────────────────────────────────── */
+    .scroll-top {
+      position: fixed; bottom: 28px; right: 28px; z-index: 80;
+      width: 42px; height: 42px; border-radius: 50%;
+      background: #1e293b; border: 1px solid #334155;
+      color: #94a3b8; font-size: 18px; line-height: 1;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity .2s, background .15s, color .15s;
+    }
+    .scroll-top.visible   { opacity: 1; pointer-events: auto; }
+    .scroll-top:hover     { background: #334155; color: #f1f5f9; }
+    .scroll-top:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
   </style>
 </head>
 <body>
@@ -173,8 +214,22 @@
     <p>E-Mail-Deliverability-Analysen auf Basis realer Microsoft-Exchange-Header — gruppiert nach Absender-Domain.</p>
   </header>
 
+  <!-- ── Company nav ──────────────────────────────────────────────────── -->
+  <nav class="company-nav" aria-label="Zu Unternehmen springen">
+    <div class="company-nav-inner">
+      <a href="#retec"><span class="company-nav-icon">💧</span>RETEC</a>
+      <a href="#johanniter"><span class="company-nav-icon">🚑</span>Johanniter</a>
+      <a href="#cylex"><span class="company-nav-icon">📋</span>cylex.de</a>
+      <a href="#terrafinanz"><span class="company-nav-icon">🏠</span>terrafinanz.de</a>
+      <a href="#fin-law"><span class="company-nav-icon">⚖️</span>fin-law.de</a>
+      <a href="#pparena"><span class="company-nav-icon">🎯</span>pparena.de</a>
+      <a href="#lerntraining"><span class="company-nav-icon">📚</span>lerntraining.de</a>
+      <a href="#akademie"><span class="company-nav-icon">🎓</span>akademie-lernpaed.</a>
+    </div>
+  </nav>
+
   <!-- ── RETEC Unternehmensgruppe ─────────────────────────────────────── -->
-  <div class="domain-block">
+  <div class="domain-block" id="retec">
     <div class="domain-header">
       <div class="domain-icon">💧</div>
       <div>
@@ -485,7 +540,7 @@
   </div>
 
   <!-- ── juh-mitglieder.johanniter.de ────────────────────────────────── -->
-  <div class="domain-block">
+  <div class="domain-block" id="johanniter">
     <div class="domain-header">
       <div class="domain-icon">🚑</div>
       <div>
@@ -570,7 +625,7 @@
   </div>
 
   <!-- ── cylex.de ────────────────────────────────────────────────────── -->
-  <div class="domain-block">
+  <div class="domain-block" id="cylex">
     <div class="domain-header">
       <div class="domain-icon">📋</div>
       <div>
@@ -664,7 +719,7 @@
   </div>
 
   <!-- ── terrafinanz.de ────────────────────────────────────────────────── -->
-  <div class="domain-block">
+  <div class="domain-block" id="terrafinanz">
     <div class="domain-header">
       <div class="domain-icon">🏠</div>
       <div>
@@ -750,7 +805,7 @@
   </div>
 
   <!-- ── fin-law.de ──────────────────────────────────────────────────────── -->
-  <div class="domain-block">
+  <div class="domain-block" id="fin-law">
     <div class="domain-header">
       <div class="domain-icon">⚖️</div>
       <div>
@@ -836,7 +891,7 @@
   </div>
 
   <!-- ── pparena.de ──────────────────────────────────────────────────────── -->
-  <div class="domain-block">
+  <div class="domain-block" id="pparena">
     <div class="domain-header">
       <div class="domain-icon">🎯</div>
       <div>
@@ -880,7 +935,7 @@
   </div>
 
   <!-- ── lerntraining.de ──────────────────────────────────────────────────── -->
-  <div class="domain-block">
+  <div class="domain-block" id="lerntraining">
     <div class="domain-header">
       <div class="domain-icon">📚</div>
       <div>
@@ -952,7 +1007,7 @@
   </div>
 
   <!-- ── akademie-lernpaedagogik.de ───────────────────────────────────────── -->
-  <div class="domain-block">
+  <div class="domain-block" id="akademie">
     <div class="domain-header">
       <div class="domain-icon">🎓</div>
       <div>
@@ -1010,7 +1065,18 @@
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') closeModal();
     });
+
+    // Scroll-to-top visibility
+    const scrollBtn = document.getElementById('scrollTop');
+    window.addEventListener('scroll', () => {
+      scrollBtn.classList.toggle('visible', window.scrollY > 300);
+    }, { passive: true });
   </script>
+
+  <!-- Scroll-to-top button -->
+  <button class="scroll-top" id="scrollTop"
+          onclick="window.scrollTo({top:0,behavior:'smooth'})"
+          aria-label="Nach oben scrollen">↑</button>
 
 </body>
 </html>
