@@ -15,11 +15,16 @@
       padding: 40px 20px 80px;
     }
 
-    header { max-width: 860px; margin: 0 auto 48px; }
+    header { max-width: 860px; margin: 0 auto 48px; position: relative; }
     header a { font-size: 13px; color: #64748b; text-decoration: none; }
     header a:hover { color: #94a3b8; }
     header h1 { font-size: 28px; font-weight: 700; color: #f8fafc; margin-top: 16px; }
     header p  { margin-top: 8px; font-size: 14px; color: #64748b; }
+    .last-modified {
+      position: absolute; top: 0; right: 0;
+      font-size: 11px; color: #334155;
+      font-variant-numeric: tabular-nums;
+    }
 
     .domain-block { max-width: 860px; margin: 0 auto 48px; }
 
@@ -210,6 +215,7 @@
   <header>
     <a href="/">← Outlook Spam-Bewerter</a>
     <a href="../Samples/" style="margin-left:16px;">Samples →</a>
+    <span class="last-modified" id="last-modified"></span>
     <h1>Delivery Reports</h1>
     <p>E-Mail-Deliverability-Analysen auf Basis realer Microsoft-Exchange-Header — gruppiert nach Absender-Domain.</p>
   </header>
@@ -1065,6 +1071,18 @@
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') closeModal();
     });
+
+    // Last-modified timestamp
+    (function() {
+      const d = new Date(document.lastModified);
+      if (d.getFullYear() > 2000) {
+        document.getElementById('last-modified').textContent =
+          'Stand: ' + d.toLocaleString('de-DE', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          });
+      }
+    })();
 
     // Scroll-to-top visibility
     const scrollBtn = document.getElementById('scrollTop');

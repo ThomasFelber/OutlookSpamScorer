@@ -31,6 +31,17 @@ export default {
       });
     }
 
-    return env.ASSETS.fetch(request);
+    const response = await env.ASSETS.fetch(request);
+
+    // Add no-cache header to HTML responses so a normal refresh always
+    // picks up the latest deploy — _headers file doesn't apply via Workers
+    const ct = response.headers.get('Content-Type') || '';
+    if (ct.includes('text/html')) {
+      const headers = new Headers(response.headers);
+      headers.set('Cache-Control', 'no-cache, must-revalidate');
+      return new Response(response.body, { status: response.status, headers });
+    }
+
+    return response;
   },
 };
