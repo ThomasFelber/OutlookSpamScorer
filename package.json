@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "deploy": "wrangler pages deploy . --project-name outlook-spam-scorer --branch main"
+  }
+}
