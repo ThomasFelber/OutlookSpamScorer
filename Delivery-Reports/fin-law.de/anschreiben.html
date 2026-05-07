@@ -202,25 +202,21 @@
       <div class="highlight-box">
         <strong>Was die Analyse zeigt:</strong> Das Problem hat zwei Schichten.
         <br><br>
-        Die erste ist die Versandkonfiguration: Microsoft erwartet bestimmte technische
-        Vertrauenssignale — unter anderem, dass Absender-Domain und tatsächliche Versandinfrastruktur
-        übereinstimmen und eine Sicherheitsrichtlinie hinterlegt ist. Beides fehlt oder ist
-        nicht korrekt gesetzt. Vereinfacht: Der Brief kommt ohne vollständigen Absender-Briefkopf an.
+        Die erste betrifft die Versandkonfiguration: Es fehlen technische Vertrauenssignale,
+        die moderne E-Mail-Provider heute als selbstverständlich voraussetzen. Vereinfacht:
+        Der Brief kommt ohne vollständigen Absender-Briefkopf an — und wird deshalb aussortiert,
+        obwohl sein Inhalt legitim ist.
         <br><br>
-        Die zweite Schicht ist das Template selbst. Das HTML des Newsletters enthält technische
-        Altlasten, die den Spam-Score aktiv verschlechtern: 285 unsichtbare Sonderzeichen, die
-        Spam-Filter als Verschleierungsversuch werten, sowie versteckten Text. Hinzu kommen
-        strukturelle Probleme im Code, die nicht direkt zum Junk-Problem beitragen, aber zeigen,
-        dass das Template seit längerer Zeit nicht grundlegend überarbeitet wurde.
+        Die zweite Schicht ist das Newsletter-Template selbst. Es enthält mehrere Arten
+        technischer Auffälligkeiten, die Spam-Filter aktiv bestrafen und die sich über die
+        Jahre angesammelt haben. Das ist kein Vorwurf — es passiert, wenn ein Template lange
+        im Einsatz ist, ohne dass jemand mit dem Blick eines Zustellbarkeits-Spezialisten
+        draufgeschaut hat.
         <br><br>
         Beide Ursachen betreffen nicht eine Ausgabe, sondern jeden Versand — vergangene wie künftige.
-        <br><br>
-        Konkret gemessen haben wir das bei Outlook und Hotmail, weil die Analyse über einen
-        Microsoft-basierten Ansatz erfolgte. Die strukturellen Ursachen — fehlendes DMARC,
-        Return-Path-Abweichung, unsichtbare Sonderzeichen — sind jedoch keine
-        Microsoft-spezifischen Probleme. Es ist davon auszugehen, dass Gmail-Empfänger
-        dasselbe erleben; das ließe sich mit Google Postmaster Tools verifizieren.
-        Für eine Kanzlei mit einer gemischten Abonnentenliste ist das relevant.
+        Und sie beschränken sich wahrscheinlich nicht auf Outlook: Die Grundursachen wirken
+        providerunabhängig, was bedeutet, dass auch Gmail-Empfänger betroffen sein dürften —
+        nur lässt sich das ohne zusätzliches Monitoring von außen nicht so leicht erkennen.
       </div>
 
       <p>
