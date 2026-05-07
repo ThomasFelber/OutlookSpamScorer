@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deliverability Action Plan — juh-mitglieder.johanniter.de</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; line-height: 1.55; color: #1a1a1a; background: #f4f6f9; }
+  .page { max-width: 1100px; margin: 30px auto; background: #fff; border: 1px solid #d0d7de; border-radius: 6px; overflow: hidden; }
+  header { background: #003366; color: #fff; padding: 28px 36px; }
+  header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.3px; }
+  header p { font-size: 12px; margin-top: 6px; color: #b0c4de; }
+  nav { background: #004080; display: flex; flex-wrap: wrap; gap: 0; }
+  nav a { color: #cce0ff; font-size: 12px; padding: 8px 14px; text-decoration: none; border-right: 1px solid #003366; white-space: nowrap; }
+  nav a:hover { background: #0055aa; color: #fff; }
+  main { padding: 30px 36px; }
+  h2 { font-size: 15px; font-weight: 700; color: #003366; border-bottom: 2px solid #003366; padding-bottom: 5px; margin: 28px 0 14px; text-transform: uppercase; letter-spacing: 0.4px; }
+  h3 { font-size: 13px; font-weight: 700; color: #004080; margin: 16px 0 8px; }
+  p { margin-bottom: 10px; }
+  ul, ol { margin: 8px 0 12px 22px; }
+  li { margin-bottom: 5px; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; background: #f0f4f8; border: 1px solid #d0d7de; border-radius: 3px; padding: 1px 5px; }
+  pre { font-family: 'Consolas', 'Courier New', monospace; font-size: 11.5px; background: #f0f4f8; border: 1px solid #d0d7de; border-radius: 4px; padding: 12px 16px; overflow-x: auto; margin: 10px 0; white-space: pre-wrap; word-break: break-all; }
+  .badge { display: inline-block; border-radius: 3px; padding: 2px 8px; font-size: 11px; font-weight: 700; margin-left: 6px; vertical-align: middle; }
+  .badge-pass { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+  .badge-fail { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+  .badge-warn { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+  .badge-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+  .badge-high { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+  .badge-med { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+  .badge-low { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+  .signal-box { border-left: 4px solid #003366; background: #f0f4f8; padding: 12px 16px; margin: 10px 0; border-radius: 0 4px 4px 0; }
+  .signal-box.warn { border-left-color: #e6a817; background: #fffbf0; }
+  .signal-box.danger { border-left-color: #c0392b; background: #fff5f5; }
+  .signal-box.ok { border-left-color: #27ae60; background: #f0fff4; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { background: #003366; color: #fff; padding: 9px 12px; text-align: left; font-size: 12px; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e1e7ef; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7f9fc; }
+  tr:hover td { background: #eef2f8; }
+  .prio-1 { background: #f8d7da !important; font-weight: 700; color: #721c24; }
+  .prio-2 { background: #fff3cd !important; font-weight: 700; color: #856404; }
+  .prio-3 { background: #d4edda !important; font-weight: 700; color: #155724; }
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 14px 0; }
+  .metric-card { border: 1px solid #d0d7de; border-radius: 5px; padding: 14px; text-align: center; background: #fafbfc; }
+  .metric-card .val { font-size: 26px; font-weight: 700; color: #003366; }
+  .metric-card .lbl { font-size: 11px; color: #555; margin-top: 4px; }
+  .metric-card.red .val { color: #c0392b; }
+  .metric-card.green .val { color: #27ae60; }
+  .metric-card.amber .val { color: #e6a817; }
+  footer { background: #f0f4f8; border-top: 1px solid #d0d7de; padding: 14px 36px; font-size: 11px; color: #666; }
+  .toc-num { color: #b0c4de; font-size: 11px; margin-right: 4px; }
+  @media (max-width: 700px) { main { padding: 18px; } header { padding: 18px; } nav a { font-size: 11px; padding: 6px 10px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <h1>E-Mail-Deliverability Action Plan — Technische Detailanalyse</h1>
+  <p>Sender: <strong>mitgliederservice.sued@juh-mitglieder.johanniter.de</strong> &nbsp;|&nbsp; Betreff: Zuwendungsbestätigung Nr. 1247882 &nbsp;|&nbsp; Analysedatum: 08. April 2026 &nbsp;|&nbsp; Klassifikation: LEGITIM / Fehlzustellung in Junk</p>
+</header>
+
+<nav>
+  <a href="#exec"><span class="toc-num">1</span>Executive Summary</a>
+  <a href="#findings"><span class="toc-num">2</span>Critical Findings</a>
+  <a href="#auth"><span class="toc-num">3</span>Authentication</a>
+  <a href="#headers"><span class="toc-num">4</span>Header-Analyse</a>
+  <a href="#content"><span class="toc-num">5</span>Content-Analyse</a>
+  <a href="#dns"><span class="toc-num">6</span>DNS &amp; Infrastruktur</a>
+  <a href="#msft"><span class="toc-num">7</span>Microsoft-Remediation</a>
+  <a href="#gmail"><span class="toc-num">8</span>Gmail-Remediation</a>
+  <a href="#plan"><span class="toc-num">9</span>Action Plan</a>
+  <a href="#final"><span class="toc-num">10</span>Final Assessment</a>
+</nav>
+
+<main>
+
+<!-- SECTION 1 -->
+<h2 id="exec">1. Executive Summary</h2>
+<p>Die analysierte E-Mail ist eine <strong>technisch legitime Zuwendungsbestätigung</strong> der Johanniter-Unfall-Hilfe e.V., die alle drei kritischen Authentifizierungsebenen (SPF, DKIM, DMARC) erfolgreich besteht und von einem autorisierten Mailjet-ESP-Relay gesendet wurde. Dennoch klassifiziert Microsoft Exchange die Nachricht als Junk (<code>OFR:SpamFilter</code>), da der Spam-Filter-Override die Auth-Pass-Signale überstimmt — ein klares Indiz für <strong>IP-Reputationsprobleme auf 87.253.234.214</strong> kombiniert mit Content-Triggern (Behörden-Erwähnung, Link-Dichte). Der Handlungsbedarf ist hoch: Ohne gezielte Infrastruktur- und Content-Maßnahmen besteht das Risiko einer dauerhaften Fehlklassifikation transaktionaler Pflichtdokumente, die steuerrechtliche Relevanz für Empfänger haben.</p>
+
+<div class="metric-grid">
+  <div class="metric-card amber">
+    <div class="val">7/10</div>
+    <div class="lbl">Add-in Score</div>
+  </div>
+  <div class="metric-card green">
+    <div class="val">2/10</div>
+    <div class="lbl">AI Score (HAM-Konfidenz)</div>
+  </div>
+  <div class="metric-card red">
+    <div class="val">Junk</div>
+    <div class="lbl">Exchange-Zustellung</div>
+  </div>
+  <div class="metric-card green">
+    <div class="val">PASS</div>
+    <div class="lbl">SPF / DKIM / DMARC</div>
+  </div>
+  <div class="metric-card amber">
+    <div class="val">none</div>
+    <div class="lbl">DMARC-Policy</div>
+  </div>
+  <div class="metric-card red">
+    <div class="val">OFR</div>
+    <div class="lbl">Exchange Override-Typ</div>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<h2 id="findings">2. Critical Findings</h2>
+
+<div class="signal-box danger">
+  <strong>KRITISCH — Exchange SpamFilter-Override (OFR:SpamFilter):</strong> Microsoft Exchange hat das Auth-Pass-Ergebnis explizit überstimmt. Dies bedeutet, dass ein oder mehrere Signale im Spam-Confidence-Level (SCL) so stark negativ gewichtet wurden, dass die bestandene Authentifizierung irrelevant wird. Primärverdächtige: IP-Reputation (87.253.234.214), Inhalts-Trigger.
+</div>
+
+<div class="signal-box danger">
+  <strong>KRITISCH — Doppel-Signal Junk+Override:</strong> Das gleichzeitige Auftreten von Junk-Zustellung UND Filter-Override ist ein Compounding-Problem. Es deutet darauf hin, dass mindestens zwei unabhängige Bewertungssysteme (IP-Reputations-DB + Content-Filter) negativ ausschlagen. Einzelmaßnahmen werden nicht ausreichen.
+</div>
+
+<div class="signal-box warn">
+  <strong>HOCH — Return-Path-Domain-Mismatch:</strong> Der Return-Path verwendet <code>a845600.bnc3.mailjet.com</code> (Bounce-Tracking-Domain von Mailjet), nicht <code>juh-mitglieder.johanniter.de</code>. Obwohl dies bei ESP-versendetem Mail technisch Standard ist und SPF dagegen besteht, wertet Exchange dieses Mismatch als Risikofaktor — insbesondere in Kombination mit anderen negativen Signalen.
+</div>
+
+<div class="signal-box warn">
+  <strong>HOCH — Behörden-Impersonation-Trigger (Finanzamt/BZSt):</strong> Die Formulierung „zur Vorlage beim Finanzamt" aktiviert Anti-Phishing-Regelwerke, die auf staatliche Institutionen ansprechen. Dieser Trigger ist unabhängig vom Sender-Kontext aktiv.
+</div>
+
+<div class="signal-box warn">
+  <strong>MITTEL — Hohe Link-Dichte (6 Links):</strong> Sechs Hyperlinks in einer transaktionalen E-Mail mit kurzem Textkörper erzeugen ein ungünstiges Text-zu-Link-Ratio, das Spam-Charakteristika imitiert.
+</div>
+
+<div class="signal-box warn">
+  <strong>MITTEL — DMARC-Policy auf <code>none</code>:</strong> Obwohl DMARC besteht, signalisiert <code>p=none</code> fehlende Durchsetzungsbereitschaft und verhindert, dass Exchange zusätzliche Vertrauenspunkte aus einer strikten Policy ableitet.
+</div>
+
+<div class="signal-box ok">
+  <strong>POSITIV — DKIM vollständig alignt:</strong> DKIM-Signatur mit <code>d=juh-mitglieder.johanniter.de</code> ist korrekt auf die From-Domain alignt. <code>compauth=pass reason=100</code> bestätigt Microsoft Composite Auth als vollständig bestanden.
+</div>
+
+<div class="signal-box ok">
+  <strong>POSITIV — HELO-Mismatch nicht kritisch:</strong> <code>helo=o214.p9.mailjet.com</code> vs. Absender-Domain ist bei ESP-geroutetem Mail erwartungskonform und wird durch DKIM-Alignment kompensiert. Kein eigenständiger Risikofaktor.
+</div>
+
+<!-- SECTION 3 -->
+<h2 id="auth">3. Authentication Analysis</h2>
+
+<h3>3.1 SPF</h3>
+<div class="signal-box ok">
+  <strong>Ergebnis: PASS</strong> — IP 87.253.234.214 ist in der SPF-Policy von <code>a845600.bnc3.mailjet.com</code> (Envelope-From / Return-Path-Domain) als permitted Sender autorisiert. Outlook bestätigt: <code>spf=pass (sender IP is 87.253.234.214)</code>.
+</div>
+<ul>
+  <li>Die SPF-Prüfung läuft gegen die <strong>Envelope-From-Domain</strong> (<code>a845600.bnc3.mailjet.com</code>), nicht gegen die Header-From-Domain (<code>juh-mitglieder.johanniter.de</code>). Dies ist korrekt und standard.</li>
+  <li>SPF-Alignment für DMARC: Die DMARC-Prüfung alignt SPF gegen die Header-From-Domain. Da SPF auf der Bounce-Domain besteht, nicht auf <code>juh-mitglieder.johanniter.de</code>, trägt SPF <strong>nicht</strong> zur DMARC-Alignment bei. DMARC besteht allein über DKIM-Alignment.</li>
+  <li>Empfehlung: Mailjet-Subdomain-Sending einrichten, sodass auch SPF-Alignment gegen <code>juh-mitglieder.johanniter.de</code> möglich wird (Custom Bounce Domain über CNAME-Delegation).</li>
+</ul>
+
+<h3>3.2 DKIM</h3>
+<div class="signal-box ok">
+  <strong>Ergebnis: PASS — vollständig alignt</strong>
+</div>
+<pre>DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=juh-mitglieder.johanniter.de;
+  i=mitgliederservice.sued@juh-mitglieder.johanniter.de;
+  s=mailjet; x=1775649670;
+  h=message-id:senderemail:sendername:from:from:to:to:subject:...
+  bh=H07S1Gva+MmAWiH/c2XELNwDXNyj8nknbOBwOG+bE90=;</pre>
+<ul>
+  <li><strong>Algorithmus:</strong> <code>rsa-sha256</code> — aktuell und konform.</li>
+  <li><strong>Canonicalization:</strong> <code>relaxed/simple</code> — robuste Wahl für transaktionale Mail.</li>
+  <li><strong>Selector:</strong> <code>mailjet</code> — DNS-Lookup <code>mailjet._domainkey.juh-mitglieder.johanniter.de</code> muss TXT-Record mit Public Key liefern.</li>
+  <li><strong>DKIM-Alignment (DMARC):</strong> <code>d=juh-mitglieder.johanniter.de</code> alignt exakt auf <code>header.from=juh-mitglieder.johanniter.de</code> — strict und relaxed alignment beide erfüllt.</li>
+  <li><strong>Signed Headers:</strong> Enthält <code>from:from</code> und <code>to:to</code> (doppelt gelistet) — dies ist Mailjet-konform zur Absicherung gegen Header-Injection. Kein Befund.</li>
+  <li><strong>Expiry (<code>x=</code>):</strong> Signatur-Ablauf konfiguriert — positives Sicherheitsmerkmal.</li>
+  <li><strong>Schlüssellänge:</strong> Aus dem Header nicht direkt ableitbar; DNS-Lookup empfohlen. Minimum 2048 Bit für neue Deployments.</li>
+</ul>
+
+<h3>3.3 DMARC</h3>
+<div class="signal-box warn">
+  <strong>Ergebnis: PASS — Policy: <code>p=none</code> (Monitoring-Modus)</strong>
+</div>
+<ul>
+  <li>DMARC besteht ausschließlich über DKIM-Alignment (SPF-Alignment schlägt fehl wegen Return-Path-Domain-Mismatch — normal für ESP-Mail).</li>
+  <li><code>action=none</code>: Exchange wendet keine DMARC-gesteuerte Quarantine/Reject-Action an.</li>
+  <li><code>p=none</code> bedeutet: Empfänger-MTAs erhalten kein Durchsetzungssignal. Exchange und andere Empfänger können dies als mangelndes Vertrauen des Absenders in seine eigene Infrastruktur interpretieren.</li>
+  <li>Fehlende <code>rua=</code> / <code>ruf=</code>-Tags würden verhindern, dass Aggregate- und Forensic-Reports empfangen werden — DNS-Record prüfen.</li>
+</ul>
+<pre># Empfohlener DMARC-Record-Upgrade-Pfad:
+Phase 1 (jetzt): _dmarc.juh-mitglieder.johanniter.de TXT
+  "v=DMARC1; p=none; rua=mailto:dmarc-reports@johanniter.de;
+   ruf=mailto:dmarc-forensic@johanniter.de; fo=1; adkim=s; aspf=r; pct=100"
+
+Phase 2 (nach 4 Wochen Monitoring):
+  "v=DMARC1; p=quarantine; rua=...; ruf=...; fo=1; adkim=s; aspf=r; pct=25"
+
+Phase 3 (nach 8 Wochen): pct=100, dann p=reject</pre>
+
+<h3>3.4 ARC (Authenticated Received Chain)</h3>
+<ul>
+  <li>Aus den vorliegenden Headern sind keine ARC-Seal/ARC-Message-Signature-Header sichtbar. ARC ist besonders relevant bei weitergeleiteten E-Mails (Mailing-Listen, Auto-Forwarder).</li>
+  <li>Für den vorliegenden Direktversand (Mailjet → Exchange) ist ARC nicht zwingend, aber das Fehlen bedeutet: Falls ein Empfänger die Mail weiterleitet, verlieren alle Auth-Signale ihre Gültigkeit.</li>
+  <li>Mailjet unterstützt ARC-Signing — sollte in den ESP-Einstellungen aktiviert werden.</li>
+</ul>
+
+<h3>3.5 Composite Authentication (compauth)</h3>
+<div class="signal-box ok">
+  <code>compauth=pass reason=100</code> — Höchste Vertrauensstufe in Microsofts Composite-Auth-System. Bedeutet: Alle Auth-Faktoren (SPF, DKIM, DMARC) bestehen und sind konsistent. Trotzdem Junk-Zustellung = reiner Content/IP-Reputation-Override.
+</div>
+
+<h3>3.6 Return-Path vs. Envelope Sender</h3>
+<table>
+  <tr><th>Feld</th><th>Wert</th><th>Domain</th><th>Bewertung</th></tr>
+  <tr><td>Header From</td><td><code>mitgliederservice.sued@juh-mitglieder.johanniter.de</code></td><td>juh-mitglieder.johanniter.de</td><td><span class="badge badge-pass">OK</span></td></tr>
+  <tr><td>Return-Path (Envelope-From)</td><td><code>389892b0.BAAA...@a845600.bnc3.mailjet.com</code></td><td>a845600.bnc3.mailjet.com</td><td><span class="badge badge-warn">Mismatch</span></td></tr>
+  <tr><td>DKIM d=</td><td><code>juh-mitglieder.johanniter.de</code></td><td>juh-mitglieder.johanniter.de</td><td><span class="badge badge-pass">Alignt</span></td></tr>
+  <tr><td>SPF Pass-Domain</td><td><code>a845600.bnc3.mailjet.com</code></td><td>a845600.bnc3.mailjet.com</td><td><span class="badge badge-warn">Kein DMARC-Alignment</span></td></tr>
+</table>
+<p>Der Return-Path-Mismatch ist bei Mailjet-Bounce-Tracking konstruktionsbedingt. Zur Reduzierung des Risiko-Signals sollte eine <strong>Custom Bounce Domain</strong> (<code>bounce.juh-mitglieder.johanniter.de</code>) via CNAME auf Mailjet-Infrastruktur delegiert werden — dies alignt auch SPF für DMARC.</p>
+
+<!-- SECTION 4 -->
+<h2 id="headers">4. Header Analysis</h2>
+
+<h3>4.1 Microsoft SCL/BCL/Destination</h3>
+<div class="signal-box danger">
+  <p>Aus dem Signal <code>OFR:SpamFilter</code> und der Junk-Zustellung ist ein <strong>SCL ≥ 5</strong> zu inferieren (Exchange klassifiziert SCL 5–9 als Junk). Der Override-Typ <code>OFR</code> (Override Filter Result) bedeutet: Ein nachgelagerter Regel-Satz (IP-Reputation oder Content-Klassiﬁkator) hat den ursprünglichen Filter-Befund überschrieben.</p>
+  <p>BCL (Bulk Complaint Level) ist aus den vorliegenden Headern nicht sichtbar, aber wahrscheinlich > 0, falls andere Empfänger auf dieser IP/von diesem Mailjet-Konto zuvor Beschwerden ausgelöst haben.</p>
+</div>
+<table>
+  <tr><th>Header/Signal</th><th>Wert/Inferenz</th><th>Bedeutung</th></tr>
+  <tr><td><code>X-Forefront-Antispam-Report</code></td><td>Nicht vollständig vorliegend</td><td>Würde SCL, BCL, PCL, SFV-Werte enthalten — vollständige Header anfordern</td></tr>
+  <tr><td>SCL (inferiert)</td><td>≥ 5</td><td>Junk-Schwelle bei Exchange Online</td></tr>
+  <tr><td>Override-Typ</td><td><code>OFR:SpamFilter</code></td><td>SpamFilter hat Auth-Pass überstimmt</td></tr>
+  <tr><td>Destination</td><td>Junk</td><td>Junk-Folder, nicht Inbox</td></tr>
+  <tr><td><code>compauth</code></td><td>pass reason=100</td><td>Composite Auth vollständig bestanden</td></tr>
+</table>
+
+<h3>4.2 HELO/PTR-Analyse</h3>
+<table>
+  <tr><th>Parameter</th><th>Wert</th><th>Risiko</th></tr>
+  <tr><td>HELO-String</td><td><code>o214.p9.mailjet.com</code></td><td><span class="badge badge-info">Akzeptabel (ESP-Standard)</span></td></tr>
+  <tr><td>Verbindungs-IP</td><td><code>87.253.234.214</code></td><td><span class="badge badge-warn">Reputation prüfen</span></td></tr>
+  <tr><td>PTR (Reverse DNS)</td><td>Nicht verifiziert / ggf. fehlend</td><td><span class="badge badge-fail">Kritisch wenn fehlend</span></td></tr>
+  <tr><td>FCrDNS-Konsistenz</td><td>Forward-confirmed rDNS prüfen</td><td>HELO muss auf IP forward-resolven</td></tr>
+</table>
+<p>Der HELO-Mismatch (<code>o214.p9.mailjet.com</code> ≠ <code>juh-mitglieder.johanniter.de</code>) ist für ESP-geroutetes Mail nicht kritisch, da DKIM-Alignment alle relevanten Trust-Signale liefert. Kritisch ist jedoch das mögliche Fehlen eines validen PTR-Records für <code>87.253.234.214</code>. Mailjet-Support muss kontaktiert werden, um PTR-Record-Status zu bestätigen.</p>
+
+<h3>4.3 Received-Chain-Analyse</h3>
+<pre>Hop 1: Mailjet-Relay (o214.p9.mailjet.com, 87.253.234.214)
+  → DU2PEPF00028CFE.mail.protection.outlook.com [10.167.242.182]
+  TLS 1.2 / ECDHE_RSA_WITH_AES_256_GCM_SHA384 ✓
+
+Hop 2: DU2PEPF00028CFE → DU2PR04CA0330.eurprd04.prod.outlook.com
+  TLS 1.3 / AES_256_GCM_SHA384 ✓ (Frontend Transport)
+
+Hop 3: DU2PR04CA0330 → AS1P195MB1543.EURP195.PROD.OUTLOOK.COM
+  TLS 1.2 / AES_256_GCM_SHA384 ✓ (Interne Microsoft-Infrastruktur)
+
+Hop 4: AS1P195MB1543 → DU0P195MB2839 (HTTPS, internes Outlook-Routing)
+  Zeitstempel: Wed, 8

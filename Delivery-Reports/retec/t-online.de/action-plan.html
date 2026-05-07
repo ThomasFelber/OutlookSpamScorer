@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deliverability Action Plan — RETEC water technology</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #1a1a1a; background: #f4f6f9; line-height: 1.55; }
+  .wrapper { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+  header { background: #0d2b4e; color: #fff; padding: 28px 32px; border-radius: 6px 6px 0 0; margin-bottom: 0; }
+  header h1 { font-size: 22px; font-weight: 700; letter-spacing: .3px; }
+  header .meta { margin-top: 10px; font-size: 12px; opacity: .8; display: flex; flex-wrap: wrap; gap: 18px; }
+  header .meta span { display: inline-flex; align-items: center; gap: 4px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+  .badge-red { background:#e53935; color:#fff; }
+  .badge-orange { background:#fb8c00; color:#fff; }
+  .badge-green { background:#2e7d32; color:#fff; }
+  .badge-blue { background:#1565c0; color:#fff; }
+  .badge-grey { background:#607d8b; color:#fff; }
+  section { background:#fff; border-radius: 0; border-left: 4px solid #0d2b4e; margin-top: 2px; padding: 22px 28px; }
+  section:last-of-type { border-radius: 0 0 6px 6px; }
+  section h2 { font-size: 16px; font-weight: 700; color: #0d2b4e; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  section h2 .sec-num { background:#0d2b4e; color:#fff; border-radius: 50%; width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0; }
+  h3 { font-size: 13px; font-weight: 700; color: #333; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .4px; }
+  p { margin-bottom: 8px; }
+  ul { margin: 6px 0 10px 18px; }
+  ul li { margin-bottom: 5px; }
+  .finding { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px; padding: 10px 14px; border-radius: 4px; }
+  .finding-crit { background:#fdecea; border-left: 3px solid #e53935; }
+  .finding-warn { background:#fff8e1; border-left: 3px solid #fb8c00; }
+  .finding-ok   { background:#e8f5e9; border-left: 3px solid #43a047; }
+  .finding-info { background:#e3f2fd; border-left: 3px solid #1976d2; }
+  .finding-icon { font-size: 16px; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+  .finding-body strong { display: block; font-size: 13px; margin-bottom: 2px; }
+  .finding-body span { font-size: 12px; color: #444; }
+  code, .mono { font-family: 'Courier New', monospace; font-size: 12px; background: #f0f0f0; padding: 1px 4px; border-radius: 3px; word-break: break-all; }
+  pre { background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; padding: 12px; font-size: 12px; overflow-x: auto; white-space: pre-wrap; margin: 8px 0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+  th { background: #0d2b4e; color: #fff; padding: 9px 12px; text-align: left; font-size: 12px; }
+  td { padding: 9px 12px; border-bottom: 1px solid #e0e0e0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f9f9f9; }
+  .auth-table td:first-child { font-weight: 700; width: 130px; }
+  .prio-1 { background: #fdecea !important; }
+  .prio-2 { background: #fff8e1 !important; }
+  .prio-3 { background: #e8f5e9 !important; }
+  .impact-high { color: #e53935; font-weight: 700; }
+  .impact-med  { color: #fb8c00; font-weight: 700; }
+  .impact-low  { color: #43a047; font-weight: 700; }
+  .score-box { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+  .score-card { background: #f0f4f8; border-radius: 6px; padding: 12px 18px; text-align: center; min-width: 110px; }
+  .score-card .label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: .4px; }
+  .score-card .value { font-size: 28px; font-weight: 800; margin: 4px 0 2px; }
+  .score-card .sub { font-size: 11px; color: #777; }
+  .red { color: #e53935; }
+  .green { color: #2e7d32; }
+  .orange { color: #fb8c00; }
+  .blue { color: #1565c0; }
+  footer { text-align: center; font-size: 11px; color: #888; margin-top: 18px; padding-bottom: 10px; }
+  @media(max-width:700px){ section { padding: 16px 14px; } th, td { padding: 7px 8px; } }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<header>
+  <h1>📧 Deliverability Action Plan — RETEC water technology</h1>
+  <div class="meta">
+    <span>📌 <strong>Absender:</strong> retec-water-technology@t-online.de</span>
+    <span>📋 <strong>Betreff:</strong> Ihre Bestellung im RETEC water technology</span>
+    <span>📅 <strong>Analysedatum:</strong> 15. September 2025</span>
+    <span>🎯 <strong>Add-in Score:</strong> <span class="badge badge-red">9/10 — Spam-Verdacht</span></span>
+    <span>🤖 <strong>AI Score:</strong> <span class="badge badge-green">1/10 — Ham</span></span>
+    <span>📊 <strong>SCL:</strong> <span class="badge badge-orange">6 — Junk</span></span>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 1 -->
+<section>
+  <h2><span class="sec-num">1</span> Executive Summary</h2>
+  <p>
+    Diese legitime Transaktions-E-Mail von RETEC water technology wird von Microsoft Exchange trotz korrekter SPF- und DMARC-Authentifizierung mit <strong>SCL 6 als Junk</strong> klassifiziert und in den Junk-Ordner des Empfängers zugestellt.
+    Die primären Ursachen sind das vollständige Fehlen einer <strong>DKIM-Signatur</strong>, der Versand über einen <strong>Consumer-ISP (T-Online/Telekom)</strong> statt eines transaktionalen ESPs sowie ein Content-Signal, das von Microsoft als <strong>Marken-Impersonation</strong> interpretiert wird (Keyword „Netto" in Verbindung mit der Domain <code>t-online.de</code>).
+    Ohne sofortige Maßnahmen — insbesondere DKIM-Implementierung und Migration zu einer Unternehmens-Domain plus professionellem ESP — bleibt die Zustellung in den Junk-Ordner der Standard und gefährdet die Kundenkommunikation nachhaltig.
+  </p>
+  <div class="score-box" style="margin-top:14px;">
+    <div class="score-card"><div class="label">Add-in Score</div><div class="value red">9/10</div><div class="sub">Spam-Verdacht</div></div>
+    <div class="score-card"><div class="label">AI Score</div><div class="value green">1/10</div><div class="sub">Legitim (Ham)</div></div>
+    <div class="score-card"><div class="label">SCL</div><div class="value orange">6</div><div class="sub">Junk-Schwelle: 5</div></div>
+    <div class="score-card"><div class="label">BCL</div><div class="value green">0</div><div class="sub">Kein Bulk</div></div>
+    <div class="score-card"><div class="label">DKIM</div><div class="value red">FEHLT</div><div class="sub">none signed</div></div>
+    <div class="score-card"><div class="label">SPF</div><div class="value green">PASS</div><div class="sub">194.25.134.21</div></div>
+    <div class="score-card"><div class="label">DMARC</div><div class="value green">PASS</div><div class="sub">action=none</div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 2 -->
+<section>
+  <h2><span class="sec-num">2</span> Critical Findings</h2>
+
+  <div class="finding finding-crit">
+    <div class="finding-icon">🔴</div>
+    <div class="finding-body">
+      <strong>KRITISCH — Fehlende DKIM-Signatur</strong>
+      <span>Der Header <code>dkim=none (message not signed) header.d=none</code> bedeutet, dass Microsoft Exchange keinen kryptographischen Nachweis der Nachrichtenintegrität hat. Dies ist der wichtigste einzelne Faktor für SCL-Erhöhung bei ansonsten passender Authentifizierung. Microsoft Defender gewichtet DKIM extrem hoch als Vertrauenssignal.</span>
+    </div>
+  </div>
+
+  <div class="finding finding-crit">
+    <div class="finding-icon">🔴</div>
+    <div class="finding-body">
+      <strong>KRITISCH — Consumer-ISP als Versandinfrastruktur</strong>
+      <span>Versand über <code>mailout10.t-online.de</code> (IP <code>194.25.134.21</code>). T-Online/Telekom-Consumer-IPs teilen sich Reputations-Pools mit Millionen Privatnutzern, darunter kompromittierte Konten und Spammer. Die IP hat keine dedizierte Transaktions-Reputation bei Microsoft SNDS.</span>
+    </div>
+  </div>
+
+  <div class="finding finding-crit">
+    <div class="finding-icon">🔴</div>
+    <div class="finding-body">
+      <strong>KRITISCH — Microsoft OFR:SpamFilter Override aktiv</strong>
+      <span>Das Signal <code>OFR:SpamFilter</code> zeigt, dass der Exchange Online Protection (EOP) Spam-Filter Auth-Pass explizit überstimmt hat. Dies ist ein starker Indikator, dass IP-Reputations- oder Content-Signale die Authentifizierungsergebnisse übertrumpfen — ein Muster, das sich ohne Infrastrukturwechsel nicht durch Konfiguration beheben lässt.</span>
+    </div>
+  </div>
+
+  <div class="finding finding-warn">
+    <div class="finding-icon">🟠</div>
+    <div class="finding-body">
+      <strong>HOCH — Marken-Impersonation-Signal: „Netto" + Domain-Mismatch</strong>
+      <span>Das Keyword „Netto" im Body (<code>Gesamtkosten Netto: 55,54 €</code>) kombiniert mit der Absender-Domain <code>t-online.de</code> triggert Microsoft-Filter für Marken-Impersonation des deutschen Discounters „Netto". Obwohl es sich um buchhalterische Terminologie handelt, erkennt der Filter den semantischen Kontext nicht zuverlässig.</span>
+    </div>
+  </div>
+
+  <div class="finding finding-warn">
+    <div class="finding-icon">🟠</div>
+    <div class="finding-body">
+      <strong>HOCH — Domain-Architektur-Inkonsistenz</strong>
+      <span>Die Webseite läuft auf <code>www.retec-water-technology.de</code> (IP <code>185.207.231.241</code>), die Message-ID stammt von <code>@www.retec-water-technology.de</code>, aber der Absender ist <code>@t-online.de</code>. Diese Drei-Domain-Konstellation (retec-water-technology.de / t-online.de / retec-water-technology.de im Message-ID) erzeugt erhöhtes Misstrauen bei Reputationssystemen.</span>
+    </div>
+  </div>
+
+  <div class="finding finding-warn">
+    <div class="finding-icon">🟠</div>
+    <div class="finding-body">
+      <strong>MITTEL — Kein List-Unsubscribe / RFC-2369-Header</strong>
+      <span>Transaktions-E-Mails brauchen zwar kein Unsubscribe, aber das vollständige Fehlen von <code>List-*</code>-Headern in einer E-Mail, die über einen Consumer-Account versendet wird, erhöht Content-Scores marginal. Relevanter: Fehlendes <code>Feedback-ID</code>-Header verhindert granulare Reputationsmessung.</span>
+    </div>
+  </div>
+
+  <div class="finding finding-ok">
+    <div class="finding-icon">🟢</div>
+    <div class="finding-body">
+      <strong>OK — SPF und DMARC korrekt konfiguriert</strong>
+      <span>SPF pass mit alignierter Domain <code>t-online.de</code>, DMARC pass mit <code>action=none</code>. compauth=100 (pass). Diese Basis ist solide und muss beim ESP-Wechsel repliziert werden.</span>
+    </div>
+  </div>
+
+  <div class="finding finding-ok">
+    <div class="finding-icon">🟢</div>
+    <div class="finding-body">
+      <strong>OK — Inhalt ist legitim und strukturiert korrekt</strong>
+      <span>Keine URL-Shortener, keine obfuskierten Links, kein Hidden Text, kein Broken Encoding. PayPal-Link direkt zu <code>paypal.com</code>. BCL=0 bestätigt keine Bulk-Muster. Inhalt entspricht professioneller Bestellbestätigung.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 3 -->
+<section>
+  <h2><span class="sec-num">3</span> Authentication Analysis</h2>
+
+  <table class="auth-table">
+    <thead><tr><th>Protokoll</th><th>Ergebnis</th><th>Detail</th><th>Bewertung</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>SPF</td>
+        <td><span class="badge badge-green">PASS</span></td>
+        <td><code>smtp.mailfrom=t-online.de</code> — IP <code>194.25.134.21</code> ist im SPF-Record von t-online.de autorisiert (via T-Online MTA <code>mailout10.t-online.de</code>).</td>
+        <td>✅ Korrekt. Envelope-From und Header-From sind aligned (beide t-online.de). SPF allein reicht Microsoft jedoch nicht bei unbekannter IP-Reputation.</td>
+      </tr>
+      <tr>
+        <td>DKIM</td>
+        <td><span class="badge badge-red">NONE</span></td>
+        <td><code>dkim=none (message not signed) header.d=none</code> — Keine Signatur vorhanden. T-Online signiert ausgehende Nachrichten für Kundenkonten standardmäßig nicht mit kundenspezifischen DKIM-Schlüsseln.</td>
+        <td>❌ Kritisch. Fehlende DKIM-Signatur bedeutet: (1) keine Nachrichtenintegrität, (2) keine Domain-Reputation über Zeit aufbaubar, (3) DMARC ist nur durch SPF-Alignment gedeckt — anfälliger bei Forwarding.</td>
+      </tr>
+      <tr>
+        <td>DMARC</td>
+        <td><span class="badge badge-green">PASS</span></td>
+        <td><code>dmarc=pass action=none header.from=t-online.de</code> — DMARC besteht durch SPF-Alignment. Policy ist <code>none</code> (T-Online's eigene Policy für ihre Domain).</td>
+        <td>⚠️ Bedingt OK. DMARC pass nur durch SPF-Alignment (nicht DKIM). Bei Forwarding-Szenarien kann SPF brechen → DMARC-Fail. Policy <code>none</code> bietet keinen Schutz vor Spoofing.</td>
+      </tr>
+      <tr>
+        <td>ARC</td>
+        <td><span class="badge badge-grey">N/A</span></td>
+        <td>Kein ARC-Chain in den analysierten Headers. Nicht erforderlich, da keine Weiterleitungsstrecke nachweisbar.</td>
+        <td>Neutral. Irrelevant für dieses Szenario, aber relevant sobald Weiterleitung über Mailing-Listen erfolgt.</td>
+      </tr>
+      <tr>
+        <td>compauth</td>
+        <td><span class="badge badge-green">PASS (100)</span></td>
+        <td><code>compauth=pass reason=100</code> — Microsoft Composite Authentication hat alle verfügbaren Signale zusammengeführt und einen Pass vergeben.</td>
+        <td>✅ Positiv, aber compauth=pass schützt nicht vor content-basierten SCL-Erhöhungen durch EOP. OFR:SpamFilter override ignoriert compauth explizit.</td>
+      </tr>
+      <tr>
+        <td>Return-Path / Envelope</td>
+        <td><span class="badge badge-green">ALIGNED</span></td>
+        <td><code>Return-Path: retec-water-technology@t-online.de</code> — identisch mit <code>From:</code>-Header. Envelope-Sender und Header-Sender sind konsistent.</td>
+        <td>✅ Keine Spoofing-Indikation. Bounce-Handling funktioniert korrekt auf das T-Online-Konto.</td>
+      </tr>
+      <tr>
+        <td>DMARC Policy (t-online.de)</td>
+        <td><span class="badge badge-orange">p=none</span></td>
+        <td>T-Online publiziert für <code>t-online.de</code> eine DMARC-Policy mit <code>p=none</code>. Dies ist T-Onlines eigene Policy — RETEC hat keinen Einfluss darauf.</td>
+        <td>⚠️ Da RETEC keine eigene Domain für E-Mail nutzt, ist man den Policy-Entscheidungen des ISPs ausgeliefert. Eigene Domain mit eigener DMARC-Policy (<code>p=quarantine</code> → <code>p=reject</code>) ist zwingend.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>DKIM-Implementierungsoptionen für Sofortmaßnahmen</h3>
+  <p>Da T-Online keine DKIM-Signierung für Kunden-Konten anbietet, gibt es zwei Wege:</p>
+  <ul>
+    <li><strong>Option A (Sofort, empfohlen):</strong> Migration zu professionellem ESP (SendGrid, Amazon SES, Postmark) — DKIM wird vom ESP für eine <em>eigene Domain</em> (<code>mail.retec-water-technology.de</code>) automatisch signiert.</li>
+    <li><strong>Option B (Kurzfristig, begrenzt):</strong> Eigenen Postfix/Exim MTA mit DKIM-Signierung für <code>retec-water-technology.de</code> betreiben — setzt technischen Aufwand voraus und erfordert dennoch Reputationsaufbau.</li>
+  </ul>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 4 -->
+<section>
+  <h2><span class="sec-num">4</span> Header Analysis</h2>
+
+  <h3>Microsoft Exchange / EOP Filter-Signale</h3>
+  <table>
+    <thead><tr><th>Header / Signal</th><th>Wert</th><th>Interpretation</th></tr></thead>
+    <tbody>
+      <tr><td><code>X-MS SCL</code></td><td><span class="badge badge-red">6</span></td><td>Spam Confidence Level 6 — oberhalb der Junk-Schwelle von 5. EOP klassifiziert die Nachricht als wahrscheinlichen Spam.</td></tr>
+      <tr><td><code>X-MS BCL</code></td><td><span class="badge badge-green">0</span></td><td>Bulk Complaint Level 0 — keine Bulk-Muster erkannt. Positiv: E-Mail wird nicht als Massenmailing klassifiziert.</td></tr>
+      <tr><td><code>dest:J</code></td><td><span class="badge badge-red">Junk</span></td><td>Destination: Junk-Ordner. Direkte Konsequenz von SCL ≥ 5.</td></tr>
+      <tr><td><code>OFR:SpamFilter</code></td><td><span class="badge badge-red">Override</span></td><td>Exchange hat Auth-Pass-Ergebnis durch Spam-Filter überstimmt. Indiziert starke IP-Reputations- oder Content-Signale, die Authentifizierung übertrumpfen.</td></tr>
+      <tr><td><code>compauth=pass reason=100</code></td><td><span class="badge badge-green">PASS</span></td><td>Composite Auth bestanden — wird durch OFR:SpamFilter ignoriert.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>HELO / PTR / Received-Chain Analyse</h3>
+  <pre>Hop 1: [185.207.231.241] (retec-water-technology.de Webserver)
+       → fwd70.aul.t-online.de [10.223.144.96] (internes T-Online-Netz)
+       → mailout10.t-online.de [194.25.134.21] (externer MTA)
+       → DU6PEPF0000B61E.eurprd02.prod.outlook.com (Microsoft EOP Inbound)
+       → DBAP195MB1067.EURP195.PROD.OUTLOOK.COM (Exchange Online Mailbox)</pre>
+
+  <table>
+    <thead><tr><th>Hop</th><th>Host</th><th>IP</th><th>Bewertung</th></tr></thead>
+    <tbody>
+      <tr><td>Ursprung</td><td><code>www.retec-water-technology.de</code></td><td>185.207.231.241</td><td>⚠️ Webserver sendet direkt E-Mail — keine dedizierte E-Mail-Infrastruktur. Webhosting-IPs teilen Reputation mit anderen Kunden des Hosters.</td></tr>
+      <tr><td>T-Online intern</td><td><code>fwd70.aul.t-online.de</code></td><td>10.223.144.96</td><td>✅ Interne Weiterleitung — neutral.</td></tr>
+      <tr><td>T-Online MTA</td><td><code>mailout10.t-online.de</code></td><td>194.25.134.21</td><td>❌ Shared Consumer-IP-Pool. HELO stimmt mit PTR überein (positiv), aber IP-Reputation im Consumer-Segment ist schwach.</td></tr>
+      <tr><td>EOP Inbound</td><td><code>DU6PEPF0000B61E.eurprd02.prod.outlook.com</code></td><td>10.167.8.133</td><td>✅ Standard Microsoft EOP Frontend.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Message-ID Analyse</h3>
+  <p>
+    <code>Message-Id: &lt;82e6ca19ddd73a9d3c3093bb0a6faa0879b127c3@www.retec-water-technology.de&gt;</code>
+  </p>
+  <p>
+    Die Message-ID stammt von <code>www.retec-water-technology.de</code> (Webserver-Domain), der From-Header zeigt <code>@t-online.de</code>. Diese Diskrepanz ist kein RFC-Verstoß, kann aber von ML-basierten Filtern als Inkonsistenzsignal gewertet werden. Empfehlung: Nach ESP-Migration sollte die Message-ID von der sendenden Domain stammen.
+  </p>
+
+  <h3>X-TOI Headers (T-Online Internal)</h3>
+  <p>
+    <code>X-TOI-EXPURGATEID: 150726::... CLEAN NORMAL</code> — T-Online's eigener Content-Filter hat die Nachricht als <strong>CLEAN</strong> eingestuft. Dies bestätigt, dass das Problem nicht beim T-Online-Filter liegt, sondern bei Microsoft EOP's Bewertung der T-Online-IP-Reputation und Content-Signale.
+  </p>
+
+  <h3>Zeitstempel-Analyse</h3>
+  <p>
+    Date-Header: <code>Mon, 15 Sep 2025 22:54:07 +0200</code><br>
+    EOP Empfang: <code>Mon, 15 Sep 2025 21:16:47 +0000</code> (= 23:16:47 CEST)<br>
+    <strong>Delta: ca. 22 Minuten</strong> zwischen Date-Header und tatsächlichem Versand. Dies deutet darauf hin, dass der Date-Header vom Webshop-System gesetzt wird (zum Zeitpunkt der Bestellverarbeitung), die eigentliche Übertragung aber verzögert erfolgte. Empfehlung: Date-Header sollte den tatsächlichen Versandzeitpunkt widerspiegeln — große Deltas können von Filtern als Anomalie gewertet werden.
+  </p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 5 -->
+<section>

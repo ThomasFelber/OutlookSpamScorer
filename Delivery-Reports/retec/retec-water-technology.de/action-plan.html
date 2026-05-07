@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deliverability Action Plan — shop@retec-water-technology.de</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 1.6; color: #1a1a1a; background: #f4f6f9; }
+  .wrapper { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  header { background: #0d2b4e; color: #fff; padding: 28px 32px; border-radius: 8px; margin-bottom: 24px; }
+  header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; }
+  header .meta { font-size: 0.82rem; opacity: 0.75; }
+  header .scores { display: flex; gap: 24px; margin-top: 14px; }
+  header .score-box { background: rgba(255,255,255,0.1); border-radius: 6px; padding: 8px 16px; text-align: center; }
+  header .score-box .val { font-size: 1.6rem; font-weight: 800; }
+  header .score-box .lbl { font-size: 0.72rem; opacity: 0.8; text-transform: uppercase; letter-spacing: .05em; }
+  .score-bad { color: #ff6b6b; }
+  .score-good { color: #51cf66; }
+  section { background: #fff; border-radius: 8px; padding: 24px 28px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+  section h2 { font-size: 1.05rem; font-weight: 700; color: #0d2b4e; border-bottom: 2px solid #e3e8f0; padding-bottom: 8px; margin-bottom: 16px; }
+  section h3 { font-size: 0.92rem; font-weight: 700; color: #1a3a5c; margin: 16px 0 6px; }
+  p { margin-bottom: 10px; }
+  ul, ol { padding-left: 20px; margin-bottom: 10px; }
+  li { margin-bottom: 5px; }
+  code, .mono { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 0.82rem; background: #f0f3f7; padding: 1px 5px; border-radius: 3px; }
+  pre { background: #f0f3f7; padding: 12px 14px; border-radius: 6px; overflow-x: auto; font-size: 0.78rem; margin-bottom: 10px; border-left: 3px solid #4a90d9; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+  .badge-pass { background: #d3f9d8; color: #1a7f37; }
+  .badge-fail { background: #ffe3e3; color: #c0392b; }
+  .badge-warn { background: #fff3bf; color: #7d5a00; }
+  .badge-info { background: #dbe4ff; color: #2c5282; }
+  .badge-none { background: #e9ecef; color: #495057; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  th { background: #0d2b4e; color: #fff; padding: 9px 10px; text-align: left; }
+  td { padding: 8px 10px; border-bottom: 1px solid #e3e8f0; vertical-align: top; }
+  tr:hover td { background: #f8fafc; }
+  .prio-hoch { background: #ffe3e3; color: #c0392b; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
+  .prio-mittel { background: #fff3bf; color: #7d5a00; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
+  .prio-niedrig { background: #d3f9d8; color: #1a7f37; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
+  .impact-high { color: #c0392b; font-weight: 600; }
+  .impact-med { color: #7d5a00; font-weight: 600; }
+  .impact-low { color: #1a7f37; font-weight: 600; }
+  .finding-block { border-left: 4px solid #e74c3c; background: #fff5f5; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 10px; }
+  .finding-block.warn { border-color: #f39c12; background: #fffbf0; }
+  .finding-block.info { border-color: #3498db; background: #f0f7ff; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .auth-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f3f7; }
+  .auth-row:last-child { border-bottom: none; }
+  .auth-label { min-width: 90px; font-weight: 700; color: #0d2b4e; font-size: 0.82rem; }
+  .auth-val { flex: 1; }
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { display: flex; gap: 14px; padding: 8px 0; border-bottom: 1px solid #f0f3f7; }
+  .timeline li:last-child { border-bottom: none; }
+  .tl-num { background: #0d2b4e; color: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  .final-box { background: linear-gradient(135deg, #0d2b4e 0%, #1a4a7c 100%); color: #fff; border-radius: 8px; padding: 24px 28px; }
+  .final-box h2 { color: #fff; border-color: rgba(255,255,255,0.3); }
+  .final-box p { color: rgba(255,255,255,0.9); }
+  .verdict { font-size: 1.3rem; font-weight: 800; color: #ffd43b; margin-bottom: 8px; }
+  @media(max-width:680px){ .two-col{ grid-template-columns: 1fr; } header .scores{ flex-wrap: wrap; } }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<!-- HEADER -->
+<header>
+  <h1>Deliverability Action Plan — RETEC water technology</h1>
+  <div class="meta">Absender: <strong>shop@retec-water-technology.de</strong> &nbsp;|&nbsp; Empfänger-MX: Microsoft Exchange Online (Outlook.com) &nbsp;|&nbsp; Analysedatum: 01. April 2026</div>
+  <div class="scores">
+    <div class="score-box"><div class="val score-bad">10/10</div><div class="lbl">Add-in Score (Risiko)</div></div>
+    <div class="score-box"><div class="val score-good">2/10</div><div class="lbl">AI Score (Risiko)</div></div>
+    <div class="score-box"><div class="val score-bad">SCL 6</div><div class="lbl">Microsoft Spam Conf.</div></div>
+    <div class="score-box"><div class="val score-bad">JUNK</div><div class="lbl">Zustellungspfad</div></div>
+  </div>
+</header>
+
+<!-- 1. EXECUTIVE SUMMARY -->
+<section>
+  <h2>1. Executive Summary</h2>
+  <p>Die E-Mail ist mit hoher Wahrscheinlichkeit eine legitime Bestellbestätigung von RETEC water technology — der Inhalt trägt klare, transaktionale Merkmale (Bestellnummer 74969, Kundendaten, Preise, DHL-Versand). Dennoch landet sie im Junk-Ordner des Empfängers, weil Microsofts Spam-Filter drei gleichzeitig auftretende technische Schwachstellen kombiniert: eine nicht auflösbare DKIM-Signatur (<em>no key for signature</em>), einen HELO-Mismatch durch Shared-Hosting bei Dogado sowie ein möglicherweise als Marken-Impersonation gewertetes Textsignal (<em>"Netto"</em>). Das Zusammentreffen dieser Signale führt zu einem <code>OFR:SpamFilter</code>-Override, der die bestandene <code>compauth</code>-Authentifizierung überstimmt. Durch gezielte Korrekturen — vor allem DKIM-Reparatur und HELO-Normalisierung — ist eine vollständige Inbox-Zustellung kurzfristig erreichbar.</p>
+</section>
+
+<!-- 2. CRITICAL FINDINGS -->
+<section>
+  <h2>2. Critical Findings</h2>
+
+  <div class="finding-block">
+    <strong>[KRITISCH] DKIM: kein öffentlicher Schlüssel im DNS auffindbar</strong><br>
+    Selektor <code>default</code>, Domain <code>retec-water-technology.de</code>. Die Signatur ist vorhanden (<code>DKIM-Signature: v=1; s=default; d=retec-water-technology.de</code>), der korrespondierende TXT-Eintrag <code>default._domainkey.retec-water-technology.de</code> liefert jedoch keinen Wert. Empfangendes MTA: <code>dkim=fail (no key for signature)</code>. Dies ist der primäre Auslöser des SCL-6-Sprungs.
+  </div>
+
+  <div class="finding-block">
+    <strong>[KRITISCH] HELO-Domain-Mismatch + mehrfache Envelope-Diskrepanz</strong><br>
+    Der Postfix-Server identifiziert sich als <code>srv573659.dogado-shops.de</code>; der Header-From zeigt <code>retec-water-technology.de</code>. Gleichzeitig weicht die SMTP-Envelope-Adresse (<code>smtp.mailfrom=retec-shop@retec-regenwassertechnik.de</code> in den originating Auth-Results) von der sichtbaren Absenderadresse (<code>shop@retec-water-technology.de</code>) ab — eine zweite, bislang unbehandelte Domain-Konflikt-Schicht.
+  </div>
+
+  <div class="finding-block">
+    <strong>[KRITISCH] OFR:SpamFilter-Override trotz compauth=pass</strong><br>
+    Microsoft Exchange hat explizit die bestandene Authentifizierung überstimmt (<code>OFR:SpamFilter</code>) und gleichzeitig ein Doppel-Signal produziert: Junk-Zustellung <em>und</em> Filter-Override. Dies deutet darauf hin, dass die IP 185.207.231.241 in Microsofts internen Reputation-Datenbanken bereits negativ bewertet ist oder die Kombination der Signale einen kombinierten Score-Schwellenwert überschreitet.
+  </div>
+
+  <div class="finding-block warn">
+    <strong>[HOCH] DMARC: policy=none — kein Schutz, kein Enforcement</strong><br>
+    DMARC läuft im reinen Monitoring-Modus. Da DKIM fehlschlägt, hängt die DMARC-Auswertung ausschließlich am SPF-Alignment. Der Status <code>bestguesspass</code> (kein echter <code>pass</code>) zeigt, dass Microsoft intern rät statt sicher klassifiziert.
+  </div>
+
+  <div class="finding-block warn">
+    <strong>[HOCH] Personalisierungsfehler: "Nicht definiert Felber"</strong><br>
+    Das Präfix-Feld wurde nicht korrekt befüllt. Solche Merge-Tag-Fehler signalisieren Content-Management-Schwächen und erhöhen Spam-Scores bei heuristischen Filtern.
+  </div>
+
+  <div class="finding-block warn">
+    <strong>[MITTEL] "Netto"-Erwähnung als mögliches Impersonation-Signal</strong><br>
+    Im Body-Text steht <code>Gesamtkosten Netto: 92,02 €</code>. Da die Absenderdomain <em>retec-water-technology.de</em> ist, interpretieren regelbasierte Filter "Netto" potenziell als Verweis auf den deutschen Lebensmitteleinzelhändler "Netto" (Markenmissbrauch). Dies ist inhaltlich korrekt (Nettopreis), muss aber textlich eindeutiger gestaltet werden.
+  </div>
+
+  <div class="finding-block info">
+    <strong>[INFO] Doppelte Return-Path-Domain: retec-regenwassertechnik.de</strong><br>
+    Die originating <code>smtp.mailfrom</code> verweist auf eine andere Domain (<code>retec-regenwassertechnik.de</code>). Dies legt nahe, dass das Shop-System zwei unterschiedliche Sendekonfigurationen nutzt oder eine Migration unvollständig ist.
+  </div>
+</section>
+
+<!-- 3. AUTHENTICATION ANALYSIS -->
+<section>
+  <h2>3. Authentication Analysis</h2>
+
+  <div class="auth-row">
+    <div class="auth-label">SPF</div>
+    <div class="auth-val">
+      <span class="badge badge-pass">PASS</span>
+      <span style="margin-left:8px;">IP <code>185.207.231.241</code> ist in der SPF-Record der Domain <code>retec-water-technology.de</code> autorisiert. Mechanismus: vermutlich <code>include:dogado.de</code> oder direkte IP-Freigabe. SPF-Alignment ist gegeben, da <code>smtp.mailfrom</code> dieselbe Domain wie <code>From:</code> trägt — <em>jedoch</em> weist die originäre Server-Log-Zeile <code>smtp.mailfrom=retec-shop@retec-regenwassertechnik.de</code> auf eine andere Bounce-Domain hin. Dies muss bereinigt werden, um konsequentes SPF-Alignment sicherzustellen.</span>
+    </div>
+  </div>
+
+  <div class="auth-row">
+    <div class="auth-label">DKIM</div>
+    <div class="auth-val">
+      <span class="badge badge-fail">FAIL</span>
+      <span style="margin-left:8px;">Selektor: <code>default</code> | Domain: <code>retec-water-technology.de</code> | Algorithmus: <code>rsa-sha256</code> | Kanonisierung: <code>relaxed/relaxed</code>. Fehlerursache: DNS-TXT-Eintrag <code>default._domainkey.retec-water-technology.de</code> existiert nicht oder liefert keinen <code>p=</code>-Wert. Möglicherweise wurde der Schlüssel rotiert, ohne den DNS-Eintrag zu aktualisieren, oder Dogados Panel hat den Schlüssel nicht publiziert. Die DKIM-Signatur umfasst nur <code>Subject:To:From</code> — das Header-Set ist zu minimal; <code>Date</code>, <code>Message-ID</code> und <code>Content-Type</code> sollten eingeschlossen werden, um Replay-Angriffe zu erschweren.</span>
+    </div>
+  </div>
+
+  <div class="auth-row">
+    <div class="auth-label">DMARC</div>
+    <div class="auth-val">
+      <span class="badge badge-warn">BESTGUESSPASS</span>
+      <span style="margin-left:8px;">Policy: <code>action=none</code>. Microsoft gibt <code>bestguesspass</code> zurück — d.h. kein vollständiger DMARC-Pass, sondern eine heuristische Schätzung. Ein echter <code>dmarc=pass</code> erfordert, dass entweder SPF (<em>aligned</em>) oder DKIM (<em>aligned</em>) besteht. Da DKIM fehlschlägt, hängt alles am SPF-Alignment. Sobald DKIM repariert ist, wird DMARC zu einem echten <code>pass</code>. Policy-Verschärfung auf <code>p=quarantine</code> → <code>p=reject</code> ist nach Stabilisierung obligatorisch.</span>
+    </div>
+  </div>
+
+  <div class="auth-row">
+    <div class="auth-label">ARC</div>
+    <div class="auth-val">
+      <span class="badge badge-none">NICHT VORHANDEN</span>
+      <span style="margin-left:8px;">Kein ARC-Seal im Header. Da die E-Mail direkt von Dogado-MTA zu Microsoft zugestellt wird (keine Zwischenvermittlung), ist ARC hier nicht kritisch. Sobald jedoch Weiterleitungen (z.B. über Gmail oder andere Mailhosts) relevant werden, sollte ein ARC-kompatibler Relay eingerichtet werden.</span>
+    </div>
+  </div>
+
+  <div class="auth-row">
+    <div class="auth-label">compauth</div>
+    <div class="auth-val">
+      <span class="badge badge-pass">PASS (reason=109)</span>
+      <span style="margin-left:8px;">Reason-Code 109 bedeutet: Microsoft hat die Nachricht als legitim eingestuft, obwohl DKIM fehlschlug, weil andere Signale (SPF-Pass, Message-Struktur) stark positiv waren. Trotzdem hat der <code>OFR:SpamFilter</code>-Override dies überstimmt — compauth ist eine notwendige, aber keine hinreichende Bedingung für Inbox-Zustellung.</span>
+    </div>
+  </div>
+
+  <div class="auth-row">
+    <div class="auth-label">Return-Path / Envelope</div>
+    <div class="auth-val">
+      <span class="badge badge-warn">DISKREPANZ</span>
+      <span style="margin-left:8px;">Die originating Auth-Results des Dogado-Servers zeigen: <code>smtp.mailfrom=retec-shop@retec-regenwassertechnik.de</code>. Das bedeutet, der tatsächliche SMTP-MAIL-FROM-Befehl (Bounce-/Return-Path-Adresse) verwendet die Domain <code>retec-regenwassertechnik.de</code>, während der sichtbare <code>From:</code>-Header <code>retec-water-technology.de</code> zeigt. Für vollständiges SPF-Alignment müssen beide Domains übereinstimmen oder es muss ein konsistenter Subdomain-Ansatz gewählt werden (z.B. <code>bounce.retec-water-technology.de</code>).</span>
+    </div>
+  </div>
+
+  <div class="auth-row">
+    <div class="auth-label">Alignment Summary</div>
+    <div class="auth-val">
+      <table style="font-size:0.78rem;">
+        <tr><th>Prüfung</th><th>Domain</th><th>Ergebnis</th><th>Aligned</th></tr>
+        <tr><td>SPF (Envelope From)</td><td>retec-regenwassertechnik.de / retec-water-technology.de</td><td><span class="badge badge-pass">PASS</span></td><td><span class="badge badge-warn">PARTIAL</span></td></tr>
+        <tr><td>DKIM (d=)</td><td>retec-water-technology.de</td><td><span class="badge badge-fail">FAIL</span></td><td><span class="badge badge-fail">N/A</span></td></tr>
+        <tr><td>From: (Header)</td><td>retec-water-technology.de</td><td>—</td><td>—</td></tr>
+        <tr><td>DMARC Alignment</td><td>retec-water-technology.de</td><td><span class="badge badge-warn">BESTGUESSPASS</span></td><td><span class="badge badge-warn">SCHWACH</span></td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 4. HEADER ANALYSIS -->
+<section>
+  <h2>4. Header Analysis</h2>
+
+  <h3>Microsoft SCL / BCL / Zustellungspfad</h3>
+  <div class="two-col">
+    <div>
+      <p><strong>SCL 6</strong>: Spam Confidence Level 6 bedeutet, dass Exchange die Nachricht mit hoher Wahrscheinlichkeit als Spam klassifiziert. Standard-Junk-Schwellenwert ist SCL 5; SCL 6 liegt darüber. Ein weiterer Anstieg (SCL 9) würde zur direkten Löschung führen. <br>
+      <strong>BCL</strong>: Kein BCL-Wert sichtbar — die IP ist nicht als dedizierter Bulk-Sender bekannt, was den legitimen Charakter stützt.<br>
+      <strong>dest:J</strong>: Zustellung in den Junk-Ordner (Junk E-Mail). Der Header-Pfad bestätigt: <code>X-MS-Exchange-Organization-SCL: 6</code> kombiniert mit <code>OFR:SpamFilter</code>.</p>
+    </div>
+    <div>
+      <p><strong>OFR:SpamFilter-Override</strong>: Dieser Wert erscheint, wenn ein Content- oder Reputations-Filter die Authentifizierungsergebnisse explizit überstimmt. Mögliche Auslöser im Einzelnen: DKIM-Fail, IP-Reputationssignal, "Netto"-Keyword, HELO-Mismatch. Microsoft verrechnet alle Signale in einem zusammengesetzten Score — kein einzelner Treffer reicht aus, aber die Kombination aller vier überschreitet den Schwellenwert.</p>
+    </div>
+  </div>
+
+  <h3>HELO / rDNS / PTR</h3>
+  <p>Der sendende Server identifiziert sich per HELO als <code>srv573659.dogado-shops.de</code>. Das PTR-Record der IP <code>185.207.231.241</code> löst vermutlich auf denselben Hostnamen auf — konsistent mit Dogado Shared-Hosting-Infrastruktur. Das Problem: Die sendende Domain im From-Header ist <code>retec-water-technology.de</code>, nicht <code>dogado-shops.de</code>. Heuristische Filter interpretieren diesen Mismatch als verdächtig. <strong>Lösung</strong>: Entweder Dedicated-IP mit korrektem PTR (<code>mail.retec-water-technology.de</code>) oder HELO-Konfiguration des Postfix auf <code>retec-water-technology.de</code> (sofern Dogado dies erlaubt).</p>
+
+  <h3>Received-Chain Analyse</h3>
+  <pre>
+[1] retec-water-technology.de (srv573659.dogado-shops.de [185.207.231.241])
+    → srv573659.dogado-shops.de (Postfix, ESMTPSA)         ← Lokale Übergabe
+[2] srv573659.dogado-shops.de (185.207.231.241)
+    → AMS1EPF0000004E.mail.protection.outlook.com          ← MX-Eingang Microsoft (Amsterdam)
+    TLS 1.3 / TLS_AES_256_GCM_SHA384 ✓
+[3] AMS1EPF0000004E.eurprd04.prod.outlook.com
+    → CWLP265CA0295.GBRP265.PROD.OUTLOOK.COM               ← Interne Microsoft-Weiterleitung (UK)
+    TLS 1.3 ✓
+[4] CWLP265CA0295
+    → GV4P195MB2720.EURP195.PROD.OUTLOOK.COM               ← Interne Verarbeitung
+    TLS 1.2 / TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 ✓
+[5] GV4P195MB2720
+    → DU0P195MB2839.EURP195.PROD.OUTLOOK.COM (HTTPS)       ← Finale Zustellung in Junk
+  </pre>
+  <p><strong>Auffälligkeit</strong>: Hop 1 zeigt eine interne Loopback-Übergabe auf dem Dogado-Server — dies ist normal bei Shopware/JTL/WooCommerce-Installationen, die per PHP-Mail oder lokalem Postfix versenden. Zeitstempel-Diskrepanz: Postfix-Timestamp <code>14:57:48 CEST</code> vs. Microsoft-Eingang <code>13:45:11 UTC</code> (= <code>15:45:11 CEST</code>) — ca. 47 Minuten Verzögerung oder Uhrzeitfehler auf dem Dogado-Server. Dies sollte geprüft werden.</p>
+
+  <h3>Weitere relevante Header</h3>
+  <ul>
+    <li><code>X-IncomingTopHeaderMarker</code>: Microsoft-intern, kein Handlungsbedarf.</li>
+    <li><code>Message-Id: &lt;ebebb2af…@retec-water-technology.de&gt;</code>: Korrekt formatiert, Domain-konsistent.</li>
+    <li><code>Content-Type: multipart/alte[rnative]</code> (truncated): Multipart/alternative mit HTML+Text-Teilen — guter Standard. Sicherstellen, dass beide Teile inhaltlich konsistent sind.</li>
+    <li>Kein <code>List-Unsubscribe</code>-Header vorhanden — für transaktionale E-Mails akzeptabel, aber empfehlenswert zur Verbesserung der Nutzerfreundlichkeit.</li>
+    <li>Kein <code>X-Mailer</code> / <code>X-Originating-IP</code> — positiv, da diese oft als Fingerprinting-Vektoren für Spam genutzt werden.</li>
+  </ul>
+</section>
+
+<!-- 5. HTML & CONTENT ANALYSIS -->
+<section>
+  <h2>5. HTML &amp; Content Technical Analysis</h2>
+
+  <h3>MIME-Struktur</h3>
+  <p>Content-Type <code>multipart/alternative</code> ist korrekt gewählt für transaktionale E-Mails. Kritisch ist sicherzustellen, dass der Text-Teil (<code>text/plain</code>) nicht leer ist — viele Shop-Plugins generieren einen leeren Plaintext-Teil, was Spam-Score erhöht. Das Verhältnis Text/HTML sollte ≥ 25 % Plaintext-Anteil betragen.</p>
+
+  <h3>Encoding
