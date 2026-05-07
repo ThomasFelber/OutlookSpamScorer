@@ -163,6 +163,46 @@
     <p>E-Mail-Deliverability-Analysen auf Basis realer Microsoft-Exchange-Header — gruppiert nach Absender-Domain.</p>
   </header>
 
+  <!-- ── pparena.de ──────────────────────────────────────────────────────── -->
+  <div class="domain-block">
+    <div class="domain-header">
+      <div class="domain-icon">🎯</div>
+      <div>
+        <div class="domain-name">pparena.de</div>
+        <div class="domain-meta">SparkPost · 1 Report</div>
+      </div>
+    </div>
+
+    <div class="report-grid">
+
+      <div class="report-card" onclick="openModal('pparena.de/report-0010.html','Report #0010 — Spam Scorer Analysis · pparena.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0010 — Spam Scorer Analysis</div>
+          <div class="card-meta">31. März 2026 · info@mailing.pparena.de via SparkPost · Spam Scorer v2.0.12</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="bad">6/10</span></div>
+            <div class="metric">AI <span class="ok">2/10</span></div>
+            <div class="metric">Zustellung <span class="bad">Junk</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">3 × hoch</span>
+            <span class="pill pill-amber">4 × mittel</span>
+            <span class="pill pill-gray">2 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> 6 Ausrufezeichen + 8 Links + Reply-To-Domain-Mismatch (paintball-plzen.cz ≠ mailing.pparena.de) · Junk-Zustellung trotz SPF/DKIM/DMARC-Pass (OFR:SpamFilter)
+          </div>
+        </div>
+        <a href="pparena.de/report-0010.html" target="_blank"
+           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ── lerntraining.de ──────────────────────────────────────────────────── -->
   <div class="domain-block">
     <div class="domain-header">
