@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E-Mail Deliverability Audit #3 — akademie-lernpaedagogik.de</title>
+<style>
+  *, *::before, *::before { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1a1a1a;
+    background: #f5f4f0;
+    padding: 2rem 1rem;
+  }
+  .page {
+    max-width: 780px;
+    margin: 0 auto;
+    background: #fff;
+    border: 0.5px solid #d0cfc6;
+    border-radius: 12px;
+    padding: 2rem 2.5rem 3rem;
+  }
+  .mono { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 12px; background: #f1efe8; padding: 1px 6px; border-radius: 4px; }
+  .badge { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 99px; display: inline-block; }
+  .badge-red { background: #fcebeb; color: #a32d2d; }
+  .badge-amber { background: #faeeda; color: #854f0b; }
+  .badge-gray { background: #f1efe8; color: #5f5e5a; }
+  .badge-ok { background: #eaf3de; color: #3b6d11; }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 1.5rem;
+  }
+  .metric-card { background: #f5f4f0; border-radius: 8px; padding: 10px 12px; }
+  .metric-label { font-size: 11px; color: #888780; margin-bottom: 4px; }
+  .metric-value { font-size: 15px; font-weight: 500; margin-bottom: 2px; }
+  .metric-sub { font-size: 11px; color: #888780; }
+  .green { color: #3b6d11; }
+  .red { color: #a32d2d; }
+  .amber { color: #854f0b; }
+
+  .mismatch-box {
+    background: #fff;
+    border: 0.5px solid #d0cfc6;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 1.5rem;
+  }
+  .mismatch-label { font-size: 12px; font-weight: 500; color: #5f5e5a; margin-bottom: 8px; }
+  .mismatch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mismatch-item-label { font-size: 11px; color: #888780; margin-bottom: 3px; }
+  .mismatch-item-val { font-family: "SFMono-Regular", Consolas, monospace; font-size: 11px; word-break: break-all; }
+  .mismatch-note { font-size: 12px; color: #888780; margin-top: 8px; }
+
+  .section-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #888780;
+    text-transform: uppercase;
+    margin: 1.5rem 0 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 0.5px solid #e0dfd6;
+  }
+  .finding {
+    background: #fff;
+    border: 0.5px solid #d0cfc6;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .finding-high { border-left: 3px solid #e24b4a; }
+  .finding-medium { border-left: 3px solid #ef9f27; }
+  .finding-low { border-left: 3px solid #b4b2a9; }
+
+  .finding-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .finding-title { font-size: 14px; font-weight: 500; color: #1a1a1a; }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .compare-ist { background: #fcebeb; border-radius: 8px; padding: 8px 10px; }
+  .compare-soll { background: #eaf3de; border-radius: 8px; padding: 8px 10px; }
+  .compare-neutral { background: #f5f4f0; border-radius: 8px; padding: 8px 10px; }
+  .compare-warn { background: #faeeda; border-radius: 8px; padding: 8px 10px; }
+  .compare-label { font-size: 11px; margin-bottom: 2px; }
+  .compare-val { font-size: 13px; font-weight: 500; }
+  .compare-sub { font-size: 11px; margin-top: 2px; }
+  .ist-label { color: #791f1f; }
+  .ist-val { color: #a32d2d; }
+  .ist-sub { color: #a32d2d; }
+  .soll-label { color: #27500a; }
+  .soll-val { color: #3b6d11; }
+  .soll-sub { color: #3b6d11; }
+  .warn-label { color: #633806; }
+  .warn-val { color: #854f0b; }
+  .warn-sub { color: #854f0b; }
+  .neutral-label { color: #888780; }
+  .neutral-val { color: #5f5e5a; }
+  .neutral-sub { color: #888780; }
+  .finding-desc { font-size: 13px; color: #5f5e5a; line-height: 1.6; }
+
+  .callout {
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 10px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .callout-ok { background: #eaf3de; color: #27500a; border-left: 3px solid #3b6d11; border-radius: 0 8px 8px 0; }
+  .callout-warn { background: #faeeda; color: #633806; border-left: 3px solid #ef9f27; border-radius: 0 8px 8px 0; }
+
+  .summary-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .footer { margin-top: 2rem; padding-top: 1rem; border-top: 0.5px solid #e0dfd6; font-size: 11px; color: #b4b2a9; }
+
+  .report-nav { display: flex; gap: 8px; margin-bottom: 1.75rem; flex-wrap: wrap; }
+  .report-nav-item { font-size: 12px; padding: 4px 12px; border-radius: 99px; border: 0.5px solid #d0cfc6; color: #888780; }
+  .report-nav-item.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="report-nav">
+    <span class="report-nav-item">Report #1 — lerntraining.de</span>
+    <span class="report-nav-item">Report #2 — lerntraining.de (erweitert)</span>
+    <span class="report-nav-item active">Report #3 — akademie-lernpaedagogik.de</span>
+  </div>
+
+  <div style="margin-bottom: 1.75rem;">
+    <div style="font-size: 11px; color: #888780; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.08em;">E-Mail Deliverability Audit #3</div>
+    <div style="font-size: 20px; font-weight: 500; color: #1a1a1a; margin-bottom: 0.25rem;">akademie-lernpaedagogik.de — Microsoft Junk-Analyse</div>
+    <div style="font-size: 13px; color: #888780;">E-Mail vom 28. Januar 2026, 07:02 UTC · Empfänger: felber110@outlook.de · ESP: ActiveCampaign</div>
+  </div>
+
+  <div style="margin-bottom: 1.5rem;">
+    <div style="font-size: 12px; color: #888780; margin-bottom: 3px;">Analysierte E-Mail</div>
+    <div style="font-size: 14px; color: #1a1a1a; margin-bottom: 2px;">Von: <span class="mono">seminar@akademie-lernpaedagogik.de</span> via ActiveCampaign / KumoMTA</div>
+    <div style="font-size: 14px; color: #1a1a1a;">Betreff: <span style="font-family: monospace; font-size: 12px; background: #f1efe8; padding: 1px 6px; border-radius: 4px;">**Gute Nachrichten fürs Lernen: die richtigen Worte finden ...**</span> &nbsp;<span class="badge badge-red">Sternchen-Umrahmung</span></div>
+  </div>
+
+  <div style="background: #fff; border: 1.5px solid #e24b4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 1.5rem;">
+    <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; color: #791f1f; text-transform: uppercase; margin-bottom: 10px;">Betreff dieser E-Mail — Konkrete Probleme</div>
+    <div style="font-size: 14px; font-weight: 500; color: #1a1a1a; background: #f5f4f0; border-radius: 6px; padding: 10px 14px; margin-bottom: 12px; font-family: monospace; word-break: break-all;">
+      **Gute Nachrichten fürs Lernen: die richtigen Worte finden ...**
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
+      <div style="background: #fcebeb; border-radius: 6px; padding: 8px 10px;">
+        <div style="font-size: 11px; color: #791f1f; margin-bottom: 3px; font-weight: 500;">Problem 1 — Sternchen</div>
+        <div style="font-size: 13px; font-weight: 500; color: #a32d2d; margin-bottom: 2px;">** ... ** um den Betreff</div>
+        <div style="font-size: 11px; color: #a32d2d;">wirkt reißerisch · Spam-Signal</div>
+      </div>
+      <div style="background: #fcebeb; border-radius: 6px; padding: 8px 10px;">
+        <div style="font-size: 11px; color: #791f1f; margin-bottom: 3px; font-weight: 500;">Problem 2 — Ausrufezeichen</div>
+        <div style="font-size: 13px; font-weight: 500; color: #a32d2d; margin-bottom: 2px;">7 im gesamten Mailing</div>
+        <div style="font-size: 11px; color: #a32d2d;">Limit: max. 1–2 pro E-Mail</div>
+      </div>
+      <div style="background: #faeeda; border-radius: 6px; padding: 8px 10px;">
+        <div style="font-size: 11px; color: #854f0b; margin-bottom: 3px; font-weight: 500;">Problem 3 — Ton</div>
+        <div style="font-size: 13px; font-weight: 500; color: #854f0b; margin-bottom: 2px;">„Gute Nachrichten" + „..."</div>
+        <div style="font-size: 11px; color: #854f0b;">Clickbait-Muster erhöhen SCL</div>
+      </div>
+    </div>
+    <div style="font-size: 12px; color: #5f5e5a; margin-bottom: 6px; font-weight: 500;">Überarbeitete Betreff-Vorschläge:</div>
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 11px; background: #eaf3de; color: #3b6d11; padding: 2px 7px; border-radius: 4px; white-space: nowrap; font-weight: 500;">Variante A</span>
+        <span style="font-size: 13px; color: #1a1a1a;">Wie Sie Ihr Kind beim Lernen optimal unterstützen – Webinar am [Datum]</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 11px; background: #eaf3de; color: #3b6d11; padding: 2px 7px; border-radius: 4px; white-space: nowrap; font-weight: 500;">Variante B</span>
+        <span style="font-size: 13px; color: #1a1a1a;">Die richtigen Worte finden – Lerntipp für Eltern</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 11px; background: #eaf3de; color: #3b6d11; padding: 2px 7px; border-radius: 4px; white-space: nowrap; font-weight: 500;">Variante C</span>
+        <span style="font-size: 13px; color: #1a1a1a;">Akademie für Lernpädagogik: Neue Webinar-Termine im Februar</span>
+      </div>
+    </div>
+    <div style="font-size: 11px; color: #888780; margin-top: 8px;">Keine Sonderzeichen als Umrahmung · keine Auslassungspunkte · A/B-Test ohne Sternchen empfohlen</div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">SPF</div>
+      <div class="metric-value green">Pass</div>
+      <div class="metric-sub">52.128.40.143 erlaubt</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">DKIM</div>
+      <div class="metric-value green">Pass (2×)</div>
+      <div class="metric-sub">akademie-lernpaedagogik.de + acems1.com</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">DMARC</div>
+      <div class="metric-value green">Pass</div>
+      <div class="metric-sub">action=none</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">SCL (Spam Score)</div>
+      <div class="metric-value red">5 / 9</div>
+      <div class="metric-sub">Schwelle Junk: ab 5</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">BCL (Bulk Score)</div>
+      <div class="metric-value red">5 / 9</div>
+      <div class="metric-sub">erhöht · Beschwerdesignal erkannt</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Zustellung</div>
+      <div class="metric-value red">Junk</div>
+      <div class="metric-sub">dest:J, OFR:SpamFilterAuthJ</div>
+    </div>
+  </div>
+
+  <div class="mismatch-box">
+    <div class="mismatch-label">HELO-Domain vs. Absender — bekannter ActiveCampaign-Mismatch</div>
+    <div class="mismatch-grid">
+      <div>
+        <div class="mismatch-item-label">HELO (Verbindung)</div>
+        <div class="mismatch-item-val amber">s4.csa1.acemsd5.com</div>
+      </div>
+      <div>
+        <div class="mismatch-item-label">From (Header)</div>
+        <div class="mismatch-item-val green">seminar@akademie-lernpaedagogik.de</div>
+      </div>
+    </div>
+    <div class="mismatch-note">Strukturell bedingt durch ActiveCampaign-Infrastruktur. Kein technischer Fehler, kann aber Misstrauen erzeugen. Gegenmaßnahme: Fußzeilen-Hinweis (siehe Befund INFRASTRUKTUR).</div>
+  </div>
+
+  <div style="background: #fcebeb; border: 1px solid #f09595; border-radius: 8px; padding: 12px 14px; margin-bottom: 1.5rem;">
+    <div style="font-size: 12px; font-weight: 500; color: #791f1f; margin-bottom: 6px;">BCL 5 — erhöhte Beschwerderate erkannt</div>
+    <div style="font-size: 13px; color: #a32d2d; line-height: 1.6;">BCL 5 bedeutet, dass Microsoft eine erhöhte Anzahl an Junk-Beschwerden (Nutzer klicken auf "Als Junk melden") für diese Versandquelle registriert hat. Im Gegensatz zu Report #1 und #2 (BCL 0) ist hier ein aktives Beschwerdesignal vorhanden — nicht nur Inhalts- oder Authentifizierungsprobleme.</div>
+  </div>
+
+  <div class="summary-pills">
+    <span class="badge badge-red">4 × hoch</span>
+    <span class="badge badge-amber">3 × mittel</span>
+  </div>
+
+  <div class="section-title">Hoch</div>
+
+  <div class="finding finding-high">
+    <div class="finding-header">
+      <span class="badge badge-red">INHALT</span>
+      <span class="finding-title">Zero-Width-Space-Obfuskation sofort entfernen</span>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-ist">
+        <div class="compare-label ist-label">Ist</div>
+        <div class="compare-val ist-val">128 Zero-Width-Spaces</div>
+        <div class="compare-sub ist-sub">Unicode U+200B / U+FEFF im Template</div>
+      </div>
+      <div class="compare-soll">
+        <div class="compare-label soll-label">Soll</div>
+        <div class="compare-val soll-val">0 versteckte Zeichen</div>
+        <div class="compare-sub soll-sub">Template auf unsichtbare Unicode-Zeichen prüfen</div>
+      </div>
+    </div>
+    <div class="finding-desc">Zero-Width-Spaces sind für den Leser unsichtbar, für Spam-Filter aber ein eindeutiges Obfuskationssignal. 128 Vorkommen sind kein Versehen — sie entstehen typischerweise durch Copy-Paste aus Word oder durch manuelle Verschleierungsversuche. Prüfung: Template-Quellcode in einem Hex-Editor oder mit einem Unicode-Scanner auf U+200B, U+200C, U+200D, U+FEFF untersuchen.</div>
+  </div>
+
+  <div class="finding finding-high">
+    <div class="finding-header">
+      <span class="badge badge-red">INHALT</span>
+      <span class="finding-title">Versteckten Text eliminieren — mit Ausnahme von PreHeader</span>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-ist">
+        <div class="compare-label ist-label">Ist</div>
+        <div class="compare-val ist-val">versteckter Text vorhanden</div>
+        <div class="compare-sub ist-sub">z.B. weiß auf weiß, CSS display:none mit Inhalt</div>
+      </div>
+      <div class="compare-soll">
+        <div class="compare-label soll-label">Soll</div>
+        <div class="compare-val soll-val">nur PreHeader-Text</div>
+        <div class="compare-sub soll-sub">alle anderen versteckten Inhalte entfernen</div>
+      </div>
+    </div>
+    <div class="finding-desc">Versteckter Text (weiße Schrift auf weißem Hintergrund, <span class="mono">color: transparent</span>, <span class="mono">font-size: 0</span>) ist eine klassische Spam-Technik und wird von Microsoft-Filtern streng bestraft.</div>
+    <div class="callout callout-ok" style="margin-top: 10px;">
+      <strong>Ausnahme: PreHeader-Text</strong><br>
+      PreHeader-Text (<span style="font-family: monospace; font-size: 11px;">display:none</span> oder <span style="font-family: monospace; font-size: 11px;">max-height: 0; overflow: hidden</span> unmittelbar nach dem öffnenden Body-Tag) ist eine legitime und weit verbreitete Technik zur Steuerung der Postfach-Vorschauzeile. Spam-Filter kennen dieses Muster und werten es in der Regel nicht negativ. PreHeader-Text sollte belassen werden — er verbessert die Öffnungsrate. Sicherstellen: Der PreHeader enthält echten, relevanten Text und keine Obfuskationszeichen.
+    </div>
+  </div>
+
+  <div class="finding finding-high">
+    <div class="finding-header">
+      <span class="badge badge-red">INHALT</span>
+      <span class="finding-title">Ausrufezeichen drastisch reduzieren</span>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-ist">
+        <div class="compare-label ist-label">Ist</div>
+        <div class="compare-val ist-val">7 Ausrufezeichen</div>
+        <div class="compare-sub ist-sub">verteilt über Betreff und Body</div>
+      </div>
+      <div class="compare-soll">
+        <div class="compare-label soll-label">Soll</div>
+        <div class="compare-val soll-val">max. 1–2 pro E-Mail</div>
+        <div class="compare-sub soll-sub">sachliche, wertorientierte Formulierungen</div>
+      </div>
+    </div>
+    <div class="finding-desc">7 Ausrufezeichen signalisieren aggressive Werbung und erhöhen den Spam-Score kumulativ. Emotionale Satzzeichen durch inhaltlich starke, sachliche Formulierungen ersetzen. Ziel: maximale Aussagekraft ohne Interpunktions-Verstärker.</div>
+  </div>
+
+  <div class="finding finding-high">
+    <div class="finding-header">
+      <span class="badge badge-red">ENGAGEMENT</span>
+      <span class="finding-title">Beschwerderate durch Segmentierung senken</span>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-ist">
+        <div class="compare-label ist-label">Ist</div>
+        <div class="compare-val ist-val">BCL 5 — erhöht</div>
+        <div class="compare-sub ist-sub">aktive Beschwerden von Empfängern registriert</div>
+      </div>
+      <div class="compare-soll">
+        <div class="compare-label soll-label">Soll</div>
+        <div class="compare-val soll-val">BCL 0–2</div>
+        <div class="compare-sub soll-sub">Complaint-Rate unter 0,1% halten</div>
+      </div>
+    </div>
+    <div class="finding-desc">BCL 5 ist ein direktes Signal aktiver Nutzerbeschwerden — schwerwiegender als ein reines SCL-Problem. Gegenmaßnahmen: ausschließlich an Empfänger mit explizitem Interesse an Lernpädagogik-Seminaren senden, Re-Engagement-Kampagne für inaktive Kontakte, einfacher sichtbarer Abmeldelink im E-Mail-Body (nicht nur im Header).</div>
+    <div style="background: #f5f4f0; border-left: 3px solid #b4b2a9; border-radius: 0 8px 8px 0; padding: 8px 12px; margin-top: 10px; font-size: 12px; color: #5f5e5a; line-height: 1.6;">
+      <strong style="color: #444441;">Diagnosetool: Microsoft SNDS und Google Postmaster Tools</strong><br>
+      Aufgrund der erhöhten Beschwerderate (BCL 5) empfiehlt sich die Einrichtung von Microsoft SNDS (<span class="mono">sendersupport.microsoft.com</span>) und Google Postmaster Tools. Beide Tools verbessern die Reputation nicht aktiv — sie zeigen den genauen Verlauf der Beschwerderate nach Umsetzung der Maßnahmen und machen sichtbar, ob die Segmentierung und das List-Cleaning wirken. Besonders relevant hier, da BCL 5 bereits ein konkretes Beschwerdesignal ist, dessen Rückgang messbar sein muss.
+    </div>
+  </div>
+
+  <div class="section-title">Mittel</div>
+
+  <div class="finding finding-medium">
+    <div class="finding-header">
+      <span class="badge badge-amber">INHALT</span>
+      <span class="finding-title">Betreffzeile professionalisieren</span>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-ist">
+        <div class="compare-label ist-label">Ist</div>
+        <div class="compare-val ist-val">**...**-Umrahmung</div>
+        <div class="compare-sub ist-sub">Sternchen + Auslassungspunkte = Clickbait-Muster</div>
+      </div>
+      <div class="compare-soll">
+        <div class="compare-label soll-label">Soll</div>
+        <div class="compare-val soll-val">klarer Sachbetreff</div>
+        <div class="compare-sub soll-sub">keine Sonderzeichen als Dekoration</div>
+      </div>
+    </div>
+    <div class="finding-desc">Sternchen-Umrahmung und Auslassungspunkte am Satzende sind Clickbait-Marker. A/B-Test: Version ohne Sternchen gegen aktuelle Version. Erwartetes Ergebnis: niedrigerer SCL und höhere Open-Rate bei Outlook-Empfängern.</div>
+  </div>
+
+  <div class="finding finding-medium">
+    <div class="finding-header">
+      <span class="badge badge-amber">LISTEN-HYGIENE</span>
+      <span class="finding-title">Engagement-basierte List-Cleaning durchführen</span>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-ist">
+        <div class="compare-label ist-label">Ist</div>
+        <div class="compare-val ist-val">unbekannt</div>
+        <div class="compare-sub ist-sub">OFR:SpamFilterAuthJ trotz Auth-Pass</div>
+      </div>
+      <div class="compare-soll">
+        <div class="compare-label soll-label">Soll</div>
+        <div class="compare-val soll-val">6-Monats-Schwelle</div>
+        <div class="compare-sub soll-sub">monatliche Hygiene-Routine in ActiveCampaign</div>
+      </div>
+    </div>
+    <div class="finding-desc">Microsoft ignoriert korrekte Authentifizierung wenn das Engagement dauerhaft zu niedrig ist (OFR:SpamFilterAuthJ). Kontakte ohne E-Mail-Öffnung in 6 Monaten aus aktiven Listen entfernen. In ActiveCampaign: Segment "nicht geöffnet in 180 Tagen" erstellen, Re-Engagement-Sequenz starten, danach Entfernen.</div>
+  </div>
+
+  <div class="finding finding-medium">
+    <div class="finding-header">
+      <span class="badge badge-amber">INFRASTRUKTUR</span>
+      <span class="finding-title">HELO-Domain-Alignment durch Fußzeilen-Hinweis kompensieren</span>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-neutral">
+        <div class="compare-label neutral-label">Ist (strukturell bedingt)</div>
+        <div class="compare-val neutral-val">acemsd5.com ≠ akademie-lernpaedagogik.de</div>
+        <div class="compare-sub neutral-sub">ActiveCampaign-Standard · kein Konfigurationsfehler</div>
+      </div>
+      <div class="compare-soll">
+        <div class="compare-label soll-label">Maßnahme</div>
+        <div class="compare-val soll-val">Fußzeilen-Transparenz</div>
+        <div class="compare-sub soll-sub">Absender-Kontext für Empfänger sichtbar machen</div>
+      </div>
+    </div>
+    <div class="finding-desc">Der HELO-Mismatch ist bei allen ESP-versendeten E-Mails strukturell normal und wird von Filtern entsprechend bewertet. Empfänger sehen ihn jedoch nicht direkt. Empfehlung Fußzeilen-Text:</div>
+    <div style="background: #f5f4f0; border-radius: 6px; padding: 8px 12px; margin-top: 8px; font-size: 12px; font-family: monospace; color: #5f5e5a;">
+      Versand via ActiveCampaign im Auftrag der Akademie für Lernpädagogik · seminar@akademie-lernpaedagogik.de
+    </div>
+    <div class="callout callout-warn" style="margin-top: 10px;">
+      Hinweis zu PreHeader-Text: Der HELO-Mismatch beeinflusst den PreHeader nicht. PreHeader-Text (unsichtbarer Vorschautext im HTML-Body) ist eine legitime Technik und sollte nicht als HELO-Kompensation verwendet oder entfernt werden.
+    </div>
+  </div>
+
+  <div class="footer">Generiert auf Basis des E-Mail-Headers vom 28.01.2026 · akademie-lernpaedagogik.de · ActiveCampaign / KumoMTA · IP 52.128.40.143 · Report #3</div>
+
+</div>
+</body>
+</html>

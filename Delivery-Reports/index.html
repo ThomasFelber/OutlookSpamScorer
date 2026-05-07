@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Delivery Reports – Outlook Spam-Bewerter</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 40px 20px 80px;
+    }
+
+    header { max-width: 860px; margin: 0 auto 48px; }
+    header a { font-size: 13px; color: #64748b; text-decoration: none; }
+    header a:hover { color: #94a3b8; }
+    header h1 { font-size: 28px; font-weight: 700; color: #f8fafc; margin-top: 16px; }
+    header p  { margin-top: 8px; font-size: 14px; color: #64748b; }
+
+    .domain-block { max-width: 860px; margin: 0 auto 48px; }
+
+    .domain-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px; padding-bottom: 12px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .domain-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: #1e293b;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .domain-name  { font-size: 18px; font-weight: 600; color: #f1f5f9; }
+    .domain-meta  { font-size: 12px; color: #475569; margin-top: 2px; }
+
+    .report-grid { display: grid; gap: 12px; }
+
+    .report-card {
+      display: flex; align-items: flex-start; gap: 16px;
+      background: #1a1f2e; border: 1px solid #1e293b;
+      border-radius: 10px; padding: 16px 20px;
+      text-decoration: none; color: inherit;
+      transition: border-color .15s, background .15s;
+    }
+    .report-card:hover { border-color: #334155; background: #1e2438; }
+
+    .card-left { flex: 1; min-width: 0; }
+
+    .card-title {
+      font-size: 15px; font-weight: 600; color: #f1f5f9; margin-bottom: 4px;
+    }
+    .card-meta {
+      font-size: 12px; color: #475569; margin-bottom: 10px;
+    }
+
+    .pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .pill {
+      font-size: 11px; font-weight: 500;
+      padding: 2px 8px; border-radius: 99px;
+    }
+    .pill-red    { background: #1f0a0a; color: #f87171; border: 1px solid #7f1d1d; }
+    .pill-amber  { background: #1c0e00; color: #fbbf24; border: 1px solid #78350f; }
+    .pill-gray   { background: #0f172a; color: #64748b; border: 1px solid #1e293b; }
+    .pill-green  { background: #052e16; color: #4ade80; border: 1px solid #14532d; }
+
+    .key-issue {
+      font-size: 12px; color: #94a3b8;
+      padding: 6px 10px; background: #0f172a;
+      border-radius: 6px; border-left: 3px solid #334155;
+      line-height: 1.5;
+    }
+    .key-issue strong { color: #cbd5e1; }
+
+    .metrics {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;
+    }
+    .metric {
+      font-size: 11px; padding: 3px 8px;
+      background: #0f172a; border: 1px solid #1e293b;
+      border-radius: 6px; color: #64748b;
+    }
+    .metric span { font-weight: 600; }
+    .metric span.ok  { color: #4ade80; }
+    .metric span.bad { color: #f87171; }
+    .metric span.warn{ color: #fbbf24; }
+
+    .card-arrow { color: #334155; font-size: 18px; flex-shrink: 0; align-self: center; }
+    .report-card:hover .card-arrow { color: #64748b; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="/">← Outlook Spam-Bewerter</a>
+    <h1>Delivery Reports</h1>
+    <p>E-Mail-Deliverability-Analysen auf Basis realer Microsoft-Exchange-Header — gruppiert nach Absender-Domain.</p>
+  </header>
+
+  <!-- ── lerntraining.de ──────────────────────────────────────────────────── -->
+  <div class="domain-block">
+    <div class="domain-header">
+      <div class="domain-icon">📚</div>
+      <div>
+        <div class="domain-name">lerntraining.de</div>
+        <div class="domain-meta">Amazon SES eu-central-1 · 2 Reports</div>
+      </div>
+    </div>
+
+    <div class="report-grid">
+
+      <a href="lerntraining.de/report-2-erweitert.html" class="report-card">
+        <div class="card-left">
+          <div class="card-title">Report #2 — Erweiterte Analyse</div>
+          <div class="card-meta">20. März 2026 · info@lerntraining.de via Amazon SES</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass 2×</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">SCL <span class="bad">5/9</span></div>
+            <div class="metric">BCL <span class="ok">0</span></div>
+            <div class="metric">Zustellung <span class="bad">Junk</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">3 × hoch</span>
+            <span class="pill pill-amber">3 × mittel</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> Shared IP ohne eigene Reputation + fehlendes Custom MAIL FROM (Envelope-Domain: amazonses.com ≠ lerntraining.de) · Engagement-Raten wahrscheinlich zu niedrig (OFR:SpamFilterAuthJ trotz korrekter Auth)
+          </div>
+        </div>
+        <div class="card-arrow">›</div>
+      </a>
+
+      <a href="lerntraining.de/report-1.html" class="report-card">
+        <div class="card-left">
+          <div class="card-title">Report #1 — Erstanalyse</div>
+          <div class="card-meta">20. März 2026 · info@lerntraining.de via Amazon SES</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass 2×</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">SCL <span class="bad">5/9</span></div>
+            <div class="metric">BCL <span class="ok">0</span></div>
+            <div class="metric">Zustellung <span class="bad">Junk</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">2 × hoch</span>
+            <span class="pill pill-amber">2 × mittel</span>
+            <span class="pill pill-gray">3 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> 4 Ausrufezeichen + Emoji im Betreff · Return-Path-Mismatch (Amazon SES, kein Custom Return-Path) · niedrige Engagement-Rate vermutet
+          </div>
+        </div>
+        <div class="card-arrow">›</div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- ── akademie-lernpaedagogik.de ───────────────────────────────────────── -->
+  <div class="domain-block">
+    <div class="domain-header">
+      <div class="domain-icon">🎓</div>
+      <div>
+        <div class="domain-name">akademie-lernpaedagogik.de</div>
+        <div class="domain-meta">ActiveCampaign / KumoMTA · 1 Report</div>
+      </div>
+    </div>
+
+    <div class="report-grid">
+
+      <a href="akademie-lernpaedagogik.de/report-1.html" class="report-card">
+        <div class="card-left">
+          <div class="card-title">Report #1 — Microsoft Junk-Analyse</div>
+          <div class="card-meta">28. Januar 2026 · seminar@akademie-lernpaedagogik.de via ActiveCampaign</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass 2×</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">SCL <span class="bad">5/9</span></div>
+            <div class="metric">BCL <span class="bad">5/9</span></div>
+            <div class="metric">Zustellung <span class="bad">Junk</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">4 × hoch</span>
+            <span class="pill pill-amber">3 × mittel</span>
+          </div>
+          <div class="key-issue">
+            <strong>Kritisch:</strong> 128 Zero-Width-Spaces im Template (Obfuskationssignal) · BCL 5 = aktive Nutzerbeschwerden vorhanden · 7 Ausrufezeichen · Sternchen-Umrahmung im Betreff (<code style="font-size:11px">**...**</code>)
+          </div>
+        </div>
+        <div class="card-arrow">›</div>
+      </a>
+
+    </div>
+  </div>
+
+</body>
+</html>

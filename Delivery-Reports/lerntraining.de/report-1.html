@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E-Mail Deliverability Audit — lerntraining.de</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1a1a1a;
+    background: #f5f4f0;
+    padding: 2rem 1rem;
+  }
+  .page {
+    max-width: 780px;
+    margin: 0 auto;
+    background: #fff;
+    border: 0.5px solid #d0cfc6;
+    border-radius: 12px;
+    padding: 2rem 2.5rem 3rem;
+  }
+  .meta { margin-bottom: 1.5rem; }
+  .meta-label { font-size: 12px; color: #888780; margin-bottom: 3px; }
+  .meta-line { font-size: 14px; color: #1a1a1a; margin-bottom: 2px; }
+  .mono { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 12px; background: #f1efe8; padding: 1px 6px; border-radius: 4px; }
+  .badge { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 99px; display: inline-block; }
+  .badge-red { background: #fcebeb; color: #a32d2d; }
+  .badge-amber { background: #faeeda; color: #854f0b; }
+  .badge-gray { background: #f1efe8; color: #5f5e5a; }
+  .badge-warn { background: #faeeda; color: #854f0b; }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 1.5rem;
+  }
+  .metric-card {
+    background: #f5f4f0;
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .metric-label { font-size: 11px; color: #888780; margin-bottom: 4px; }
+  .metric-value { font-size: 15px; font-weight: 500; margin-bottom: 2px; }
+  .metric-sub { font-size: 11px; color: #888780; }
+  .green { color: #3b6d11; }
+  .red { color: #a32d2d; }
+
+  .mismatch-box {
+    background: #fff;
+    border: 0.5px solid #d0cfc6;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 1.5rem;
+  }
+  .mismatch-label { font-size: 12px; font-weight: 500; color: #5f5e5a; margin-bottom: 8px; }
+  .mismatch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mismatch-item-label { font-size: 11px; color: #888780; margin-bottom: 3px; }
+  .mismatch-item-val { font-family: "SFMono-Regular", Consolas, monospace; font-size: 11px; word-break: break-all; }
+  .mismatch-note { font-size: 12px; color: #888780; margin-top: 8px; }
+
+  .section-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #888780;
+    text-transform: uppercase;
+    margin: 1.5rem 0 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 0.5px solid #e0dfd6;
+  }
+  .finding {
+    background: #fff;
+    border: 0.5px solid #d0cfc6;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .finding-high { border-left: 3px solid #e24b4a; }
+  .finding-medium { border-left: 3px solid #ef9f27; }
+  .finding-low { border-left: 3px solid #b4b2a9; }
+
+  .finding-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .finding-title { font-size: 14px; font-weight: 500; color: #1a1a1a; }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .compare-ist { background: #fcebeb; border-radius: 8px; padding: 8px 10px; }
+  .compare-soll { background: #eaf3de; border-radius: 8px; padding: 8px 10px; }
+  .compare-neutral { background: #f5f4f0; border-radius: 8px; padding: 8px 10px; }
+  .compare-label { font-size: 11px; margin-bottom: 2px; }
+  .compare-val { font-size: 13px; font-weight: 500; }
+  .compare-sub { font-size: 11px; margin-top: 2px; }
+  .ist-label { color: #791f1f; }
+  .ist-val { color: #a32d2d; }
+  .ist-sub { color: #a32d2d; }
+  .soll-label { color: #27500a; }
+  .soll-val { color: #3b6d11; }
+  .soll-sub { color: #3b6d11; }
+  .neutral-label { color: #888780; }
+  .neutral-val { color: #5f5e5a; }
+  .neutral-sub { color: #888780; }
+  .finding-desc { font-size: 13px; color: #5f5e5a; line-height: 1.6; }
+
+  .summary-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+
+  .footer { margin-top: 2rem; padding-top: 1rem; border-top: 0.5px solid #e0dfd6; font-size: 11px; color: #b4b2a9; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div style="margin-bottom: 1.75rem;">
+    <div style="font-size: 11px; color: #888780; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.08em;">E-Mail Deliverability Audit</div>
+    <div style="font-size: 20px; font-weight: 500; color: #1a1a1a; margin-bottom: 0.25rem;">lerntraining.de — Microsoft Junk-Analyse</div>
+    <div style="font-size: 13px; color: #888780;">E-Mail vom 20. März 2026, 06:00 UTC · Empfänger: felber110@outlook.de</div>
+  </div>
+
+  <div class="meta">
+    <div class="meta-label">Analysierte E-Mail</div>
+    <div class="meta-line">Von: <span class="mono">info@lerntraining.de</span> via Amazon SES eu-central-1</div>
+    <div class="meta-line">Betreff: Heute findet deine Begrüßungsstunde statt! &nbsp;<span class="badge badge-warn">1 Emoji im Betreff</span></div>
+  </div>
+
+  <div style="background: #fff; border: 1.5px solid #e24b4a; border-radius: 8px; padding: 14px 16px; margin-bottom: 1.5rem;">
+    <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; color: #791f1f; text-transform: uppercase; margin-bottom: 10px;">Betreff dieser E-Mail — Konkrete Probleme</div>
+    <div style="font-size: 15px; font-weight: 500; color: #1a1a1a; background: #f5f4f0; border-radius: 6px; padding: 10px 14px; margin-bottom: 12px; letter-spacing: 0.01em;">
+      Heute findet deine Begrüßungsstunde statt! 😊
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
+      <div style="background: #fcebeb; border-radius: 6px; padding: 8px 10px;">
+        <div style="font-size: 11px; color: #791f1f; margin-bottom: 3px; font-weight: 500;">Problem 1 — Ausrufezeichen</div>
+        <div style="font-size: 13px; font-weight: 500; color: #a32d2d; margin-bottom: 2px;">„statt!" + 3 weitere im Body</div>
+        <div style="font-size: 11px; color: #a32d2d;">4 total · Limit: max. 1 pro E-Mail</div>
+      </div>
+      <div style="background: #fcebeb; border-radius: 6px; padding: 8px 10px;">
+        <div style="font-size: 11px; color: #791f1f; margin-bottom: 3px; font-weight: 500;">Problem 2 — Emoji</div>
+        <div style="font-size: 13px; font-weight: 500; color: #a32d2d; margin-bottom: 2px;">😊 im Betreff</div>
+        <div style="font-size: 11px; color: #a32d2d;">negativ bei Outlook/Hotmail</div>
+      </div>
+      <div style="background: #faeeda; border-radius: 6px; padding: 8px 10px;">
+        <div style="font-size: 11px; color: #854f0b; margin-bottom: 3px; font-weight: 500;">Problem 3 — Ton</div>
+        <div style="font-size: 13px; font-weight: 500; color: #854f0b; margin-bottom: 2px;">„Heute findet … statt!"</div>
+        <div style="font-size: 11px; color: #854f0b;">Dringlichkeitssprache erhöht SCL</div>
+      </div>
+    </div>
+    <div style="font-size: 12px; color: #5f5e5a; margin-bottom: 6px; font-weight: 500;">Überarbeitete Betreff-Vorschläge:</div>
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 11px; background: #eaf3de; color: #3b6d11; padding: 2px 7px; border-radius: 4px; white-space: nowrap; font-weight: 500;">Variante A</span>
+        <span style="font-size: 13px; color: #1a1a1a;">Deine Begrüßungsstunde beginnt heute</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 11px; background: #eaf3de; color: #3b6d11; padding: 2px 7px; border-radius: 4px; white-space: nowrap; font-weight: 500;">Variante B</span>
+        <span style="font-size: 13px; color: #1a1a1a;">Deine erste Lernstunde ist für heute geplant</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 11px; background: #eaf3de; color: #3b6d11; padding: 2px 7px; border-radius: 4px; white-space: nowrap; font-weight: 500;">Variante C</span>
+        <span style="font-size: 13px; color: #1a1a1a;">Juergen Moeller: Deine Begrüßungsstunde wartet</span>
+      </div>
+    </div>
+    <div style="font-size: 11px; color: #888780; margin-top: 8px;">Absendername im From-Header als Vertrauenssignal nutzen · kein Emoji · max. 1 Ausrufezeichen im gesamten Mailing</div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">SPF</div>
+      <div class="metric-value green">Pass</div>
+      <div class="metric-sub">69.169.224.7 erlaubt</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">DKIM</div>
+      <div class="metric-value green">Pass (2×)</div>
+      <div class="metric-sub">lerntraining.de + amazonses.com</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">DMARC</div>
+      <div class="metric-value green">Pass</div>
+      <div class="metric-sub">action=none</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">SCL (Spam Score)</div>
+      <div class="metric-value red">5 / 9</div>
+      <div class="metric-sub">Schwelle Junk: ab 5</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Zustellung</div>
+      <div class="metric-value red">Junk</div>
+      <div class="metric-sub">dest:J, OFR:SpamFilterAuthJ</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">BCL (Bulk Score)</div>
+      <div class="metric-value green">0 / 9</div>
+      <div class="metric-sub">kein Bulk-Signal</div>
+    </div>
+  </div>
+
+  <div class="mismatch-box">
+    <div class="mismatch-label">Return-Path vs. From — Domain-Mismatch</div>
+    <div class="mismatch-grid">
+      <div>
+        <div class="mismatch-item-label">From (Header)</div>
+        <div class="mismatch-item-val green">info@lerntraining.de</div>
+      </div>
+      <div>
+        <div class="mismatch-item-label">Return-Path (Envelope)</div>
+        <div class="mismatch-item-val red">...@eu-central-1.amazonses.com</div>
+      </div>
+    </div>
+    <div class="mismatch-note">Kein Custom Return-Path konfiguriert — Envelope-Domain weicht von Header-From ab.</div>
+  </div>
+
+  <div class="summary-pills">
+    <span class="badge badge-red">2 × hoch</span>
+    <span class="badge badge-amber">2 × mittel</span>
+    <span class="badge badge-gray">3 × niedrig</span>
+  </div>
+
+  <div class="section-title">Hoch</div>
+
+  <div class="finding finding-high">
+    <div class="finding-header">
+      <span class="badge badge-red">INHALT</span>
+      <span class="finding-title">Anzahl der Ausrufezeichen drastisch reduzieren</span>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-ist">
+        <div class="compare-label ist-label">Ist</div>
+        <div class="compare-val ist-val">4 Ausrufezeichen</div>
+        <div class="compare-sub ist-sub">Betreff endet auf „statt!" + 3 weitere im Body</div>
+      </div>
+      <div class="compare-soll">
+        <div class="compare-label soll-label">Soll</div>
+        <div class="compare-val soll-val">max. 1 pro E-Mail</div>
+        <div class="compare-sub soll-sub">sachlichere Formulierungen</div>
+      </div>
+    </div>
+    <div class="finding-desc">Ausrufezeichen triggern Spam-Filter direkt. Emotionale Verstärker durch neutrale Formulierungen ersetzen. Begrenzen auf maximal 1 pro E-Mail.</div>
+  </div>
+
+  <div class="finding finding-high">
+    <div class="finding-header">
+      <span class="badge badge-red">ENGAGEMENT</span>
+      <span class="finding-title">Engagement-Raten analysieren und verbessern</span>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-ist">
+        <div class="compare-label ist-label">Verdacht (aus SCL=5)</div>
+        <div class="compare-val ist-val">niedrige Interaktion</div>
+        <div class="compare-sub ist-sub">Microsoft gewichtet Nutzerverhalten stark</div>
+      </div>
+      <div class="compare-soll">
+        <div class="compare-label soll-label">Maßnahme</div>
+        <div class="compare-val soll-val">30-Tage-Analyse</div>
+        <div class="compare-sub soll-sub">Open-Rate, Click-Rate, Beschwerden</div>
+      </div>
+    </div>
+    <div class="finding-desc">Microsoft filtert primär auf Basis von Nutzerverhalten. Korrekte Authentifizierung schützt nicht vor schlechter Reputation durch niedrige Interaktionsraten trotz korrekter Authentifizierung.</div>
+  </div>
+
+  <div class="section-title">Mittel</div>
+
+  <div class="finding finding-medium">
+    <div class="finding-header">
+      <span class="badge badge-amber">INFRASTRUKTUR</span>
+      <span class="finding-title">Custom Return-Path bei Amazon SES konfigurieren</span>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-ist">
+        <div class="compare-label ist-label">Ist</div>
+        <div class="compare-val ist-val" style="font-family: monospace; font-size: 11px; word-break: break-all;">...@eu-central-1.amazonses.com</div>
+      </div>
+      <div class="compare-soll">
+        <div class="compare-label soll-label">Soll</div>
+        <div class="compare-val soll-val" style="font-family: monospace; font-size: 12px;">bounces.lerntraining.de</div>
+      </div>
+    </div>
+    <div class="finding-desc">Domain-Alignment verbessern und Empfängervertrauen erhöhen. Custom Return-Path in SES-Konfiguration hinterlegen, CNAME-Record im DNS setzen.</div>
+  </div>
+
+  <div class="finding finding-medium">
+    <div class="finding-header">
+      <span class="badge badge-amber">LISTEN-HYGIENE</span>
+      <span class="finding-title">Inaktive Empfänger segmentieren und Re-Engagement starten</span>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-ist">
+        <div class="compare-label ist-label">Ist</div>
+        <div class="compare-val ist-val">unbekannt</div>
+        <div class="compare-sub ist-sub">keine Segmentierung nach Inaktivität</div>
+      </div>
+      <div class="compare-soll">
+        <div class="compare-label soll-label">Soll</div>
+        <div class="compare-val soll-val">90-Tage-Segment</div>
+        <div class="compare-sub soll-sub">Re-Engagement oder Entfernen</div>
+      </div>
+    </div>
+    <div class="finding-desc">Empfänger ohne Interaktion in 90 Tagen identifizieren. Gezielte Re-Engagement-Kampagne oder dauerhaftes Entfernen schützt Sender-Reputation.</div>
+  </div>
+
+  <div class="section-title">Niedrig</div>
+
+  <div class="finding finding-low">
+    <div class="finding-header">
+      <span class="badge badge-gray">AUTHENTIFIZIERUNG</span>
+      <span class="finding-title">BIMI-Record implementieren</span>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-neutral">
+        <div class="compare-label neutral-label">Ist</div>
+        <div class="compare-val neutral-val">kein BIMI</div>
+        <div class="compare-sub neutral-sub">DMARC policy=none (zu schwach)</div>
+      </div>
+      <div class="compare-soll">
+        <div class="compare-label soll-label">Soll</div>
+        <div class="compare-val soll-val">BIMI + Logo</div>
+        <div class="compare-sub soll-sub">DMARC erst auf enforce setzen</div>
+      </div>
+    </div>
+    <div class="finding-desc">Logo-Anzeige in Microsoft-Postfächern erhöht Markensichtbarkeit und Vertrauen. Voraussetzung: DMARC policy=quarantine oder reject aktiv.</div>
+  </div>
+
+  <div class="finding finding-low">
+    <div class="finding-header">
+      <span class="badge badge-gray">DIAGNOSE</span>
+      <span class="finding-title">Microsoft SNDS zur Diagnose der Beschwerderate einrichten</span>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-neutral">
+        <div class="compare-label neutral-label">Ist</div>
+        <div class="compare-val neutral-val">nicht eingerichtet</div>
+        <div class="compare-sub neutral-sub">Sendende IP: 69.169.224.7</div>
+      </div>
+      <div class="compare-neutral">
+        <div class="compare-label neutral-label">Zweck</div>
+        <div class="compare-val neutral-val">Diagnosetool</div>
+        <div class="compare-sub neutral-sub">verbessert Reputation nicht — macht sie sichtbar</div>
+      </div>
+    </div>
+    <div class="finding-desc">Microsoft SNDS (Smart Network Data Services) zeigt Beschwerderate, Trap-Hits und Reputationsstatus der sendenden IP an. SNDS verbessert die Reputation nicht aktiv — es macht bestehende Probleme sichtbar, damit die richtigen Gegenmaßnahmen (Segmentierung, List-Cleaning) gezielt eingesetzt werden können. Registrierung unter <span class="mono">sendersupport.microsoft.com</span>.</div>
+  </div>
+
+  <div class="finding finding-low">
+    <div class="finding-header">
+      <span class="badge badge-gray">INHALT</span>
+      <span class="finding-title">Emoji-Verwendung im Betreff vermeiden</span>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-ist">
+        <div class="compare-label ist-label">Ist</div>
+        <div class="compare-val ist-val">1 Emoji im Betreff</div>
+        <div class="compare-sub ist-sub">😊 am Ende von „statt! 😊"</div>
+      </div>
+      <div class="compare-soll">
+        <div class="compare-label soll-label">Soll</div>
+        <div class="compare-val soll-val">kein Emoji</div>
+        <div class="compare-sub soll-sub">besonders bei Business-Kommunikation</div>
+      </div>
+    </div>
+    <div class="finding-desc">Emojis in Betreffzeilen werden von mehreren Spam-Filtern negativ gewertet, insbesondere bei transaktionaler und B2C-Kommunikation mit Microsoft-Postfächern.</div>
+  </div>
+
+  <div class="footer">Generiert auf Basis des E-Mail-Headers vom 20.03.2026 · lerntraining.de · Amazon SES eu-central-1 · IP 69.169.224.7</div>
+
+</div>
+</body>
+</html>
