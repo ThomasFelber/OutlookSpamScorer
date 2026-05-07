@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deliverability Action Plan — Terrafinanz Wohnbau | verkaeufer@terrafinanz.de</title>
+<style>
+  :root {
+    --primary: #1a2e4a; --accent: #0d6efd; --accent-light: #e8f0fe;
+    --danger: #c0392b; --danger-light: #fdecea;
+    --warning: #e67e22; --warning-light: #fef5e7;
+    --success: #1e8449; --success-light: #eafaf1;
+    --neutral: #5d6d7e; --neutral-light: #f4f6f8;
+    --border: #d0d7de;
+    --font-body: 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'Cascadia Code', 'Consolas', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-body); font-size: 14px; line-height: 1.7; color: #1c1c1e; background: #f0f2f5; }
+  .page-wrapper { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  .masthead { background: var(--primary); color: #fff; border-radius: 12px 12px 0 0; padding: 32px 36px 28px; }
+  .masthead .label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.65; font-weight: 600; }
+  .masthead h1 { font-size: 22px; font-weight: 700; line-height: 1.3; margin-top: 4px; }
+  .masthead .meta-row { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 14px; }
+  .masthead .meta-item { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 14px; font-size: 12px; line-height: 1.5; }
+  .masthead .meta-item strong { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; opacity: 0.6; margin-bottom: 2px; }
+
+  .card { background: #fff; border: 1px solid var(--border); border-top: none; padding: 28px 36px; }
+  .card:last-child { border-radius: 0 0 12px 12px; }
+  .card + .card { border-top: 1px solid var(--border); }
+
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .section-number { width: 28px; height: 28px; min-width: 28px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .section-header h2 { font-size: 16px; font-weight: 700; color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 3px; flex: 1; }
+
+  .callout { border-radius: 8px; padding: 14px 18px; margin-bottom: 14px; display: flex; gap: 12px; align-items: flex-start; }
+  .callout.danger  { background: var(--danger-light);  border-left: 4px solid var(--danger); }
+  .callout.warning { background: var(--warning-light); border-left: 4px solid var(--warning); }
+  .callout.success { background: var(--success-light); border-left: 4px solid var(--success); }
+  .callout.info    { background: var(--accent-light);  border-left: 4px solid var(--accent); }
+  .callout-icon { font-size: 18px; line-height: 1; margin-top: 1px; }
+  .callout-body { flex: 1; font-size: 13px; }
+  .callout-body strong { display: block; margin-bottom: 2px; }
+
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; margin-right: 4px; }
+  .badge.p1 { background: #fdecea; color: var(--danger); border: 1px solid #f5c6c2; }
+  .badge.p2 { background: var(--warning-light); color: var(--warning); border: 1px solid #fad7a0; }
+  .badge.p3 { background: var(--success-light); color: var(--success); border: 1px solid #a9dfbf; }
+
+  .action-block { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+  .action-block-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--neutral-light); border-bottom: 1px solid var(--border); }
+  .action-block-title { font-weight: 700; font-size: 14px; color: var(--primary); flex: 1; }
+  .action-block-body { padding: 14px 16px; font-size: 13px; line-height: 1.7; }
+  .action-block-body p { margin-bottom: 8px; }
+  .action-block-body p:last-child { margin-bottom: 0; }
+
+  code { background: #f0f2f5; border: 1px solid #d0d7de; border-radius: 4px; padding: 1px 6px; font-family: var(--font-mono); font-size: 11.5px; color: #c0392b; }
+  .code-block { background: #1e1e2e; color: #cdd6f4; font-family: var(--font-mono); font-size: 12px; line-height: 1.7; border-radius: 8px; padding: 14px 18px; overflow-x: auto; margin: 10px 0; white-space: pre; }
+
+  ol.steps { padding-left: 20px; display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+  ol.steps li { font-size: 13px; padding-left: 4px; }
+
+  table.summary-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.summary-table th { background: var(--primary); color: #fff; padding: 8px 12px; text-align: left; font-size: 11px; text-transform: uppercase; }
+  table.summary-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.summary-table tr:nth-child(odd) td { background: #fff; }
+  table.summary-table tr:nth-child(even) td { background: var(--neutral-light); }
+
+  .report-footer { text-align: center; margin-top: 28px; font-size: 11px; color: var(--neutral); line-height: 2; }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <div class="masthead">
+    <div class="label">Technischer Aktionsplan</div>
+    <h1>E-Mail-Deliverability — Terrafinanz Wohnbau</h1>
+    <div class="meta-row">
+      <div class="meta-item"><strong>Absender</strong>verkaeufer@terrafinanz.de</div>
+      <div class="meta-item"><strong>Infrastruktur</strong>Listmonk · postal.sblum.de</div>
+      <div class="meta-item"><strong>Add-in Score</strong>5 / 10 — Suspicious</div>
+      <div class="meta-item"><strong>AI Score</strong>2 / 10 — Ham (82 %)</div>
+      <div class="meta-item"><strong>Erstellt</strong>7. Mai 2026</div>
+    </div>
+  </div>
+
+  <!-- 1. Lagebild -->
+  <div class="card">
+    <div class="section-header">
+      <div class="section-number">1</div>
+      <h2>Lagebild</h2>
+    </div>
+    <div class="callout danger">
+      <div class="callout-icon">🚨</div>
+      <div class="callout-body">
+        <strong>Junk-Zustellung trotz vollständiger Auth-Pass</strong>
+        Microsoft Exchange klassifiziert die E-Mails als Junk (dest:J + OFR:SpamFilter), obwohl SPF, DKIM, DMARC und compauth alle bestehen. Das zeigt: das technische Protokoll-Fundament ist vorhanden, aber Infrastruktur-Alignment, DMARC-Policy und Content-Signale liefern dem Filter Angriffsfläche.
+      </div>
+    </div>
+    <div class="callout info">
+      <div class="callout-icon">ℹ</div>
+      <div class="callout-body">
+        <strong>Versandweg</strong>
+        Der Versand läuft über Listmonk mit postal.sblum.de als SMTP-Relay. Der Return-Path zeigt <code>rp.postal.sblum.de</code>, während die From-Domain <code>terrafinanz.de</code> ist — ein typisches Alignment-Problem bei fremden Relay-Diensten.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Priorität 1 — Hoch -->
+  <div class="card">
+    <div class="section-header">
+      <div class="section-number">2</div>
+      <h2>Priorität Hoch — sofort umsetzen</h2>
+    </div>
+
+    <div class="action-block">
+      <div class="action-block-header">
+        <span class="badge p1">P1 · Authentifizierung</span>
+        <div class="action-block-title">DMARC-Policy auf p=quarantine verschärfen</div>
+      </div>
+      <div class="action-block-body">
+        <p>Der aktuelle DMARC-Eintrag enthält <code>p=none</code> — das ist ein reines Monitoring-Modus ohne Enforcement. Empfänger-Server wie Microsoft sehen das als schwaches Signal.</p>
+        <p><strong>Sofortmaßnahme:</strong> Policy auf <code>p=quarantine</code> erhöhen. Mittelfristig (nach 4–6 Wochen Monitoring) auf <code>p=reject</code> erhöhen.</p>
+        <div class="code-block">v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@terrafinanz.de; ruf=mailto:dmarc-forensics@terrafinanz.de; pct=100; adkim=r; aspf=r</div>
+        <p>Während der Umstellungsphase täglich die RUA-Reports prüfen, um legitime Versandwege nicht zu blockieren.</p>
+      </div>
+    </div>
+
+    <div class="action-block">
+      <div class="action-block-header">
+        <span class="badge p1">P1 · Infrastruktur</span>
+        <div class="action-block-title">Custom Return-Path / Bounce-Domain für terrafinanz.de einrichten</div>
+      </div>
+      <div class="action-block-body">
+        <p>Der Return-Path <code>rp.postal.sblum.de</code> bricht das Domain-Alignment. Das ist für Microsoft ein sichtbares Misstrauenssignal, auch wenn DMARC per DKIM-Alignment besteht.</p>
+        <p><strong>Umsetzung:</strong> In Listmonk / postal.sblum.de eine Bounce-Domain auf <code>bounce.terrafinanz.de</code> oder <code>mail.terrafinanz.de</code> konfigurieren.</p>
+        <ol class="steps">
+          <li>CNAME-Eintrag anlegen: <code>bounce.terrafinanz.de → postal.sblum.de</code></li>
+          <li>In der postal.sblum.de-Konfiguration die eigene Domain als Return-Path hinterlegen</li>
+          <li>SPF-Eintrag von <code>terrafinanz.de</code> um die postal-IPs erweitern: <code>include:postal.sblum.de</code></li>
+          <li>Nach Aktivierung: Testmail senden und <code>Return-Path</code>-Header prüfen</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="action-block">
+      <div class="action-block-header">
+        <span class="badge p1">P1 · Inhalt</span>
+        <div class="action-block-title">Link-Dichte von 12 auf max. 5–7 Links reduzieren</div>
+      </div>
+      <div class="action-block-body">
+        <p>12 Links in einer Marketing-E-Mail ist ein starkes Spam-Signal, insbesondere wenn mehrere Links auf dasselbe Ziel zeigen oder Tracking-URLs sichtbar sind.</p>
+        <p><strong>Maßnahmen:</strong></p>
+        <ol class="steps">
+          <li>Mehrfach-Links zum gleichen Ziel auf einen konsolidieren (z.B. CTA-Button statt 3× gleiche URL)</li>
+          <li>Footer-Links auf das Wesentliche kürzen (Abmelden + Impressum)</li>
+          <li>Tracking-Pixel und unsichtbare Links entfernen oder reduzieren</li>
+          <li>Ziel: max. 5–7 semantisch unterschiedliche Links pro E-Mail</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Priorität 2 — Mittel -->
+  <div class="card">
+    <div class="section-header">
+      <div class="section-number">3</div>
+      <h2>Priorität Mittel — innerhalb 4 Wochen</h2>
+    </div>
+
+    <div class="action-block">
+      <div class="action-block-header">
+        <span class="badge p2">P2 · Infrastruktur</span>
+        <div class="action-block-title">IP-Reputation der Versand-IP 116.203.164.215 überwachen</div>
+      </div>
+      <div class="action-block-body">
+        <p>Die Versand-IP ist eine shared IP des postal.sblum.de-Services. Deren Reputation kann sich durch Mitversender-Verhalten verschlechtern, ohne dass Terrafinanz direkt eingreifen kann.</p>
+        <p><strong>Maßnahmen:</strong></p>
+        <ol class="steps">
+          <li>IP täglich bei <a href="https://mxtoolbox.com/blacklists.aspx" target="_blank">MXToolbox Blacklist Check</a> und <a href="https://www.barracudacentral.org/lookups" target="_blank">Barracuda</a> prüfen</li>
+          <li>Warming-Protokolle bei Listmonk einhalten (Volumen graduell steigern)</li>
+          <li>Bei wiederholt schlechter Reputation: Wechsel auf dedizierte IP beim Provider anfragen</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="action-block">
+      <div class="action-block-header">
+        <span class="badge p2">P2 · Engagement</span>
+        <div class="action-block-title">Personalisierung und Engagement-Segmentierung</div>
+      </div>
+      <div class="action-block-body">
+        <p>Microsoft Exchange berücksichtigt Engagement-Signale (Öffnungsraten, Klicks, Antworten) stark in der Junk-Klassifikation. Niedrige Engagement-Raten verstärken die Junk-Tendenz über Zeit.</p>
+        <ol class="steps">
+          <li>Betreffzeile personalisieren: Empfänger-Name oder Region einbauen</li>
+          <li>Inaktive Empfänger (keine Öffnung in 6+ Monaten) in separate Re-Engagement-Kampagne auslagern</li>
+          <li>Klare Single-CTA statt mehrerer Handlungsoptionen pro Mail</li>
+          <li>Versandzeit optimieren: Dienstag–Donnerstag 9–11 Uhr für B2B-Zielgruppe</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Priorität 3 — Niedrig -->
+  <div class="card">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <h2>Priorität Niedrig — fortlaufend</h2>
+    </div>
+
+    <div class="action-block">
+      <div class="action-block-header">
+        <span class="badge p3">P3 · Inhalt</span>
+        <div class="action-block-title">Zeitdruck-Formulierungen entschärfen</div>
+      </div>
+      <div class="action-block-body">
+        <p>Formulierungen wie „Schnell sein lohnt sich" und „befristet" triggern Spam-Filter, die auf Dringlichkeits-Sprache trainiert sind.</p>
+        <p><strong>Empfehlung:</strong> Durch sachlichere Zeitangaben ersetzen. Statt „befristet" → „gültig bis 31. Mai 2026". Statt „Schnell sein lohnt sich" → konkret: „Konditionen stehen noch 3 Wochen zur Verfügung."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Zusammenfassung -->
+  <div class="card">
+    <div class="section-header">
+      <div class="section-number">5</div>
+      <h2>Zusammenfassung — Priorisierte Maßnahmenliste</h2>
+    </div>
+    <table class="summary-table">
+      <thead>
+        <tr><th>#</th><th>Maßnahme</th><th>Kategorie</th><th>Priorität</th><th>Aufwand</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>DMARC p=none → p=quarantine</td><td>Authentifizierung</td><td><span class="badge p1">Hoch</span></td><td>DNS-Eintrag ändern — 30 Min</td></tr>
+        <tr><td>2</td><td>Custom Bounce-Domain <code>bounce.terrafinanz.de</code></td><td>Infrastruktur</td><td><span class="badge p1">Hoch</span></td><td>CNAME + Provider-Konfiguration — 2–4 h</td></tr>
+        <tr><td>3</td><td>Link-Dichte auf max. 5–7 reduzieren</td><td>Inhalt</td><td><span class="badge p1">Hoch</span></td><td>Template-Überarbeitung — 1–2 h</td></tr>
+        <tr><td>4</td><td>IP-Reputation regelmäßig prüfen</td><td>Infrastruktur</td><td><span class="badge p2">Mittel</span></td><td>Wöchentlicher Check — 10 Min/Woche</td></tr>
+        <tr><td>5</td><td>Engagement-Segmentierung + Personalisierung</td><td>Engagement</td><td><span class="badge p2">Mittel</span></td><td>Listmonk-Konfiguration — 2–3 h</td></tr>
+        <tr><td>6</td><td>Zeitdruck-Formulierungen ersetzen</td><td>Inhalt</td><td><span class="badge p3">Niedrig</span></td><td>Redaktionell — laufend</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="report-footer">
+  Spam Scorer v2.0.21 · Technischer Aktionsplan · terrafinanz.de · 7. Mai 2026
+</div>
+
+</body>
+</html>

@@ -886,7 +886,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.0.21';
+const VERSION            = '2.0.22';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 const AUTHORIZED_ACCOUNT = 'felber@live.de';
 
@@ -1121,63 +1121,93 @@ function buildAuthBadges(headers) {
   const none = { html: '', allPass: false };
   if (!headers) return none;
 
-  // ── SPF / DKIM / DMARC results ─────────────────────────────────────────────
   const authLine = headers.match(/^Authentication-Results:(.+(?:\r?\n[ \t].+)*)/im)
                 || headers.match(/^ARC-Authentication-Results:(.+(?:\r?\n[ \t].+)*)/im);
-
   if (!authLine) return none;
 
-  const str    = authLine[1];
+  const str = authLine[1];
+
+  // ── Header helpers (needed early for DKIM alignment) ──────────────────────
+  const hdr = name => {
+    const re = new RegExp(`^${name}:\\s*(.+(?:\\r?\\n[ \\t].+)*)`, 'im');
+    const m  = headers.match(re);
+    return m ? m[1].replace(/\r?\n[ \t]+/g, ' ').trim() : '';
+  };
+  const dom    = s => { const m = s.match(/@([\w.-]+)/); return m ? m[1].toLowerCase() : null; };
+  const orgDom = d => { const p = d.split('.'); return p.length >= 2 ? p.slice(-2).join('.') : d; };
+
+  const fromDomain = dom(hdr('From'));
+
+  // ── SPF / DKIM / DMARC results ────────────────────────────────────────────
   const checks = [
     { label: 'SPF',   re: /spf=(pass|fail|softfail|neutral|none)/i },
     { label: 'DKIM',  re: /dkim=(pass|fail|none)/i },
     { label: 'DMARC', re: /dmarc=(pass|fail|none|bestguesspass)/i },
   ];
-
   const results = checks.map(({ label, re }) => {
-    const m   = str.match(re);
-    const val = m ? m[1].toLowerCase() : null;
-    return { label, val };
+    const m = str.match(re);
+    return { label, val: m ? m[1].toLowerCase() : null };
   });
 
-  // If every result that exists is 'pass' → hide the whole section
-  const allPass = results.every(r => r.val === 'pass');
+  // ── DKIM alignment: signing domain (from auth-results) vs From domain ─────
+  // Relaxed alignment: same organisational domain (last 2 labels).
+  // If ANY dkim=pass segment aligns → aligned. Flag only when all signing
+  // domains are foreign to the From domain.
+  const dkimPassed = results.find(r => r.label === 'DKIM')?.val === 'pass';
+  let dkimAligned       = true;  // default: no issue if undetermined
+  let dkimMismatchDomain = null; // first misaligned signing domain for the badge
+
+  if (dkimPassed && fromDomain) {
+    const signingDomains = [];
+    const segRe = /dkim=pass[^;]*/gi;
+    let seg;
+    while ((seg = segRe.exec(str)) !== null) {
+      const dm = seg[0].match(/header\.d=([\w.-]+)/i)
+              || seg[0].match(/header\.i=(?:[^@;\s]*@)?([\w.-]+)/i);
+      if (dm) signingDomains.push(dm[1].toLowerCase());
+    }
+    if (signingDomains.length > 0) {
+      dkimAligned = signingDomains.some(d => orgDom(d) === orgDom(fromDomain));
+      if (!dkimAligned) dkimMismatchDomain = signingDomains[0];
+    }
+  }
+
+  // Hide section only when all three checks pass AND DKIM is aligned
+  const allPass = results.every(r => r.val === 'pass') && dkimAligned;
   if (allPass) return { html: '', allPass: true };
 
+  // ── Build badge row ────────────────────────────────────────────────────────
   const badgesHtml = results.map(({ label, val }) => {
     if (!val) return `<span class="auth-badge auth-none">${label} —</span>`;
     const cls = val === 'pass'     ? 'auth-pass'
               : val === 'softfail' ? 'auth-softfail'
               : val === 'fail'     ? 'auth-fail'
               :                     'auth-warn';
-    return `<span class="auth-badge ${cls}">${label} ${val.toUpperCase()}</span>`;
+    const badge = `<span class="auth-badge ${cls}">${label} ${val.toUpperCase()}</span>`;
+    // Append alignment warning immediately after the DKIM badge
+    if (label === 'DKIM' && !dkimAligned && dkimMismatchDomain) {
+      return badge + `<span class="auth-badge auth-softfail">DKIM-Align ${escapeHtml(dkimMismatchDomain)} ⚠</span>`;
+    }
+    return badge;
   }).join('');
 
-  // ── Domain-path alignment ───────────────────────────────────────────────────
-  const hdr = name => {
-    const re = new RegExp(`^${name}:\\s*(.+(?:\\r?\\n[ \\t].+)*)`, 'im');
-    const m  = headers.match(re);
-    return m ? m[1].replace(/\r?\n[ \t]+/g, ' ').trim() : '';
-  };
-  const dom = str => { const m = str.match(/@([\w.-]+)/); return m ? m[1].toLowerCase() : null; };
-
-  const fromDomain       = dom(hdr('From'));
+  // ── Domain-path alignment table ───────────────────────────────────────────
   const returnPathDomain = dom(hdr('Return-Path'));
   const replyToDomain    = dom(hdr('Reply-To'));
-  const dkimDomain       = (hdr('DKIM-Signature').match(/\bd=([\w.-]+)/i) || [])[1]?.toLowerCase() ?? null;
+  const dkimSigDomain    = (hdr('DKIM-Signature').match(/\bd=([\w.-]+)/i) || [])[1]?.toLowerCase() ?? null;
 
   const rows = [
-    { label: 'Von (From)',   domain: fromDomain,       ref: true },
-    { label: 'Return-Path',  domain: returnPathDomain, ref: false },
-    { label: 'DKIM d=',      domain: dkimDomain,       ref: false },
-    { label: 'Reply-To',     domain: replyToDomain,    ref: false },
+    { label: 'Von (From)',  domain: fromDomain,       ref: true  },
+    { label: 'Return-Path', domain: returnPathDomain, ref: false },
+    { label: 'DKIM d=',     domain: dkimSigDomain,    ref: false },
+    { label: 'Reply-To',    domain: replyToDomain,    ref: false },
   ].filter(r => r.domain);
 
   let alignHtml = '';
   if (rows.length > 1) {
     const rowsHtml = rows.map(r => {
       if (r.ref) return `<tr><td class="ap-label">Von (From)</td><td class="ap-domain">${escapeHtml(r.domain)}</td><td class="ap-icon ap-ref">—</td></tr>`;
-      const ok  = r.domain === fromDomain;
+      const ok = r.domain === fromDomain;
       return `<tr class="${ok ? 'ap-ok' : 'ap-warn'}">
         <td class="ap-label">${r.label}</td>
         <td class="ap-domain">${escapeHtml(r.domain)}</td>
@@ -2254,7 +2284,35 @@ function rAuthSection(headers) {
                 || headers.match(/^ARC-Authentication-Results:(.+(?:\r?\n[ \t].+)*)/im);
   if (!authLine) return '';
 
-  const str    = authLine[1];
+  const str = authLine[1];
+
+  // DKIM alignment
+  const hdr = name => {
+    const re = new RegExp(`^${name}:\\s*(.+(?:\\r?\\n[ \\t].+)*)`, 'im');
+    const m  = headers.match(re);
+    return m ? m[1].replace(/\r?\n[ \t]+/g, ' ').trim() : '';
+  };
+  const dom    = s => { const m = s.match(/@([\w.-]+)/); return m ? m[1].toLowerCase() : null; };
+  const orgDom = d => { const p = d.split('.'); return p.length >= 2 ? p.slice(-2).join('.') : d; };
+  const fromDomain = dom(hdr('From'));
+
+  let dkimAligned        = true;
+  let dkimMismatchDomain = null;
+  if (/dkim=pass/i.test(str) && fromDomain) {
+    const signingDomains = [];
+    const segRe = /dkim=pass[^;]*/gi;
+    let seg;
+    while ((seg = segRe.exec(str)) !== null) {
+      const dm = seg[0].match(/header\.d=([\w.-]+)/i)
+              || seg[0].match(/header\.i=(?:[^@;\s]*@)?([\w.-]+)/i);
+      if (dm) signingDomains.push(dm[1].toLowerCase());
+    }
+    if (signingDomains.length > 0) {
+      dkimAligned = signingDomains.some(d => orgDom(d) === orgDom(fromDomain));
+      if (!dkimAligned) dkimMismatchDomain = signingDomains[0];
+    }
+  }
+
   const checks = [
     { label: 'SPF',      re: /spf=(pass|fail|softfail|neutral|none)/i },
     { label: 'DKIM',     re: /dkim=(pass|fail|none)/i },
@@ -2265,12 +2323,16 @@ function rAuthSection(headers) {
   const badgesHtml = checks.map(({ label, re }) => {
     const m   = str.match(re);
     const val = m ? m[1].toLowerCase() : null;
-    const cls = !val          ? 'auth-none'
+    const cls = !val               ? 'auth-none'
               : val === 'pass'     ? 'auth-pass'
               : val === 'softfail' ? 'auth-softfail'
               : val === 'fail'     ? 'auth-fail'
               :                     'auth-warn';
-    return `<span class="rpt-auth-badge ${cls}">${label} ${val ? val.toUpperCase() : '—'}</span>`;
+    const badge = `<span class="rpt-auth-badge ${cls}">${label} ${val ? val.toUpperCase() : '—'}</span>`;
+    if (label === 'DKIM' && !dkimAligned && dkimMismatchDomain) {
+      return badge + `<span class="rpt-auth-badge auth-warn">DKIM-Align ${escR(dkimMismatchDomain)} ⚠</span>`;
+    }
+    return badge;
   }).join('');
 
   return `<section class="rpt-section">

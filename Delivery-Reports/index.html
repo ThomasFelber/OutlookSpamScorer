@@ -164,6 +164,91 @@
     <p>E-Mail-Deliverability-Analysen auf Basis realer Microsoft-Exchange-Header — gruppiert nach Absender-Domain.</p>
   </header>
 
+  <!-- ── terrafinanz.de ────────────────────────────────────────────────── -->
+  <div class="domain-block">
+    <div class="domain-header">
+      <div class="domain-icon">🏠</div>
+      <div>
+        <div class="domain-name">terrafinanz.de</div>
+        <div class="domain-meta">Listmonk · postal.sblum.de · 1 Report + Aktionsplan + Anschreiben</div>
+      </div>
+    </div>
+
+    <div class="report-grid">
+
+      <div class="report-card" onclick="openModal('terrafinanz.de/report-0020.html','Report #0020 — Spam Scorer Analysis · terrafinanz.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0020 — Spam Scorer Analysis</div>
+          <div class="card-meta">22. April 2026 · verkaeufer@terrafinanz.de via Listmonk / postal.sblum.de · Spam Scorer v2.0.18</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="warn">5/10</span></div>
+            <div class="metric">AI <span class="ok">2/10</span></div>
+            <div class="metric">Zustellung <span class="bad">Junk</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">3 × hoch</span>
+            <span class="pill pill-amber">3 × mittel</span>
+            <span class="pill pill-gray">1 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> Return-Path-Domain abweichend (rp.postal.sblum.de ≠ terrafinanz.de) · DMARC p=none · 12 Links · Junk-Zustellung trotz vollständiger Auth-Pass (OFR:SpamFilter)
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="terrafinanz.de/report-0020.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="terrafinanz.de/report-0020.html" download="terrafinanz.de-KfW-Zinsen-0020.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('terrafinanz.de/action-plan.html','Technischer Aktionsplan · terrafinanz.de')">
+        <div class="card-left">
+          <div class="card-title">Technischer Aktionsplan — DMARC, Return-Path, Link-Dichte</div>
+          <div class="card-meta">7. Mai 2026 · terrafinanz.de · 6 priorisierte Maßnahmen</div>
+          <div class="pills">
+            <span class="pill pill-red">3 × hoch</span>
+            <span class="pill pill-amber">2 × mittel</span>
+            <span class="pill pill-gray">1 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Kritischster Punkt:</strong> DMARC p=none → p=quarantine + Custom Bounce-Domain bounce.terrafinanz.de + Link-Dichte auf max. 5–7 reduzieren
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="terrafinanz.de/action-plan.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="terrafinanz.de/action-plan.html" download="terrafinanz.de-TechnischerAktionsplan-DMARC.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('terrafinanz.de/anschreiben.html','Anschreiben · terrafinanz.de')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben — Deliverability-Angebot</div>
+          <div class="card-meta">7. Mai 2026 · Thomas Felber an Terrafinanz Wohnbau</div>
+          <div class="pills">
+            <span class="pill" style="color:#60a5fa;border-color:#1e3a5f;background:#0a1628;">Erfolgsbasiert · € 750</span>
+            <span class="pill pill-gray">Kollegiale Basis</span>
+          </div>
+          <div class="key-issue">
+            Angebot zur Behebung der Junk-Zustellung trotz vollständiger Auth-Pass — zwei Modelle, kein Risiko vorab.
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="terrafinanz.de/anschreiben.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="terrafinanz.de/anschreiben.html" download="terrafinanz.de-Anschreiben-Deliverability.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ── fin-law.de ──────────────────────────────────────────────────────── -->
   <div class="domain-block">
     <div class="domain-header">
