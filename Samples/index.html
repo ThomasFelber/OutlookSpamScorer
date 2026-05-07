@@ -67,16 +67,16 @@
     .tag.yellow { color: #facc15; border-color: #713f12; background: #1c0a00; }
     .tag.blue   { color: #60a5fa; border-color: #1e3a5f; background: #0a1628; }
 
-    /* New-tab button on each card */
-    .btn-card-newtab {
-      flex-shrink: 0; align-self: center;
+    /* Card action buttons */
+    .card-btns { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; align-self: center; }
+    .btn-card-newtab, .btn-card-download {
       font-size: 12px; font-weight: 500; color: #475569;
       text-decoration: none; padding: 5px 10px;
       border: 1px solid #1e293b; border-radius: 6px; background: #0f172a;
       transition: color .15s, border-color .15s;
-      white-space: nowrap;
+      white-space: nowrap; text-align: center;
     }
-    .btn-card-newtab:hover { color: #94a3b8; border-color: #334155; }
+    .btn-card-newtab:hover, .btn-card-download:hover { color: #94a3b8; border-color: #334155; }
 
     /* ── Modal ──────────────────────────────────────────────────────────── */
     .modal {
@@ -168,8 +168,12 @@
             <span class="tag">AVIF/WebP</span>
           </div>
         </div>
-        <a href="PPArena/PPArena-Variante-B-Slider2.html" target="_blank"
-           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+        <div class="card-btns">
+          <a href="PPArena/PPArena-Variante-B-Slider2.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="PPArena/PPArena-Variante-B-Slider2.html" download="PPArena-OsternMalAnders-VarianteB-Slider.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
       </div>
 
       <div class="sample-card" onclick="openModal('PPArena/PPArena-Variante-B.html','Variante B')">
@@ -183,8 +187,12 @@
             <span class="tag">VML Button</span>
           </div>
         </div>
-        <a href="PPArena/PPArena-Variante-B.html" target="_blank"
-           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+        <div class="card-btns">
+          <a href="PPArena/PPArena-Variante-B.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="PPArena/PPArena-Variante-B.html" download="PPArena-OsternMalAnders-VarianteB.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
       </div>
 
       <div class="sample-card" onclick="openModal('PPArena/PPArena-Variante-A.html','Variante A')">
@@ -197,8 +205,12 @@
             <span class="tag">A/B-Test</span>
           </div>
         </div>
-        <a href="PPArena/PPArena-Variante-A.html" target="_blank"
-           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+        <div class="card-btns">
+          <a href="PPArena/PPArena-Variante-A.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="PPArena/PPArena-Variante-A.html" download="PPArena-KeinOsterei-VarianteA.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
       </div>
 
       <div class="sample-card" onclick="openModal('PPArena/PPArena-Variante-C.html','Variante C')">
@@ -211,8 +223,12 @@
             <span class="tag">A/B-Test</span>
           </div>
         </div>
-        <a href="PPArena/PPArena-Variante-C.html" target="_blank"
-           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+        <div class="card-btns">
+          <a href="PPArena/PPArena-Variante-C.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="PPArena/PPArena-Variante-C.html" download="PPArena-NochPlaetzeFrei-VarianteC.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
       </div>
 
       <div class="sample-card" onclick="openModal('PPArena/PPArena-Variante-B-Slider.html','Variante B – Vollbild-Slider')">
@@ -226,8 +242,12 @@
             <span class="tag">Technik-Demo</span>
           </div>
         </div>
-        <a href="PPArena/PPArena-Variante-B-Slider.html" target="_blank"
-           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+        <div class="card-btns">
+          <a href="PPArena/PPArena-Variante-B-Slider.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="PPArena/PPArena-Variante-B-Slider.html" download="PPArena-OsternMalAnders-VarianteBVollbildSlider.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
       </div>
 
       <div class="sample-card template" onclick="openModal('PPArena/_template.html','_template.html')">
@@ -239,8 +259,12 @@
             <span class="tag">Template</span>
           </div>
         </div>
-        <a href="PPArena/_template.html" target="_blank"
-           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+        <div class="card-btns">
+          <a href="PPArena/_template.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="PPArena/_template.html" download="PPArena-Template.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
       </div>
 
     </div>
@@ -270,8 +294,12 @@
             <span class="tag">Embedded</span>
           </div>
         </div>
-        <a href="AlexanderKrist/Muttertag-2026.html" target="_blank"
-           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+        <div class="card-btns">
+          <a href="AlexanderKrist/Muttertag-2026.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="AlexanderKrist/Muttertag-2026.html" download="AlexanderKrist-EinGeschenkDasBleibt-Muttertag2026.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
       </div>
 
     </div>

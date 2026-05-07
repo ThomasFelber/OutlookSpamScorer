@@ -88,16 +88,16 @@
     .metric span.bad { color: #f87171; }
     .metric span.warn{ color: #fbbf24; }
 
-    /* New-tab button on each card */
-    .btn-card-newtab {
-      flex-shrink: 0; align-self: center;
+    /* Card action buttons */
+    .card-btns { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; align-self: center; }
+    .btn-card-newtab, .btn-card-download {
       font-size: 12px; font-weight: 500; color: #475569;
       text-decoration: none; padding: 5px 10px;
       border: 1px solid #1e293b; border-radius: 6px; background: #0f172a;
       transition: color .15s, border-color .15s;
-      white-space: nowrap;
+      white-space: nowrap; text-align: center;
     }
-    .btn-card-newtab:hover { color: #94a3b8; border-color: #334155; }
+    .btn-card-newtab:hover, .btn-card-download:hover { color: #94a3b8; border-color: #334155; }
 
     /* ── Modal ──────────────────────────────────────────────────────────── */
     .modal {
@@ -196,8 +196,12 @@
             <strong>Hauptproblem:</strong> 6 Ausrufezeichen + 8 Links + Reply-To-Domain-Mismatch (paintball-plzen.cz ≠ mailing.pparena.de) · Junk-Zustellung trotz SPF/DKIM/DMARC-Pass (OFR:SpamFilter)
           </div>
         </div>
-        <a href="pparena.de/report-0010.html" target="_blank"
-           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+        <div class="card-btns">
+          <a href="pparena.de/report-0010.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="pparena.de/report-0010.html" download="pparena.de-EsIstBuntKeinOsterei-0010.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
       </div>
 
     </div>
@@ -235,8 +239,12 @@
             <strong>Hauptproblem:</strong> Shared IP ohne eigene Reputation + fehlendes Custom MAIL FROM (Envelope-Domain: amazonses.com ≠ lerntraining.de) · Engagement-Raten wahrscheinlich zu niedrig (OFR:SpamFilterAuthJ trotz korrekter Auth)
           </div>
         </div>
-        <a href="lerntraining.de/report-2-erweitert.html" target="_blank"
-           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+        <div class="card-btns">
+          <a href="lerntraining.de/report-2-erweitert.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="lerntraining.de/report-2-erweitert.html" download="lerntraining.de-ErweiterteAnalyse-002.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
       </div>
 
       <div class="report-card" onclick="openModal('lerntraining.de/report-1.html','Report #1 — Erstanalyse · lerntraining.de')">
@@ -260,8 +268,12 @@
             <strong>Hauptproblem:</strong> 4 Ausrufezeichen + Emoji im Betreff · Return-Path-Mismatch (Amazon SES, kein Custom Return-Path) · niedrige Engagement-Rate vermutet
           </div>
         </div>
-        <a href="lerntraining.de/report-1.html" target="_blank"
-           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+        <div class="card-btns">
+          <a href="lerntraining.de/report-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="lerntraining.de/report-1.html" download="lerntraining.de-Erstanalyse-001.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
       </div>
 
     </div>
@@ -299,8 +311,12 @@
             <strong>Kritisch:</strong> 128 Zero-Width-Spaces im Template (Obfuskationssignal) · BCL 5 = aktive Nutzerbeschwerden vorhanden · 7 Ausrufezeichen · Sternchen-Umrahmung im Betreff (<code style="font-size:11px">**...**</code>)
           </div>
         </div>
-        <a href="akademie-lernpaedagogik.de/report-1.html" target="_blank"
-           class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+        <div class="card-btns">
+          <a href="akademie-lernpaedagogik.de/report-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="akademie-lernpaedagogik.de/report-1.html" download="akademie-lernpaedagogik.de-GuteNachrichtenLernen-001.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
       </div>
 
     </div>
