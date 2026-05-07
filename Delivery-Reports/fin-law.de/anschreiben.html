@@ -187,36 +187,40 @@
       <p>
         ich wende mich an Sie mit einer Beobachtung, die Ihren Newsletter betrifft — nicht
         eine einzelne Ausgabe, sondern strukturell jeden Versand. Als Abonnent und als jemand,
-        der sich beruflich mit E-Mail-Zustellbarkeit befasst, ist mir aufgefallen, dass Ihr
-        Newsletter bei Outlook- und Hotmail-Empfängern systematisch im Junk-Ordner landet —
-        obwohl er inhaltlich einwandfrei ist und technisch korrekt versendet wird.
+        der sich beruflich mit E-Mail-Zustellbarkeit befasst, habe ich Ihren Newsletter analysiert.
+        Das Ergebnis: Er landet bei Outlook- und Hotmail-Empfängern systematisch im Junk-Ordner.
+        Und der Grund dafür ist, offen gesagt, nicht einer — es sind mehrere, die zusammenwirken.
       </p>
 
       <p>
-        Das klingt nach einem kleinen technischen Problem. Es ist aber keines: Wer Ihren Newsletter
-        nicht im Posteingang sieht, liest ihn nicht. Bei einer Kanzlei, die ihre Sichtbarkeit
-        gegenüber Mandanten aus dem Finanz- und Aufsichtsrechtsbereich über redaktionellen Inhalt
-        aufbaut, ist das ein stiller Verlust — bei jedem einzelnen Versand, seit vermutlich
-        längerer Zeit, ohne dass es von außen auffällt.
+        Wer Ihren Newsletter nicht im Posteingang sieht, liest ihn nicht. Bei einer Kanzlei, die
+        ihre Sichtbarkeit gegenüber Mandanten aus dem Finanz- und Aufsichtsrechtsbereich über
+        redaktionellen Inhalt aufbaut, ist das ein stiller Verlust — bei jedem einzelnen Versand,
+        seit vermutlich längerer Zeit, ohne dass es von außen auffällt.
       </p>
 
       <div class="highlight-box">
-        <strong>Was konkret passiert:</strong> Es handelt sich um strukturelle Konfigurationslücken
-        in Ihrer Versandinfrastruktur — drei Einstellungen, die Microsoft als Vertrauenssignal
-        erwartet und bei Ihnen fehlen oder nicht korrekt gesetzt sind. Vereinfacht: Der Brief kommt
-        ohne vollständigen Absender-Briefkopf an. Dazu enthält das Newsletter-Template unsichtbare
-        Zeichen, die beim Aufsetzen eingeschlichen sind und von automatisierten Filtern als
-        Verschleierungsversuch gewertet werden — zu Unrecht, aber das System kennt keine Absichten.
+        <strong>Was die Analyse zeigt:</strong> Das Problem hat zwei Schichten.
         <br><br>
-        Diese Ursachen betreffen nicht eine Ausgabe, sondern jede, die Sie bisher versendet haben
-        und jede, die Sie künftig versenden, solange sie nicht behoben sind.
+        Die erste ist die Versandkonfiguration: Microsoft erwartet bestimmte technische
+        Vertrauenssignale — unter anderem, dass Absender-Domain und tatsächliche Versandinfrastruktur
+        übereinstimmen und eine Sicherheitsrichtlinie hinterlegt ist. Beides fehlt oder ist
+        nicht korrekt gesetzt. Vereinfacht: Der Brief kommt ohne vollständigen Absender-Briefkopf an.
+        <br><br>
+        Die zweite Schicht ist das Template selbst. Das HTML des Newsletters enthält technische
+        Altlasten, die den Spam-Score aktiv verschlechtern: 285 unsichtbare Sonderzeichen, die
+        Spam-Filter als Verschleierungsversuch werten, sowie versteckten Text. Hinzu kommen
+        strukturelle Probleme im Code, die nicht direkt zum Junk-Problem beitragen, aber zeigen,
+        dass das Template seit längerer Zeit nicht grundlegend überarbeitet wurde.
+        <br><br>
+        Beide Ursachen betreffen nicht eine Ausgabe, sondern jeden Versand — vergangene wie künftige.
       </div>
 
       <p>
-        Das Gute: Alles davon ist behebbar. Es sind keine umfangreichen Umbauten nötig, sondern
-        gezielte Konfigurationsänderungen auf DNS-Ebene, eine Abstimmung mit Ihrem
-        Newsletter-Anbieter und die Bereinigung des Templates. Ich habe die Analyse bereits
-        gemacht und weiß, was zu tun ist.
+        Das Gute: Alles davon ist behebbar. Es braucht eine Kombination aus gezielten
+        Konfigurationsänderungen auf DNS-Ebene, Abstimmung mit Ihrem Newsletter-Anbieter und
+        einer sauberen Neuaufstellung des Templates. Ich habe die Analyse bereits gemacht,
+        eine bereinigte Referenzversion erstellt und weiß, was konkret zu tun ist.
       </p>
 
       <div class="options-section">
