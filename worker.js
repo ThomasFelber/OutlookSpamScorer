@@ -6,15 +6,21 @@
  * Worker secret (ANTHROPIC_API_KEY) and is never exposed to the client.
  *
  * Modes:
- *   (default)      — spam analysis via claude-haiku-4-5
- *   mode="advice"  — sender reputation advice via claude-sonnet-4-5
+ *   (default)           — spam analysis via claude-haiku-4-5
+ *   mode="advice"       — sender reputation advice via claude-sonnet-4-5
+ *   mode="action-plan"  — technical deliverability action plan HTML via claude-sonnet-4-6
+ *   mode="anschreiben"  — personalised German outreach letter HTML via claude-haiku-4-5
  */
 
-const ALLOWED_ORIGIN   = 'https://outlook-spam-scorer.pages.dev';
-const MODEL_ANALYSIS   = 'claude-haiku-4-5';
-const MODEL_ADVICE     = 'claude-sonnet-4-5';
-const MAX_TOKENS       = 1024;
-const MAX_TOKENS_ADVICE = 2048;
+const ALLOWED_ORIGIN        = 'https://outlook-spam-scorer.pages.dev';
+const MODEL_ANALYSIS        = 'claude-haiku-4-5';
+const MODEL_ADVICE          = 'claude-sonnet-4-5';
+const MODEL_ACTION_PLAN     = 'claude-sonnet-4-6';
+const MODEL_ANSCHREIBEN     = 'claude-haiku-4-5';
+const MAX_TOKENS            = 1024;
+const MAX_TOKENS_ADVICE     = 2048;
+const MAX_TOKENS_ACTION_PLAN = 4500;
+const MAX_TOKENS_ANSCHREIBEN = 2000;
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin':  ALLOWED_ORIGIN,
@@ -41,9 +47,9 @@ export default {
     }
 
     // Route by mode
-    if (payload.mode === 'advice') {
-      return handleAdvice(payload, env);
-    }
+    if (payload.mode === 'advice')       return handleAdvice(payload, env);
+    if (payload.mode === 'action-plan')  return handleActionPlan(payload, env);
+    if (payload.mode === 'anschreiben')  return handleAnschreiben(payload, env);
     return handleAnalysis(payload, env);
   },
 };
@@ -205,7 +211,188 @@ JSON shape:
   return json(advice);
 }
 
+// ── Technical action plan (HTML artifact) ─────────────────────────────────────
+
+async function handleActionPlan(payload, env) {
+  const {
+    headers      = '',
+    bodyText     = '',
+    subject      = '',
+    senderEmail  = '',
+    addinScore   = null,
+    addinSignals = [],
+    claudeResult = null,
+  } = payload;
+
+  const signalList = (addinSignals || []).map(s => `  - ${s}`).join('\n') || '  (none)';
+  const aiSummary  = claudeResult?.summary  || '(not available)';
+  const aiScore    = claudeResult?.score    ?? '?';
+  const aiVerdict  = claudeResult?.verdict  || '?';
+  const aiSignals  = (claudeResult?.signals || []).map(s => `  - ${s}`).join('\n') || '  (none)';
+
+  const userPrompt = `You are a senior email deliverability and infrastructure specialist.
+Produce a comprehensive, senior-level technical deliverability action plan for the sender below.
+Output ONLY a complete, self-contained HTML document (<!DOCTYPE html> … </html>) — no JSON, no markdown fences.
+The HTML must be readable standalone in a browser. Use clean CSS embedded in <style>. German language throughout.
+
+=== EMAIL BEING ANALYSED ===
+Subject     : ${subject || '(unknown)'}
+Sender      : ${senderEmail || '(unknown)'}
+Add-in Score: ${addinScore ?? '?'}/10
+AI Score    : ${aiScore}/10 — Verdict: ${aiVerdict}
+
+=== ADD-IN SIGNALS ===
+${signalList}
+
+=== AI SIGNALS ===
+${aiSignals}
+
+=== AI SUMMARY ===
+${aiSummary}
+
+=== KEY HEADERS (truncated) ===
+${headers.slice(0, 4000)}
+
+=== BODY TEXT (truncated) ===
+${bodyText.slice(0, 2500)}
+
+---
+
+Structure the HTML report with these sections:
+1. Executive Summary (2–3 sentences)
+2. Critical Findings (bullet list)
+3. Authentication Analysis — SPF, DKIM, DMARC, ARC, compauth, alignment, Return-Path vs envelope sender
+4. Header Analysis — Microsoft SCL/BCL/dest:J, X-Spam-Status, HELO/PTR, Received chain
+5. HTML & Content Technical Analysis — MIME, encoding, hidden text, URL patterns, template quality
+6. DNS & Infrastructure Improvements
+7. Microsoft-Specific Remediation (Junk Mail Reporting Program, SNDS, Smart Network Data Services)
+8. Gmail-Specific Remediation (Postmaster Tools, FBL, DMARC reporting)
+9. Prioritised Technical Action Plan — an HTML table with columns: Priorität | Maßnahme | Warum | Geschätzter Impact | Risiko | Komplexität
+10. Final Assessment
+
+Target audience: senior infrastructure engineers and deliverability specialists.`;
+
+  let claudeResponse;
+  try {
+    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model:      MODEL_ACTION_PLAN,
+        max_tokens: MAX_TOKENS_ACTION_PLAN,
+        system: [
+          {
+            type: 'text',
+            text: 'You are a senior email deliverability specialist. Output only complete standalone HTML documents when asked. No markdown, no JSON, no fences — raw HTML starting with <!DOCTYPE html>.',
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
+        messages: [{ role: 'user', content: userPrompt }],
+      }),
+    });
+
+    if (!apiRes.ok) {
+      const errText = await apiRes.text();
+      return json({ error: `Claude API error ${apiRes.status}: ${errText}` }, 502);
+    }
+    claudeResponse = await apiRes.json();
+  } catch (err) {
+    return json({ error: `Fetch failed: ${err.message}` }, 502);
+  }
+
+  const html = claudeResponse.content?.[0]?.text ?? '';
+  return jsonHtml(html);
+}
+
+// ── Anschreiben generator (HTML artifact) ─────────────────────────────────────
+
+async function handleAnschreiben(payload, env) {
+  const {
+    subject      = '',
+    senderEmail  = '',
+    addinScore   = null,
+    addinSignals = [],
+    claudeResult = null,
+  } = payload;
+
+  const topSignals = (addinSignals || []).slice(0, 5).map(s => `  - ${s}`).join('\n') || '  (keine)';
+  const aiSummary  = claudeResult?.summary || '(nicht verfügbar)';
+  const aiScore    = claudeResult?.score   ?? '?';
+
+  const userPrompt = `Du bist ein professioneller E-Mail-Deliverability-Spezialist.
+Erstelle ein professionelles deutsches Anschreiben an den Absender der analysierten E-Mail.
+Erkläre nicht-technisch, dass ihre E-Mails wahrscheinlich im Spam landen, und biete Hilfe an.
+Output: ONLY ein vollständiges, standalone HTML-Dokument (<!DOCTYPE html> … </html>) auf Deutsch.
+Kein JSON, keine Markdown-Fences, kein Kommentar — nur reines HTML.
+
+=== ANALYSIERTE E-MAIL ===
+Absender : ${senderEmail || '(unbekannt)'}
+Betreff  : ${subject || '(unbekannt)'}
+Score    : Add-in ${addinScore ?? '?'}/10 · KI ${aiScore}/10
+
+=== ERKANNTE PROBLEME (Auszug) ===
+${topSignals}
+
+=== KI-ZUSAMMENFASSUNG ===
+${aiSummary}
+
+---
+
+Stil: professionell, klar, nicht zu technisch — wie ein Brief von einem erfahrenen Berater.
+Stadtangabe im Datum: München.
+Unterschrift: Thomas Felber, thomas@felber.dev (als klickbarer mailto-Link mit vorausgefülltem Betreff).
+Zwei Optionen anbieten: (A) Erfolgsbasiert mit angemessenem Honorar, (B) Auf kollegialer Basis ohne Rechnung.
+Keine konkreten technischen Begriffe (kein DMARC, kein SPF, kein Return-Path) — nur abstraktes Niveau.
+Verwende sauberes eingebettetes CSS im <style>-Tag.`;
+
+  let claudeResponse;
+  try {
+    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model:      MODEL_ANSCHREIBEN,
+        max_tokens: MAX_TOKENS_ANSCHREIBEN,
+        system: [
+          {
+            type: 'text',
+            text: 'Du bist ein professioneller Berater. Gib ausschließlich vollständige HTML-Dokumente aus, wenn danach gefragt wird. Kein Markdown, kein JSON, keine Fences — reines HTML ab <!DOCTYPE html>.',
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
+        messages: [{ role: 'user', content: userPrompt }],
+      }),
+    });
+
+    if (!apiRes.ok) {
+      const errText = await apiRes.text();
+      return json({ error: `Claude API error ${apiRes.status}: ${errText}` }, 502);
+    }
+    claudeResponse = await apiRes.json();
+  } catch (err) {
+    return json({ error: `Fetch failed: ${err.message}` }, 502);
+  }
+
+  const html = claudeResponse.content?.[0]?.text ?? '';
+  return jsonHtml(html);
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+function jsonHtml(html) {
+  return new Response(JSON.stringify({ html }), {
+    status: 200,
+    headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+  });
+}
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {

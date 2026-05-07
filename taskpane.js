@@ -886,7 +886,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '2.0.12';
+const VERSION    = '2.0.13';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 /**
@@ -981,6 +981,8 @@ Office.onReady(info => {
   document.getElementById('btn-claude').addEventListener('click', runClaudeCheck);
   document.getElementById('btn-toggle-hidden').addEventListener('click', toggleHiddenText);
   document.getElementById('btn-advice').addEventListener('click', runAdviceCheck);
+  document.getElementById('btn-action-plan').addEventListener('click', () => generateArtifact('action-plan'));
+  document.getElementById('btn-anschreiben').addEventListener('click', () => generateArtifact('anschreiben'));
 
   initPinHint();
   document.getElementById('version-label').textContent = 'v' + VERSION;
@@ -1407,6 +1409,73 @@ function resetClaudeResult() {
   const el = document.getElementById('claude-result');
   if (el) { el.innerHTML = ''; el.classList.add('hidden'); }
   lastClaudeResult = null;
+}
+
+// ─── Artifact generation ───────────────────────────────────────────────────────
+
+async function generateArtifact(mode) {
+  const btnId = mode === 'action-plan' ? 'btn-action-plan' : 'btn-anschreiben';
+  const btn   = document.getElementById(btnId);
+
+  if (!lastAnalysis) {
+    showToast('Bitte zuerst eine E-Mail analysieren', true);
+    return;
+  }
+
+  const item        = Office.context.mailbox.item;
+  const subject     = item?.subject             || '';
+  const senderEmail = item?.from?.emailAddress  || '';
+
+  const origLabel = btn.textContent;
+  btn.disabled    = true;
+  btn.textContent = 'Generiere…';
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode,
+        headers:      lastHeaders,
+        bodyText:     lastBodyText,
+        subject,
+        senderEmail,
+        addinScore:   currentScore,
+        addinSignals: lastAnalysis?.reasons || [],
+        claudeResult: lastClaudeResult,
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Worker-Fehler ${res.status}: ${errText}`);
+    }
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    const html     = data.html || '';
+    const blob     = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url      = URL.createObjectURL(blob);
+    const date     = new Date().toISOString().slice(0, 10);
+    const domain   = (senderEmail.match(/@([\w.-]+)/) || [])[1] || 'sender';
+    const filename = mode === 'action-plan'
+      ? `${domain}-Aktionsplan-${date}.html`
+      : `${domain}-Anschreiben-${date}.html`;
+
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showToast(`${filename} wird heruntergeladen…`, false);
+  } catch (err) {
+    showToast(`⚠ ${err.message}`, true);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = origLabel;
+  }
 }
 
 // ─── Reputation advice ─────────────────────────────────────────────────────────

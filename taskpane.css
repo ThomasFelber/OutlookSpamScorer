@@ -466,6 +466,30 @@ body {
 .btn-advice:focus-visible { outline: 2px solid #107c10; outline-offset: 2px; }
 .btn-advice:disabled { opacity: 0.6; cursor: default; }
 
+/* ── Artifact buttons ────────────────────────────────────────────────────── */
+
+.artifact-row {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-artifact {
+  flex: 1;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid #8b5cf6;
+  background: #ede9fe;
+  color: #5b21b6;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.btn-artifact:hover:not(:disabled) { background: #ddd6fe; }
+.btn-artifact:focus-visible { outline: 2px solid #8b5cf6; outline-offset: 2px; }
+.btn-artifact:disabled { opacity: 0.6; cursor: default; }
+
 /* ── Advice result ───────────────────────────────────────────────────────── */
 
 .advice-result { font-size: 13px; }
