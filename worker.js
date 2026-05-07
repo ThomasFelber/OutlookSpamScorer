@@ -371,22 +371,36 @@ ${aiSummary}
 ${adviceSummary}
 ---
 
-Stil: professionell, klar, nicht zu technisch — wie ein Brief von einem erfahrenen Berater.
+AUFBAU DES BRIEFES:
+Ganz oben im Brief (vor der Anrede) die E-Mail-Adresse des Empfängers als klickbaren mailto-Link anzeigen:
+<a href="mailto:${senderEmail || ''}">${senderEmail || ''}</a>
+
+STIL:
+Freundlich, kooperativ, auf Augenhöhe — nicht anmaßend, nicht überheblich, nicht belehrend.
 Schreibe IMMER in der Ich-Form (Perspektive: Thomas Felber als Absender).
 Stadtangabe im Datum: München.
-Unterschrift: Thomas Felber, thomas@felber.dev (als klickbarer mailto-Link mit vorausgefülltem Betreff).
-Der Brief ist IMMER von Thomas Felber — nie von einem anonymen Berater oder einer Agentur.
 
-Das Angebot: IMMER konkret ein Angebot machen, das Problem zu beheben — zwei Optionen:
-(A) Erfolgsbasiert mit angemessenem Honorar (erst nach nachgewiesener Verbesserung fällig).
-(B) Auf kollegialer Basis ohne Rechnung.
+KONTAKT DES ABSENDERS (Thomas Felber) — IMMER am Ende angeben, beide Angaben klickbar:
+E-Mail : <a href="mailto:felber@live.de?subject=Newsletter-Zustellbarkeit">felber@live.de</a>
+Telefon: <a href="tel:+491709064924">+49 170 9064924</a>  (wichtig für mobile Lesbarkeit — tel:-Link)
 
-Problembeschreibung: Das Problem auf hohem Abstraktionsniveau beschreiben — so dass der Empfänger
-versteht, dass es ein ernsthaftes, strukturelles Problem gibt, aber NICHT genug Details erhält,
-um es selbst zu lösen. Keine technischen Begriffe (kein DMARC, SPF, Return-Path, DKIM o.ä.).
-Ziel: Der Empfänger soll Thomas Felber beauftragen, nicht selbst googeln.
+DAS ANGEBOT — IMMER beide Optionen konkret nennen:
+(A) Erfolgsbasiert: Konkret einen Preis in EUR nennen, der sich an der Branche und den Margen orientiert.
+    Mindestpreis: € 400,–. Nach oben anpassen je nach Branche:
+    - Makler, Immobilien, Finanzdienstleister: € 700–900
+    - Rechtsanwälte, Steuerberater, Unternehmensberater: € 800–1.200
+    - Bauunternehmen, Handwerk mit hohen Umsätzen: € 600–900
+    - Standardbetriebe / KMU: € 400–600
+    Der Preis ist erst nach nachgewiesener Verbesserung fällig (Erfolgsmodell).
+(B) Auf kollegialer Basis ohne Rechnung — kurz und natürlich formuliert.
 
-Verwende sauberes eingebettetes CSS im <style>-Tag.`;
+PROBLEMBESCHREIBUNG:
+Auf hohem Abstraktionsniveau — der Empfänger versteht, dass es ein strukturelles Problem gibt,
+aber erhält NICHT genug Details um es selbst zu lösen.
+Keine technischen Begriffe (kein DMARC, SPF, Return-Path, DKIM o.ä.).
+Ziel: Der Empfänger soll Thomas Felber beauftragen.
+
+Verwende sauberes eingebettetes CSS im <style>-Tag. Brief ist IMMER von Thomas Felber.`;
 
   let claudeResponse;
   try {
