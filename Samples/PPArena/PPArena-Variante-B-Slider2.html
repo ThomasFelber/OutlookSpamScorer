@@ -484,5 +484,28 @@
   </table>
   <!-- ═══ END OUTER WRAPPER ════════════════════════════════════════════════ -->
 
+  <script>
+    (function () {
+      var wrap = document.querySelector('.pb-wrap');
+      if (!wrap) return;
+      var ids = ['pb1', 'pb2', 'pb3'];
+      var startX = 0;
+
+      wrap.addEventListener('touchstart', function (e) {
+        startX = e.touches[0].clientX;
+      }, { passive: true });
+
+      wrap.addEventListener('touchend', function (e) {
+        var dx = e.changedTouches[0].clientX - startX;
+        if (Math.abs(dx) < 40) return;
+        var cur = ids.findIndex(function (id) { return document.getElementById(id).checked; });
+        var next = dx < 0
+          ? (cur + 1) % ids.length
+          : (cur - 1 + ids.length) % ids.length;
+        document.getElementById(ids[next]).checked = true;
+      }, { passive: true });
+    })();
+  </script>
+
 </body>
 </html>
