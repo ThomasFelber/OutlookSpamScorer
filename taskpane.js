@@ -886,7 +886,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '2.0.15';
+const VERSION    = '2.0.16';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 /**
@@ -1429,9 +1429,20 @@ async function generateArtifact(mode) {
 
   const origLabel = btn.textContent;
   btn.disabled    = true;
-  btn.textContent = 'Generiere…';
 
   try {
+    if (!lastClaudeResult) {
+      btn.textContent = 'AI analysiert…';
+      await runClaudeCheck();
+    }
+
+    if (!lastAdviceResult) {
+      btn.textContent = 'Empfehlungen…';
+      await runAdviceCheck();
+    }
+
+    btn.textContent = 'Generiere…';
+
     const res = await fetch(WORKER_URL, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
