@@ -139,6 +139,17 @@ async function handleAdvice(payload, env) {
     claudeResult = null,
   } = payload;
 
+  // Extract sending IP + PTR hostname from headers
+  const spfIpM    = headers.match(/client-ip=([\d.a-f:]+)/i);
+  let   sendingIp = spfIpM?.[1] ?? null;
+  let   ptrHost   = null;
+  const rcvdM     = headers.match(/^Received:.*?from\s+([\w.\-[\]:]+)(?:\s+\(([\w.\-]+)\s+)?\[([\d.a-f:]+)\]/im);
+  if (rcvdM) {
+    if (!sendingIp) sendingIp = rcvdM[3];
+    const candidate = rcvdM[2] || rcvdM[1] || null;
+    if (candidate && candidate !== sendingIp) ptrHost = candidate;
+  }
+
   const userPrompt = buildAdvicePrompt(
     headers.slice(0, 3000),
     bodyText.slice(0, 2000),
@@ -147,6 +158,8 @@ async function handleAdvice(payload, env) {
     addinScore,
     addinSignals,
     claudeResult,
+    sendingIp,
+    ptrHost,
   );
 
   let claudeResponse;
@@ -546,21 +559,32 @@ ${bodyText.slice(0, 2000)}`;
 
 // ── Advice prompt builder ─────────────────────────────────────────────────────
 
-function buildAdvicePrompt(headers, bodyText, subject, senderEmail, addinScore, addinSignals, claudeResult) {
+function buildAdvicePrompt(headers, bodyText, subject, senderEmail, addinScore, addinSignals, claudeResult, sendingIp, ptrHost) {
   const signalList = (addinSignals || []).map(s => `  - ${s}`).join('\n') || '  (keine)';
   const aiSummary  = claudeResult?.summary  || '(nicht verfügbar)';
   const aiScore    = claudeResult?.score    ?? '(nicht verfügbar)';
   const aiVerdict  = claudeResult?.verdict  || '(nicht verfügbar)';
   const aiSignals  = (claudeResult?.signals || []).map(s => `  - ${s}`).join('\n') || '  (keine)';
 
-  return `Analysiere diesen Spam-Bericht und erstelle priorisierte Empfehlungen für den ABSENDER.
+  const ipSection = sendingIp
+    ? `\n=== SENDENDE IP ===\nIP       : ${sendingIp}\nHostname : ${ptrHost || '(nicht aufgelöst — kein PTR-Eintrag)'}\n`
+    : '';
 
+  const ipNote = sendingIp
+    ? `WICHTIG zur IP: Die sendende IP ist ${sendingIp}${ptrHost ? ` (PTR: ${ptrHost})` : ' (kein PTR-Eintrag)'}. ` +
+      `Falls diese IP bereits eine dedizierte Versand-IP ist (erkennbar am Hostname oder typischen ESP-Mustern), ` +
+      `empfehle NICHT "eine dedizierte IP beschaffen" — das wäre redundant. ` +
+      `Fokussiere stattdessen auf IP-Reputationsverbesserung (Warmup-Strategie, Beschwerderate senken, Engagement verbessern).`
+    : '';
+
+  return `Analysiere diesen Spam-Bericht und erstelle priorisierte Empfehlungen für den ABSENDER.
+${ipNote ? '\n' + ipNote + '\n' : ''}
 === ANALYSE-ERGEBNIS ===
 Add-in Score : ${addinScore ?? '?'}/10
 Claude Score : ${aiScore}/10 — Verdict: ${aiVerdict}
 Absender     : ${senderEmail || '(unbekannt)'}
 Betreff      : ${subject || '(unbekannt)'}
-
+${ipSection}
 === ERKANNTE PROBLEME (Add-in) ===
 ${signalList}
 

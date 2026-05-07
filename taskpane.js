@@ -886,7 +886,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '2.0.18';
+const VERSION    = '2.0.19';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 /**
@@ -1856,14 +1856,34 @@ body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size:
 .rpt-footer { text-align: center; color: #94a3b8; font-size: 11px; padding: 20px 0 8px; }
 `;
 
-/** Extract From / Date from raw internet headers */
+/** Extract From / Date / sending IP / PTR hostname from raw internet headers */
 function parseHeaderMeta(headers) {
   const get = name => {
     const re = new RegExp(`^${name}:\\s*(.+(?:\\r?\\n[ \\t].+)*)`, 'im');
     const m  = headers ? headers.match(re) : null;
     return m ? m[1].replace(/\r?\n[ \t]+/g, ' ').trim() : '';
   };
-  return { from: get('From'), date: get('Date') };
+
+  // Sending IP — prefer Received-SPF client-ip=, fall back to first IP in brackets in Received:
+  let sendingIp   = null;
+  let ptrHostname = null;
+  if (headers) {
+    const spfIp = headers.match(/client-ip=([\d.a-f:]+)/i);
+    if (spfIp) sendingIp = spfIp[1];
+
+    // First Received: header with "from HELO (PTR [IP])" or "from HELO ([IP])"
+    const rcvd = headers.match(/^Received:.*?from\s+([\w.\-[\]:]+)(?:\s+\(([\w.\-]+)\s+)?\[([\d.a-f:]+)\]/im);
+    if (rcvd) {
+      if (!sendingIp) sendingIp = rcvd[3];
+      // rcvd[2] is the PTR hostname if present (the resolved name in parens before the IP)
+      // rcvd[1] is the HELO/EHLO name
+      ptrHostname = rcvd[2] || rcvd[1] || null;
+      // Clean up — ignore if it's just the IP repeated
+      if (ptrHostname && ptrHostname === sendingIp) ptrHostname = null;
+    }
+  }
+
+  return { from: get('From'), date: get('Date'), sendingIp, ptrHostname };
 }
 
 /** Trigger the browser file download — auto-chains AI check + advice if not yet run */
@@ -1930,6 +1950,7 @@ function buildDeliverabilityHtml({ subject, senderEmail, senderName, addinScore,
   const now      = new Date().toLocaleString(t.dateLocale);
   const fromLine = senderName ? `${escR(senderName)} &lt;${escR(senderEmail)}&gt;` : escR(senderEmail);
   const dateStr  = meta.date ? escR(meta.date) : '—';
+  const { sendingIp, ptrHostname } = meta;
 
   // Pick accent colour by score
   const scoreColor = s => s <= 2 ? '#16a34a' : s <= 5 ? '#d97706' : s <= 7 ? '#dc2626' : '#7f1d1d';
@@ -1977,6 +1998,8 @@ function buildDeliverabilityHtml({ subject, senderEmail, senderName, addinScore,
   </div>
 
   ${rMetrics({ addinScore, claudeResult, addinColor, aiColor })}
+
+  ${rInfraSection(sendingIp, ptrHostname)}
 
   ${rAuthSection(headers)}
 
@@ -2087,6 +2110,20 @@ function rAuthSection(headers) {
   return `<section class="rpt-section">
     <h2>${rStr().auth}</h2>
     <div class="rpt-auth-row">${badgesHtml}</div>
+  </section>`;
+}
+
+function rInfraSection(sendingIp, ptrHostname) {
+  if (!sendingIp) return '';
+  const ptrLine = ptrHostname
+    ? `<tr><th>PTR / Hostname</th><td><code>${escR(ptrHostname)}</code></td></tr>`
+    : `<tr><th>PTR / Hostname</th><td class="rpt-warn">nicht aufgelöst</td></tr>`;
+  return `<section class="rpt-section">
+    <h2>Infrastruktur</h2>
+    <table class="meta-table">
+      <tr><th>Sendende IP</th><td><code>${escR(sendingIp)}</code></td></tr>
+      ${ptrLine}
+    </table>
   </section>`;
 }
 
