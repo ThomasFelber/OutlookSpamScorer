@@ -10,6 +10,7 @@
  *   mode="advice"       — sender reputation advice via claude-sonnet-4-5
  *   mode="action-plan"  — technical deliverability action plan HTML via claude-sonnet-4-6
  *   mode="anschreiben"  — personalised German outreach letter HTML via claude-haiku-4-5
+ *   mode="dns"          — SPF / DMARC / DKIM DNS lookups via Cloudflare DoH (no AI)
  */
 
 const ALLOWED_ORIGIN        = 'https://outlook-spam-scorer.pages.dev';
@@ -50,6 +51,7 @@ export default {
     if (payload.mode === 'advice')       return handleAdvice(payload, env);
     if (payload.mode === 'action-plan')  return handleActionPlan(payload, env);
     if (payload.mode === 'anschreiben')  return handleAnschreiben(payload, env);
+    if (payload.mode === 'dns')          return handleDnsLookup(payload);
     return handleAnalysis(payload, env);
   },
 };
@@ -421,6 +423,74 @@ Verwende sauberes eingebettetes CSS im <style>-Tag.`;
   const html = (claudeResponse.content?.[0]?.text ?? '')
     .replace(/^```(?:html)?\s*/i, '').replace(/\s*```$/, '').trim();
   return jsonHtml(html);
+}
+
+// ── DNS lookup (no AI, pure DoH) ─────────────────────────────────────────────
+
+const DKIM_SELECTORS = [
+  'default', 'google', 'mail', 'dkim', 's1', 's2', 'k1', 'k2',
+  'selector1', 'selector2',   // Microsoft 365
+  'mandrill', 'mailjet', 'smtp', 'em', 'mailo',
+];
+
+async function handleDnsLookup(payload) {
+  const { domain, dkimSelectors = [] } = payload;
+  if (!domain) return json({ error: 'domain required' }, 400);
+
+  // Deduplicate: email-extracted selectors first, then common ones
+  const allSelectors = [...new Set([...dkimSelectors, ...DKIM_SELECTORS])];
+
+  const [spfTxt, dmarcTxt, ...dkimResults] = await Promise.all([
+    dohTxt(domain),
+    dohTxt(`_dmarc.${domain}`),
+    ...allSelectors.map(sel => dkimLookup(sel, domain)),
+  ]);
+
+  const spfRecord   = spfTxt.find(r => r.startsWith('v=spf1')) ?? null;
+  const dmarcRecord = dmarcTxt.find(r => r.startsWith('v=DMARC1')) ?? null;
+
+  return json({
+    spf:   { record: spfRecord,   found: !!spfRecord },
+    dmarc: { record: dmarcRecord, found: !!dmarcRecord },
+    dkim:  dkimResults.filter(r => r.found),
+  });
+}
+
+/** Fetch all TXT records for a name via Cloudflare DoH */
+async function dohTxt(name) {
+  try {
+    const res = await fetch(
+      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(name)}&type=TXT`,
+      { headers: { Accept: 'application/dns-json' } },
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.Answer || []).map(a =>
+      (a.data || '').replace(/^"|"$/g, '').replace(/" "/g, ''),
+    );
+  } catch { return []; }
+}
+
+/** Try TXT then CNAME for a DKIM selector */
+async function dkimLookup(selector, domain) {
+  const fqdn = `${selector}._domainkey.${domain}`;
+  const txt  = await dohTxt(fqdn);
+  const dkimTxt = txt.find(r => /v=DKIM1|k=rsa|k=ed25519|p=/i.test(r));
+  if (dkimTxt) return { selector, type: 'TXT', record: dkimTxt, found: true };
+
+  try {
+    const res = await fetch(
+      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(fqdn)}&type=CNAME`,
+      { headers: { Accept: 'application/dns-json' } },
+    );
+    if (res.ok) {
+      const data = await res.json();
+      const cname = (data.Answer || []).find(a => a.type === 5);
+      if (cname?.data) return { selector, type: 'CNAME', record: cname.data, found: true };
+    }
+  } catch { /* ignore */ }
+
+  return { selector, found: false };
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

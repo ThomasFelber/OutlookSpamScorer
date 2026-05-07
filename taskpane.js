@@ -886,7 +886,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '2.0.19';
+const VERSION    = '2.0.20';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 /**
@@ -967,6 +967,7 @@ let lastHiddenText  = '';   // text extracted from hidden elements
 let lastAnalysis    = null; // { score, reasons, hiddenText }
 let lastClaudeResult = null;
 let lastAdviceResult = null;
+let lastDnsResult    = null;
 
 // ─── Office init ───────────────────────────────────────────────────────────────
 
@@ -1011,6 +1012,7 @@ function analyzeCurrentItem() {
   currentScore  = null;
   lastAnalysis  = null;
   lastHiddenText = '';
+  lastDnsResult  = null;
 
   // Reset hidden text expander
   const htSection = document.getElementById('hidden-text-section');
@@ -1852,6 +1854,11 @@ body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size:
 .rpt-hidden-num { color: #854d0e; font-weight: 700; font-size: 12px; flex-shrink: 0; min-width: 24px; }
 .rpt-hidden-code { font-family: 'Cascadia Code', 'Consolas', 'Menlo', monospace; font-size: 12px; color: #422006; word-break: break-word; white-space: pre-wrap; line-height: 1.5; }
 
+/* DNS table */
+.rpt-warn { color: #dc2626; font-size: 13px; }
+.rpt-dns-type { display: inline-block; font-size: 10px; font-weight: 700; background: #e0e7ff; color: #3730a3; border-radius: 3px; padding: 1px 5px; margin-right: 5px; vertical-align: middle; }
+.meta-table code { font-family: 'Cascadia Code','Consolas','Menlo',monospace; font-size: 12px; word-break: break-all; }
+
 /* Footer */
 .rpt-footer { text-align: center; color: #94a3b8; font-size: 11px; padding: 20px 0 8px; }
 `;
@@ -1886,6 +1893,31 @@ function parseHeaderMeta(headers) {
   return { from: get('From'), date: get('Date'), sendingIp, ptrHostname };
 }
 
+/** Fetch SPF / DMARC / DKIM via the worker DNS mode (cached per email) */
+async function fetchDnsData(senderEmail, headers) {
+  if (lastDnsResult) return lastDnsResult;
+  const domain = (senderEmail.match(/@([\w.-]+)/) || [])[1];
+  if (!domain) return null;
+
+  // Extract DKIM selector(s) from DKIM-Signature headers
+  const dkimSelectors = [];
+  const selRe = /^DKIM-Signature:.*?(?:\r?\n[ \t].+)*\bs=([^;\s]+)/gim;
+  let m;
+  while ((m = selRe.exec(headers)) !== null) dkimSelectors.push(m[1]);
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ mode: 'dns', domain, dkimSelectors }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    lastDnsResult = data;
+    return data;
+  } catch { return null; }
+}
+
 /** Trigger the browser file download — auto-chains AI check + advice if not yet run */
 async function downloadDeliverabilityReport() {
   const btn = document.getElementById('btn-delivery-report');
@@ -1902,12 +1934,16 @@ async function downloadDeliverabilityReport() {
       await runAdviceCheck();
     }
 
-    btn.textContent = 'Erstelle Report…';
+    btn.textContent = 'DNS lookup…';
 
     const item        = Office.context.mailbox.item;
     const subject     = item?.subject            || '';
     const senderEmail = item?.from?.emailAddress || '';
     const senderName  = item?.from?.displayName  || '';
+
+    const dnsResult = await fetchDnsData(senderEmail, lastHeaders);
+
+    btn.textContent = 'Erstelle Report…';
 
     const reportNum = (parseInt(localStorage.getItem('reportCount') || '0', 10) + 1);
     localStorage.setItem('reportCount', String(reportNum));
@@ -1920,6 +1956,7 @@ async function downloadDeliverabilityReport() {
       adviceResult: lastAdviceResult,
       headers:      lastHeaders,
       hiddenText:   lastHiddenText,
+      dnsResult,
       reportNum,
     });
 
@@ -1943,7 +1980,7 @@ async function downloadDeliverabilityReport() {
 }
 
 /** Assemble the full HTML document */
-function buildDeliverabilityHtml({ subject, senderEmail, senderName, addinScore, addinSignals, claudeResult, adviceResult, headers, hiddenText, reportNum }) {
+function buildDeliverabilityHtml({ subject, senderEmail, senderName, addinScore, addinSignals, claudeResult, adviceResult, headers, hiddenText, dnsResult, reportNum }) {
   const t        = rStr();   // localized strings
   const meta     = parseHeaderMeta(headers);
   const numStr   = String(reportNum).padStart(4, '0');
@@ -2002,6 +2039,8 @@ function buildDeliverabilityHtml({ subject, senderEmail, senderName, addinScore,
   ${rInfraSection(sendingIp, ptrHostname)}
 
   ${rAuthSection(headers)}
+
+  ${rDnsSection(dnsResult)}
 
   <section class="rpt-section">
     <h2>${t.addinSignals}</h2>
@@ -2079,6 +2118,36 @@ function rHiddenTextSection(hiddenText) {
     <h2>${t.hiddenTitle}</h2>
     <p class="rpt-hidden-info">${t.hiddenInfo(snippets.length)}</p>
     <ul class="rpt-hidden-list">${itemsHtml}</ul>
+  </section>`;
+}
+
+function rDnsSection(dns) {
+  if (!dns) return '';
+
+  const trunc = (s, n = 120) => s && s.length > n ? escR(s.slice(0, n)) + '<span style="color:#94a3b8">…</span>' : escR(s || '');
+
+  const spfRow = dns.spf?.found
+    ? `<tr><th>SPF</th><td><code>${trunc(dns.spf.record)}</code></td></tr>`
+    : `<tr><th>SPF</th><td class="rpt-warn">kein Eintrag gefunden</td></tr>`;
+
+  const dmarcRow = dns.dmarc?.found
+    ? `<tr><th>DMARC</th><td><code>${trunc(dns.dmarc.record)}</code></td></tr>`
+    : `<tr><th>DMARC</th><td class="rpt-warn">kein Eintrag gefunden</td></tr>`;
+
+  const dkimRows = (dns.dkim || []).length
+    ? (dns.dkim || []).map(d =>
+        `<tr><th>DKIM <span style="font-weight:400;color:#64748b">${escR(d.selector)}</span></th>` +
+        `<td><span class="rpt-dns-type">${escR(d.type)}</span> <code>${trunc(d.record, 100)}</code></td></tr>`
+      ).join('')
+    : `<tr><th>DKIM</th><td class="rpt-warn">keine bekannten Selektoren gefunden</td></tr>`;
+
+  return `<section class="rpt-section">
+    <h2>DNS-Konfiguration</h2>
+    <table class="meta-table">
+      ${spfRow}
+      ${dmarcRow}
+      ${dkimRows}
+    </table>
   </section>`;
 }
 
