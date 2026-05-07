@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zustellbarkeitsbericht – Cylex Deutschland</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            margin-bottom: 30px;
+            border-bottom: 3px solid #0066cc;
+            padding-bottom: 15px;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #0066cc;
+            margin-bottom: 5px;
+        }
+        .header p {
+            font-size: 13px;
+            color: #666;
+        }
+        .recipient {
+            margin-bottom: 25px;
+            padding: 12px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #0066cc;
+            border-radius: 4px;
+        }
+        .recipient a {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .recipient a:hover {
+            text-decoration: underline;
+        }
+        .date {
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: #666;
+        }
+        .greeting {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        .content {
+            margin-bottom: 25px;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+        .content p {
+            margin-bottom: 15px;
+        }
+        .problem-highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .problem-highlight p {
+            margin: 0;
+            font-size: 15px;
+            color: #333;
+        }
+        .solution-box {
+            background-color: #e8f4f8;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 25px 0;
+            border-left: 4px solid #0066cc;
+        }
+        .solution-box h3 {
+            font-size: 16px;
+            color: #0066cc;
+            margin-bottom: 12px;
+        }
+        .solution-box p {
+            font-size: 15px;
+            margin-bottom: 10px;
+            line-height: 1.7;
+        }
+        .option {
+            margin-bottom: 12px;
+            padding-left: 20px;
+            position: relative;
+        }
+        .option::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #0066cc;
+            font-weight: bold;
+        }
+        .closing {
+            margin-top: 25px;
+            margin-bottom: 25px;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+        .closing p {
+            margin-bottom: 12px;
+        }
+        .signature {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 14px;
+        }
+        .signature p {
+            margin-bottom: 8px;
+        }
+        .signature strong {
+            color: #0066cc;
+            font-weight: 600;
+        }
+        .contact {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .contact a {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .contact a:hover {
+            text-decoration: underline;
+        }
+        .divider {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Zustellbarkeitsbericht</h1>
+            <p>Analyse Ihrer geschäftskritischen E-Mails</p>
+        </div>
+
+        <div class="recipient">
+            Adressat: <a href="mailto:info@cylex.de">info@cylex.de</a>
+        </div>
+
+        <div class="date">
+            München, 19. Januar 2025
+        </div>
+
+        <div class="greeting">
+            Liebe Damen und Herren,
+        </div>
+
+        <div class="content">
+            <p>
+                mein Name ist Thomas Felber. Ich habe Ihre letzten ausgehenden E-Mails analysiert und möchte Sie auf ein ernstes Zustellungsproblem hinweisen, das wahrscheinlich viele Ihrer Empfänger betrifft.
+            </p>
+
+            <div class="problem-highlight">
+                <p>
+                    <strong>Das Kernproblem:</strong> Ihre E-Mails landen bei vielen Empfängern automatisch im Spam- oder Junk-Ordner – nicht, weil sie bösartig sind, sondern weil die technische Infrastruktur sendet, ohne dass Mailserver Ihnen vollständig vertrauen.
+                </p>
+            </div>
+
+            <p>
+                Konkret wurde Ihre E-Mail vom 19. Januar (Betreff: „Firmenprofil gelöscht") bei Microsoft-Systemen als Spam gekennzeichnet, obwohl der Inhalt legitim ist und alle grundlegenden Sicherheitschecks bestanden wurden.
+            </p>
+
+            <p>
+                <strong>Warum passiert das?</strong>
+            </p>
+            <p>
+                Sie nutzen einen Mailing-Dienstleister (Mandrill), um E-Mails zu versenden. Das ist völlig normal und spart Zeit. Allerdings ist der Mailserver dieses Dienstleisters nicht so stark mit Ihrer Domain (cylex.de) verbunden, wie die großen Mail-Anbieter es erwarten. Das führt dazu, dass ihre Nachrichten verdächtig wirken – obwohl sie es nicht sind.
+            </p>
+
+            <p>
+                Das Resultat: Wichtige Transaktions-E-Mails, Benachrichtigungen und Kundenbestätigungen erreichen die Posteingänge nicht zuverlässig. Kunden sehen Ihre Mails verspätet oder gar nicht.
+            </p>
+        </div>
+
+        <div class="solution-box">
+            <h3>Ich kann das beheben</h3>
+            <p>
+                Ich spezialisiere mich darauf, genau solche Probleme zu lösen. Gemeinsam werden wir die Konfiguration optimieren, damit Ihre E-Mails wieder zuverlässig ankommen.
+            </p>
+            <p>
+                <strong>Ich

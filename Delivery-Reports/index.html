@@ -88,6 +88,15 @@
     .metric span.bad { color: #f87171; }
     .metric span.warn{ color: #fbbf24; }
 
+    /* Sub-domain label within a group block */
+    .subdomain-label {
+      font-size: 11px; font-weight: 600; color: #475569;
+      text-transform: uppercase; letter-spacing: .06em;
+      padding: 14px 4px 6px; margin-top: 6px;
+      border-top: 1px solid #1e293b;
+    }
+    .subdomain-label:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+
     /* Card action buttons */
     .card-btns { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; align-self: center; }
     .btn-card-newtab, .btn-card-download {
@@ -163,6 +172,512 @@
     <h1>Delivery Reports</h1>
     <p>E-Mail-Deliverability-Analysen auf Basis realer Microsoft-Exchange-Header — gruppiert nach Absender-Domain.</p>
   </header>
+
+  <!-- ── RETEC Unternehmensgruppe ─────────────────────────────────────── -->
+  <div class="domain-block">
+    <div class="domain-header">
+      <div class="domain-icon">💧</div>
+      <div>
+        <div class="domain-name">RETEC Unternehmensgruppe</div>
+        <div class="domain-meta">retec.info · retec-regenwassertechnik.de · retec-water-technology.de · t-online.de · 7 Reports + 3 Aktionspläne</div>
+      </div>
+    </div>
+
+    <div class="report-grid">
+
+      <!-- retec.info -->
+      <div class="subdomain-label">retec.info — Ionos / kundenserver.de</div>
+
+      <div class="report-card" onclick="openModal('retec/retec.info/report-0029.html','Report #0029 — Spam Scorer Analysis · retec.info')">
+        <div class="card-left">
+          <div class="card-title">Report #0029 — Spam Scorer Analysis</div>
+          <div class="card-meta">30. Jun 2023 · info@retec.info via Ionos / kundenserver.de · Spam Scorer v2.0.21</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="warn">None</span></div>
+            <div class="metric">DMARC <span class="warn">BestGuess</span></div>
+            <div class="metric">Add-in <span class="warn">4/10</span></div>
+            <div class="metric">AI <span class="ok">2/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">3 × hoch</span>
+            <span class="pill pill-amber">3 × mittel</span>
+            <span class="pill pill-gray">2 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> Kein DKIM · DMARC p=none ohne Enforcement · kein PTR-Record für sendende IP (212.227.17.24) · HELO-Mismatch (mout.kundenserver.de ≠ retec.info)
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="retec/retec.info/report-0029.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="retec/retec.info/report-0029.html" download="retec.info-BestellungRegenwasser-0029.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <!-- retec-regenwassertechnik.de -->
+      <div class="subdomain-label">retec-regenwassertechnik.de — Microsoft 365</div>
+
+      <div class="report-card" onclick="openModal('retec/retec-regenwassertechnik.de/report-0022.html','Report #0022 — Spam Scorer Analysis · m.hauke@retec-regenwassertechnik.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0022 — Spam Scorer Analysis</div>
+          <div class="card-meta">29. Apr 2026 · m.hauke@retec-regenwassertechnik.de via Microsoft 365 · Spam Scorer v2.0.21</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="warn">Pass (misaligned)</span></div>
+            <div class="metric">DMARC <span class="warn">BestGuess</span></div>
+            <div class="metric">Add-in <span class="warn">4/10</span></div>
+            <div class="metric">AI <span class="ok">1/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">2 × hoch</span>
+            <span class="pill pill-amber">2 × mittel</span>
+            <span class="pill pill-gray">1 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> DKIM signiert mit onmicrosoft.com ≠ retec-regenwassertechnik.de · OFR:SpamFilter · kein DMARC-Record · PTR nicht aufgelöst
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="retec/retec-regenwassertechnik.de/report-0022.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="retec/retec-regenwassertechnik.de/report-0022.html" download="retec-regenwassertechnik.de-GutschriftMembran-0022.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('retec/retec-regenwassertechnik.de/report-0027.html','Report #0027 — Spam Scorer Analysis · rechnung@retec-regenwassertechnik.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0027 — Spam Scorer Analysis</div>
+          <div class="card-meta">29. Aug 2025 · rechnung@retec-regenwassertechnik.de via Microsoft 365 · Spam Scorer v2.0.21</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="warn">Pass (misaligned)</span></div>
+            <div class="metric">DMARC <span class="warn">BestGuess</span></div>
+            <div class="metric">SCL <span class="bad">6/9</span></div>
+            <div class="metric">Add-in <span class="bad">8/10</span></div>
+            <div class="metric">Zustellung <span class="bad">Junk</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">4 × hoch</span>
+            <span class="pill pill-amber">5 × mittel</span>
+            <span class="pill pill-gray">2 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> DKIM onmicrosoft.com-Mismatch · Betreff „Offener Saldo/Zahlungserinnerung" triggert Content-Filter · SCL 6 · Junk-Zustellung trotz Auth-Pass
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="retec/retec-regenwassertechnik.de/report-0027.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="retec/retec-regenwassertechnik.de/report-0027.html" download="retec-regenwassertechnik.de-OffenerSaldo-0027.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('retec/retec-regenwassertechnik.de/report-0028.html','Report #0028 — Spam Scorer Analysis · retec-shop@retec-regenwassertechnik.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0028 — Spam Scorer Analysis</div>
+          <div class="card-meta">6. Jul 2023 · retec-shop@retec-regenwassertechnik.de (Shopware) · Spam Scorer v2.0.21</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="bad">Fail</span></div>
+            <div class="metric">DKIM <span class="warn">None</span></div>
+            <div class="metric">DMARC <span class="warn">None</span></div>
+            <div class="metric">Add-in <span class="bad">6/10</span></div>
+            <div class="metric">AI <span class="warn">5/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">4 × hoch</span>
+            <span class="pill pill-amber">3 × mittel</span>
+            <span class="pill pill-gray">2 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> SPF FAIL · kein DKIM · kein DMARC-Record · Shop-Bestellbestätigungen werden systemisch abgelehnt oder als Junk zugestellt
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="retec/retec-regenwassertechnik.de/report-0028.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="retec/retec-regenwassertechnik.de/report-0028.html" download="retec-regenwassertechnik.de-BestellungShop-0028.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('retec/retec-regenwassertechnik.de/action-plan.html','Technischer Aktionsplan · retec-regenwassertechnik.de')">
+        <div class="card-left">
+          <div class="card-title">Technischer Aktionsplan — DMARC, DKIM-Alignment, SPF-Fix</div>
+          <div class="card-meta">7. Mai 2026 · retec-regenwassertechnik.de · Microsoft 365 + Shopware</div>
+          <div class="pills">
+            <span class="pill pill-red">Hoch</span>
+            <span class="pill pill-amber">Mittel</span>
+          </div>
+          <div class="key-issue">
+            <strong>Kritischste Punkte:</strong> M365-DKIM auf eigene Domain umstellen · SPF für Shopware-Absender ergänzen · DMARC-Record publizieren
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="retec/retec-regenwassertechnik.de/action-plan.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="retec/retec-regenwassertechnik.de/action-plan.html" download="retec-regenwassertechnik.de-TechnischerAktionsplan.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <!-- retec-water-technology.de -->
+      <div class="subdomain-label">retec-water-technology.de — Dogado / Shopware</div>
+
+      <div class="report-card" onclick="openModal('retec/retec-water-technology.de/report-0024.html','Report #0024 — Spam Scorer Analysis · shop@retec-water-technology.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0024 — Spam Scorer Analysis</div>
+          <div class="card-meta">1. Apr 2026 · shop@retec-water-technology.de via Dogado · Spam Scorer v2.0.21</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="bad">Fail</span></div>
+            <div class="metric">DMARC <span class="warn">BestGuess</span></div>
+            <div class="metric">SCL <span class="bad">6/9</span></div>
+            <div class="metric">Add-in <span class="bad">10/10</span></div>
+            <div class="metric">Zustellung <span class="bad">Junk</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">3 × hoch</span>
+            <span class="pill pill-amber">3 × mittel</span>
+            <span class="pill pill-gray">2 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> DKIM-Signatur vorhanden aber ungültig (DNS-Key fehlt: default._domainkey) · HELO-Mismatch (srv573659.dogado-shops.de) · SCL 6 · Junk
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="retec/retec-water-technology.de/report-0024.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="retec/retec-water-technology.de/report-0024.html" download="retec-water-technology.de-BestellungShop-0024.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('retec/retec-water-technology.de/action-plan.html','Technischer Aktionsplan · retec-water-technology.de')">
+        <div class="card-left">
+          <div class="card-title">Technischer Aktionsplan — DKIM-Key, DMARC, Dogado-Config</div>
+          <div class="card-meta">7. Mai 2026 · retec-water-technology.de · Dogado / Shopware</div>
+          <div class="pills">
+            <span class="pill pill-red">Hoch</span>
+            <span class="pill pill-amber">Mittel</span>
+          </div>
+          <div class="key-issue">
+            <strong>Kritischster Punkt:</strong> DKIM-DNS-Key für Selektor „default" veröffentlichen → sofortige Behebung von DKIM FAIL und SCL-6-Sprung
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="retec/retec-water-technology.de/action-plan.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="retec/retec-water-technology.de/action-plan.html" download="retec-water-technology.de-TechnischerAktionsplan.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <!-- t-online.de -->
+      <div class="subdomain-label">retec-water-technology@t-online.de — Consumer-ISP T-Online</div>
+
+      <div class="report-card" onclick="openModal('retec/t-online.de/report-0025.html','Report #0025 — Spam Scorer Analysis · retec-water-technology@t-online.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0025 — Spam Scorer Analysis</div>
+          <div class="card-meta">6. Jan 2026 · retec-water-technology@t-online.de · T-Online Consumer-IP · Spam Scorer v2.0.21</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="warn">None</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">SCL <span class="bad">6/9</span></div>
+            <div class="metric">Add-in <span class="bad">7/10</span></div>
+            <div class="metric">Zustellung <span class="bad">Junk</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">3 × hoch</span>
+            <span class="pill pill-amber">3 × mittel</span>
+            <span class="pill pill-gray">1 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> Kein DKIM · Consumer-ISP T-Online ohne professionelle Mail-Infrastruktur · SCL 6 · Microsoft markiert Outlook-SafeLinks als Brand-Impersonation
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="retec/t-online.de/report-0025.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="retec/t-online.de/report-0025.html" download="t-online.de-AboLieferung-0025.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('retec/t-online.de/report-0026.html','Report #0026 — Spam Scorer Analysis · retec-water-technology@t-online.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0026 — Spam Scorer Analysis</div>
+          <div class="card-meta">15. Sep 2025 · retec-water-technology@t-online.de · T-Online Consumer-IP · Spam Scorer v2.0.21</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="warn">None</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">SCL <span class="bad">6/9</span></div>
+            <div class="metric">Add-in <span class="bad">9/10</span></div>
+            <div class="metric">Zustellung <span class="bad">Junk</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">3 × hoch</span>
+            <span class="pill pill-amber">4 × mittel</span>
+            <span class="pill pill-gray">1 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> Kein DKIM · Versand über Consumer-ISP (T-Online) statt professionellem ESP · Marken-Impersonation (Netto-Erwähnung) · SCL 6 · Junk
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="retec/t-online.de/report-0026.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="retec/t-online.de/report-0026.html" download="t-online.de-BestellungWaterTechnology-0026.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('retec/t-online.de/action-plan.html','Technischer Aktionsplan · retec-water-technology@t-online.de')">
+        <div class="card-left">
+          <div class="card-title">Technischer Aktionsplan — ESP-Migration, DKIM, Domain-Konsolidierung</div>
+          <div class="card-meta">7. Mai 2026 · retec-water-technology@t-online.de · T-Online</div>
+          <div class="pills">
+            <span class="pill pill-red">Hoch</span>
+            <span class="pill pill-amber">Mittel</span>
+          </div>
+          <div class="key-issue">
+            <strong>Kritischster Punkt:</strong> Migration von T-Online Consumer-ISP auf professionellen ESP mit eigener Domain (retec-water-technology.de) und vollständiger SPF/DKIM/DMARC-Konfiguration
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="retec/t-online.de/action-plan.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="retec/t-online.de/action-plan.html" download="t-online.de-TechnischerAktionsplan.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <!-- Unified Anschreiben -->
+      <div class="subdomain-label">Konsolidiertes Anschreiben — alle Systeme</div>
+
+      <div class="report-card" onclick="openModal('retec/anschreiben-unified.html','Anschreiben – RETEC Unternehmensgruppe (alle Systeme)')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben — Deliverability-Angebot (Unternehmensgruppe)</div>
+          <div class="card-meta">7. Mai 2026 · Thomas Felber an Marvin Hauke · retec-regenwassertechnik.de</div>
+          <div class="pills">
+            <span class="pill" style="color:#60a5fa;border-color:#1e3a5f;background:#0a1628;">Erfolgsbasiert · € 600</span>
+            <span class="pill pill-gray">5 Systeme · 1 Anschreiben</span>
+          </div>
+          <div class="key-issue">
+            Systemübergreifendes Angebot: alle 4 Domains und 5 Versandinfrastrukturen (M365, Shopware/Dogado, Ionos, T-Online) in einer koordinierten Bestandsaufnahme.
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="retec/anschreiben-unified.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="retec/anschreiben-unified.html" download="retec-Anschreiben-Unified-Deliverability.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── juh-mitglieder.johanniter.de ────────────────────────────────── -->
+  <div class="domain-block">
+    <div class="domain-header">
+      <div class="domain-icon">🚑</div>
+      <div>
+        <div class="domain-name">juh-mitglieder.johanniter.de</div>
+        <div class="domain-meta">Mailjet · 1 Report + Aktionsplan + Anschreiben</div>
+      </div>
+    </div>
+
+    <div class="report-grid">
+
+      <div class="report-card" onclick="openModal('juh-mitglieder.johanniter.de/report-0030.html','Report #0030 — Spam Scorer Analysis · juh-mitglieder.johanniter.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0030 — Spam Scorer Analysis</div>
+          <div class="card-meta">8. Apr 2026 · mitgliederservice.sued@juh-mitglieder.johanniter.de via Mailjet · Spam Scorer v2.0.21</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">compauth <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="bad">7/10</span></div>
+            <div class="metric">Zustellung <span class="bad">Junk</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">3 × hoch</span>
+            <span class="pill pill-amber">3 × mittel</span>
+            <span class="pill pill-gray">2 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> Mailjet-IP 87.253.234.214 ohne PTR-Record · Behörden-Trigger „Finanzamt" im Body · Return-Path-Mismatch (bnc3.mailjet.com) · OFR:SpamFilter überstimmt Auth-Pass
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="juh-mitglieder.johanniter.de/report-0030.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="juh-mitglieder.johanniter.de/report-0030.html" download="juh-mitglieder.johanniter.de-Zuwendungsbestaetigung-0030.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('juh-mitglieder.johanniter.de/action-plan.html','Technischer Aktionsplan · juh-mitglieder.johanniter.de')">
+        <div class="card-left">
+          <div class="card-title">Technischer Aktionsplan — IP-Reputation, Custom Bounce Domain, Content</div>
+          <div class="card-meta">7. Mai 2026 · juh-mitglieder.johanniter.de · Mailjet</div>
+          <div class="pills">
+            <span class="pill pill-red">Hoch</span>
+            <span class="pill pill-amber">Mittel</span>
+          </div>
+          <div class="key-issue">
+            <strong>Kritischster Punkt:</strong> PTR-Record bei Mailjet beantragen · Custom Bounce Domain für SPF-Alignment · Finanzamt-Formulierung in Body entschärfen
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="juh-mitglieder.johanniter.de/action-plan.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="juh-mitglieder.johanniter.de/action-plan.html" download="juh-mitglieder.johanniter.de-TechnischerAktionsplan.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('juh-mitglieder.johanniter.de/anschreiben.html','Anschreiben · juh-mitglieder.johanniter.de')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben — Deliverability-Angebot</div>
+          <div class="card-meta">7. Mai 2026 · Thomas Felber an Johanniter-Unfall-Hilfe</div>
+          <div class="pills">
+            <span class="pill pill-gray">Transaktionale Pflichtdokumente</span>
+          </div>
+          <div class="key-issue">
+            Steuerrechtlich relevante Zuwendungsbestätigungen landen im Junk — Angebot zur Behebung durch IP-Reputation, Custom Tracking Domain und Content-Optimierung.
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="juh-mitglieder.johanniter.de/anschreiben.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="juh-mitglieder.johanniter.de/anschreiben.html" download="juh-mitglieder.johanniter.de-Anschreiben-Deliverability.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── cylex.de ────────────────────────────────────────────────────── -->
+  <div class="domain-block">
+    <div class="domain-header">
+      <div class="domain-icon">📋</div>
+      <div>
+        <div class="domain-name">cylex.de</div>
+        <div class="domain-meta">Mandrill (Mailchimp) · 2 Reports + 2 Anschreiben</div>
+      </div>
+    </div>
+
+    <div class="report-grid">
+
+      <div class="report-card" onclick="openModal('cylex.de/report-0032.html','Report #0032 — Spam Scorer Analysis · info@cylex.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0032 — Spam Scorer Analysis</div>
+          <div class="card-meta">7. Mai 2026 · info@cylex.de via Mandrill · Spam Scorer v2.0.21</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="bad">9/10</span></div>
+            <div class="metric">AI <span class="ok">2/10</span></div>
+            <div class="metric">Zustellung <span class="bad">Junk</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">3 × hoch</span>
+            <span class="pill pill-amber">4 × mittel</span>
+            <span class="pill pill-gray">2 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> PTR-Record zeigt auf „localhost" (198.2.145.26) · Mandrill-DKIM misaligned (mandrillapp.com ≠ cylex.de) · generische Massen-Anrede · OFR:SpamFilter
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="cylex.de/report-0032.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="cylex.de/report-0032.html" download="cylex.de-FirmenprofildGeloescht-0032.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('cylex.de/report-0033.html','Report #0033 — Spam Scorer Analysis · noreply@cylex.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0033 — Spam Scorer Analysis</div>
+          <div class="card-meta">6. Mai 2026 · noreply@cylex.de via Mandrill · Spam Scorer v2.0.21</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="bad">8/10</span></div>
+            <div class="metric">AI <span class="ok">2/10</span></div>
+            <div class="metric">Zustellung <span class="bad">Junk</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">3 × hoch</span>
+            <span class="pill pill-amber">4 × mittel</span>
+            <span class="pill pill-gray">2 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> PTR-Record zeigt auf „localhost" (205.201.131.1) · Mandrill-DKIM misaligned · Return-Path über mandrillapp.com · OFR:SpamFilter
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="cylex.de/report-0033.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="cylex.de/report-0033.html" download="cylex.de-FirmenprofildSchliessen-0033.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('cylex.de/anschreiben-1.html','Anschreiben · info@cylex.de')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben — Deliverability-Angebot (info@)</div>
+          <div class="card-meta">19. Jan 2025 · Thomas Felber an Cylex Deutschland</div>
+          <div class="pills">
+            <span class="pill" style="color:#60a5fa;border-color:#1e3a5f;background:#0a1628;">Erfolgsbasiert · € 650</span>
+            <span class="pill pill-gray">Kollegiale Basis</span>
+          </div>
+          <div class="key-issue">
+            Angebot zur Behebung der Junk-Zustellung trotz vollständiger Auth-Pass — PTR-Fix, IP-Reputation, Return-Path-Alignment.
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="cylex.de/anschreiben-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="cylex.de/anschreiben-1.html" download="cylex.de-Anschreiben-Deliverability-1.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('cylex.de/anschreiben-2.html','Anschreiben · noreply@cylex.de')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben — Deliverability-Angebot (noreply@)</div>
+          <div class="card-meta">16. Jan 2025 · Thomas Felber an Cylex Deutschland</div>
+          <div class="pills">
+            <span class="pill" style="color:#60a5fa;border-color:#1e3a5f;background:#0a1628;">Erfolgsbasiert · € 650</span>
+            <span class="pill pill-gray">Kollegiale Basis</span>
+          </div>
+          <div class="key-issue">
+            Angebot an noreply@cylex.de — Mandrill-IP-Reputation, Custom Return-Path, Engagement-Segmentierung.
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="cylex.de/anschreiben-2.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="cylex.de/anschreiben-2.html" download="cylex.de-Anschreiben-Deliverability-2.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <!-- ── terrafinanz.de ────────────────────────────────────────────────── -->
   <div class="domain-block">

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spam Analysis Report #0027</title>
+  <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.5; background: #f1f5f9; color: #1e293b; }
+.page { max-width: 820px; margin: 0 auto; padding: 24px; }
+
+/* Header */
+.rpt-header { display: flex; justify-content: space-between; align-items: flex-start; background: linear-gradient(135deg, #1e3a5f 0%, #0f4c81 100%); color: white; border-radius: 12px 12px 0 0; padding: 24px 28px; }
+.rpt-header h1 { font-size: 20px; font-weight: 700; }
+.rpt-meta { margin-top: 4px; font-size: 11px; opacity: .7; }
+.rpt-header-badge { background: rgba(255,255,255,.15); border-radius: 20px; padding: 4px 14px; font-size: 11px; white-space: nowrap; margin-top: 4px; }
+
+/* Subject box */
+.rpt-subject-box { background: #fff; border: 1px solid #e2e8f0; border-top: none; padding: 16px 24px; margin-bottom: 16px; }
+.meta-table { width: 100%; border-collapse: collapse; }
+.meta-table th { text-align: left; font-weight: 600; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; width: 80px; padding: 3px 10px 3px 0; vertical-align: top; }
+.meta-table td { padding: 3px 0; font-size: 13px; word-break: break-word; }
+
+/* Metrics grid */
+.rpt-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.metric-card { background: #fff; border-radius: 10px; padding: 16px 20px; border-top: 4px solid var(--accent, #94a3b8); text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.metric-score { font-size: 38px; font-weight: 800; color: var(--accent, #1e293b); line-height: 1; }
+.metric-denom { font-size: 18px; font-weight: 400; color: #94a3b8; }
+.metric-label { font-size: 10px; text-transform: uppercase; color: #64748b; margin-top: 6px; letter-spacing: .05em; }
+.metric-verdict { font-size: 12px; font-weight: 600; margin-top: 4px; color: var(--accent, #1e293b); }
+
+/* Sections */
+.rpt-section { background: #fff; border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.rpt-section h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #1e3a5f; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 14px; }
+.rpt-section ul { padding-left: 20px; }
+.rpt-section li { margin-bottom: 4px; font-size: 13px; }
+.none { color: #94a3b8; font-style: italic; font-size: 13px; }
+.ai-summary, .advice-intro { background: #f8fafc; border-left: 3px solid #60a5fa; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 12px; color: #374151; font-size: 13px; }
+
+/* Auth badges */
+.rpt-auth-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.rpt-auth-badge { padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1px solid transparent; }
+.auth-pass     { background: #dcfce7; color: #166534; border-color: #86efac; }
+.auth-fail     { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+.auth-softfail { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+.auth-warn     { background: #fff7ed; color: #9a3412; border-color: #fdba74; }
+.auth-none     { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
+
+/* Findings */
+.finding { background: #fff; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; border-left: 4px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.finding.prio-hoch    { border-left-color: #dc2626; }
+.finding.prio-mittel  { border-left-color: #d97706; }
+.finding.prio-niedrig { border-left-color: #16a34a; }
+.finding-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.f-category { background: #eff6ff; color: #1d4ed8; border-radius: 20px; padding: 2px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.f-priority { border-radius: 20px; padding: 2px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.prio-hoch    .f-priority { background: #fee2e2; color: #991b1b; }
+.prio-mittel  .f-priority { background: #fef9c3; color: #854d0e; }
+.prio-niedrig .f-priority { background: #dcfce7; color: #166534; }
+.finding-title { font-weight: 700; font-size: 14px; margin-bottom: 10px; color: #0f172a; }
+.finding-ist-soll { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.finding-ist, .finding-soll { display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; padding: 4px 10px; font-size: 12px; }
+.finding-ist  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.finding-soll { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.f-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; opacity: .7; }
+.f-arrow { font-size: 16px; color: #94a3b8; }
+.finding-details { margin-bottom: 8px; }
+.det-ist  { font-size: 12px; color: #991b1b; margin-bottom: 3px; }
+.det-soll { font-size: 12px; color: #166534; margin-bottom: 3px; }
+.finding-action { font-size: 13px; color: #374151; line-height: 1.6; }
+.finding-callout { border-radius: 6px; padding: 10px 14px; margin-top: 12px; }
+.finding-callout strong { display: block; margin-bottom: 4px; font-size: 12px; }
+.finding-callout p { font-size: 12px; line-height: 1.5; margin: 0; }
+.co-ok   { background: #f0fdf4; border: 1px solid #86efac; color: #14532d; }
+.co-diag { background: #eff6ff; border: 1px solid #93c5fd; color: #1e3a8a; }
+.co-warn { background: #fff7ed; border: 1px solid #fdba74; color: #7c2d12; }
+
+/* Hidden-text section */
+.rpt-hidden-info { font-size: 12px; color: #64748b; margin-bottom: 12px; }
+.rpt-hidden-list { list-style: none; padding: 0; margin: 0; }
+.rpt-hidden-item { display: flex; gap: 10px; align-items: flex-start; background: #fef9c3; border-left: 3px solid #ca8a04; padding: 8px 12px; margin-bottom: 6px; border-radius: 0 6px 6px 0; }
+.rpt-hidden-num { color: #854d0e; font-weight: 700; font-size: 12px; flex-shrink: 0; min-width: 24px; }
+.rpt-hidden-code { font-family: 'Cascadia Code', 'Consolas', 'Menlo', monospace; font-size: 12px; color: #422006; word-break: break-word; white-space: pre-wrap; line-height: 1.5; }
+
+/* DNS table */
+.rpt-warn { color: #dc2626; font-size: 13px; }
+.rpt-dns-type { display: inline-block; font-size: 10px; font-weight: 700; background: #e0e7ff; color: #3730a3; border-radius: 3px; padding: 1px 5px; margin-right: 5px; vertical-align: middle; }
+.meta-table code { font-family: 'Cascadia Code','Consolas','Menlo',monospace; font-size: 12px; word-break: break-all; }
+
+/* Footer */
+.rpt-footer { text-align: center; color: #94a3b8; font-size: 11px; padding: 20px 0 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="rpt-header">
+    <div>
+      <h1>E-Mail Deliverability Report</h1>
+      <p class="rpt-meta">Report #0027 · Created: 5/7/2026, 2:40:19 PM</p>
+    </div>
+    <div class="rpt-header-badge">Spam Scorer v2.0.21</div>
+  </header>
+
+  <div class="rpt-subject-box">
+    <table class="meta-table">
+      <tr><th>Subject</th><td>Offener Saldo/Zahlungserinnerung</td></tr>
+      <tr><th>Sender</th><td>RETEC Finanzabteilung &lt;rechnung@retec-regenwassertechnik.de&gt;</td></tr>
+      <tr><th>Date</th><td>Fri, 29 Aug 2025 10:34:35 +0000</td></tr>
+    </table>
+  </div>
+
+  <div class="rpt-metrics">
+    <div class="metric-card" style="--accent: #7f1d1d">
+      <div class="metric-score">8<span class="metric-denom">/10</span></div>
+      <div class="metric-label">Add-in Score</div>
+      <div class="metric-verdict">Probably spam</div>
+    </div>
+    <div class="metric-card" style="--accent: #16a34a">
+      <div class="metric-score">2<span class="metric-denom">/10</span></div>
+      <div class="metric-label">AI Score</div>
+      <div class="metric-verdict">ham · 88%</div>
+    </div>
+  </div>
+
+  <section class="rpt-section">
+    <h2>Infrastruktur</h2>
+    <table class="meta-table">
+      <tr><th>Sendende IP</th><td><code>52.101.66.128</code></td></tr>
+      <tr><th>PTR / Hostname</th><td class="rpt-warn">nicht aufgelöst</td></tr>
+    </table>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Authentication</h2>
+    <div class="rpt-auth-row"><span class="rpt-auth-badge auth-pass">SPF PASS</span><span class="rpt-auth-badge auth-pass">DKIM PASS</span><span class="rpt-auth-badge auth-warn">DMARC BESTGUESSPASS</span><span class="rpt-auth-badge auth-pass">compauth PASS</span></div>
+  </section>
+
+  <section class="rpt-section">
+    <h2>DNS-Konfiguration</h2>
+    <table class="meta-table">
+      <tr><th>SPF</th><td><code>v=spf1 include:spf.protection.outlook.com -all</code></td></tr>
+      <tr><th>DMARC</th><td class="rpt-warn">kein Eintrag gefunden</td></tr>
+      <tr><th>DKIM</th><td class="rpt-warn">keine bekannten Selektoren gefunden</td></tr>
+    </table>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Add-in Spam Indicators</h2>
+    <ul><li>Microsoft SCL 6: als Junk eingestuft</li><li>Microsoft Exchange: an Junk-Ordner zugestellt</li><li>Microsoft Exchange: Spam-Filter hat Auth-Pass überstimmt (OFR:SpamFilter)</li><li>Microsoft Exchange: Doppel-Signal — Junk-Zustellung UND Filter-Override</li><li>HELO-Domain abweichend (duzpr83cu001.outbound.protection.outlook.com ≠ retec-regenwassertechnik.de)</li><li>DKIM-Signatur-Domain abweichend (retecregenwassertechnik.onmicrosoft.com ≠ retec-regenwassertechnik.de)</li><li>Sehr langer Sub-Domain-Name</li></ul>
+  </section>
+
+  
+
+  <section class="rpt-section">
+    <h2>AI Analysis</h2>
+    <p class="ai-summary">Diese E-Mail ist legitime geschäftliche Korrespondenz von einem etablierten Unternehmen mit vollständigen Authentifizierungserfolgen (SPF, DKIM, DMARC). Der Inhalt zeigt typische Zahlungserinnerungsmerkmale mit spezifischen Kundendetails und klaren Handlungsoptionen.</p>
+    <ul><li>SPF pass with legitimate sender IP</li><li>DKIM signature verified</li><li>DMARC pass (bestguesspass)</li><li>Sender domain alignment (retec-regenwassertechnik.de)</li><li>No URL shorteners detected</li><li>No UTF-8 encoding issues</li><li>No merge tag placeholders</li><li>Legitimate business context: payment reminder for invoice</li><li>Specific customer details (account number, invoice number, amount)</li><li>Clear payment instructions with IBAN/BIC</li><li>Multiple resolution options provided (payment proof, invoice request, etc.)</li><li>Professional German business correspondence format</li><li>Microsoft Office 365 infrastructure (legitimate business email)</li></ul>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Recommendations for the Sender</h2>
+    <p class="advice-intro">Die E-Mail wird trotz erfolgreicher Authentifizierung (SPF, DKIM, DMARC) von Microsoft als Spam klassifiziert (SCL 6, Junk-Zustellung). Hauptprobleme: Domain-Alignment-Inkonsistenzen (HELO/DKIM weichen von der Absender-Domain ab), fehlender PTR-Eintrag für die sendende IP und typisches Zahlungserinnerungs-Content-Muster, das Filter triggert.</p>
+    <div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Authentifizierung</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">PTR-Eintrag für sendende IP einrichten</div>
+    
+    
+    <div class="finding-action">Konfigurieren Sie einen PTR-Record (Reverse DNS) für 52.101.66.128, idealerweise mit einem Hostnamen, der zu Ihrer Domain retec-regenwassertechnik.de passt (z.B. mail.retec-regenwassertechnik.de). Kontaktieren Sie Ihren Microsoft 365-Administrator oder Support.</div>
+    
+  </div><div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Authentifizierung</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">DKIM-Signatur-Domain angleichen</div>
+    
+    
+    <div class="finding-action">Die DKIM-Signatur verwendet aktuell 'retecregenwassertechnik.onmicrosoft.com'. Konfigurieren Sie Microsoft 365 so, dass DKIM mit Ihrer Hauptdomain 'retec-regenwassertechnik.de' signiert wird. Fügen Sie die erforderlichen CNAME-Records im DNS hinzu (selector1._domainkey und selector2._domainkey).</div>
+    
+  </div><div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Infrastruktur</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">HELO/EHLO-Hostname anpassen</div>
+    
+    
+    <div class="finding-action">Der HELO-Name 'duzpr83cu001.outbound.protection.outlook.com' weicht stark von Ihrer Domain ab. Falls Sie Microsoft 365 nutzen, prüfen Sie benutzerdefinierte Connector-Einstellungen oder Outbound-Routing, um einen passenderen HELO-Namen zu erzwingen.</div>
+    
+  </div><div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">Zahlungserinnerung-Formulierung entschärfen</div>
+    
+    
+    <div class="finding-action">Ersetzen Sie typische Spam-Trigger: Vermeiden Sie 'offener Saldo', 'Zahlungserinnerung' im Betreff. Nutzen Sie z.B. 'Freundliche Erinnerung Rechnung 251942' oder 'Status Ihrer Rechnung'. Entfernen Sie das Ø-Symbol (kann als Obfuskation interpretiert werden).</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Infrastruktur</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">IP-Reputation überwachen und verbessern</div>
+    
+    
+    <div class="finding-action">Überwachen Sie die Reputation von 52.101.66.128 über Microsoft SNDS (Smart Network Data Services) und externe Tools (Sender Score, Talos). Reduzieren Sie Beschwerderaten durch Double-Opt-in und klare Abmeldelinks. Implementieren Sie ein Feedback-Loop-Monitoring.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">E-Mail-Formatierung professionalisieren</div>
+    
+    
+    <div class="finding-action">Entfernen Sie ungewöhnliche Sonderzeichen und übermäßige Leerzeichen. Strukturieren Sie den Text mit klaren Absätzen. Fügen Sie ein professionelles HTML-Design hinzu (plain text wirkt oft weniger vertrauenswürdig). Nutzen Sie ein Template mit Firmenlogo und Footer.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">Call-to-Action vereinfachen</div>
+    
+    
+    <div class="finding-action">Die Anweisung 'Kopieren Sie die Zeile in den Betreff und ersetzen Sie xxx' ist komplex und wirkt ungewöhnlich. Bieten Sie stattdessen einen direkten Reply-Link oder ein Online-Formular zur Klärung an. Vereinfachen Sie die Kontaktaufnahme.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Listen-Hygiene</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">Empfänger-Segmentierung für Mahnungen</div>
+    
+    
+    <div class="finding-action">Segmentieren Sie Zahlungserinnerungen: Versenden Sie nur an Empfänger mit dokumentierter Geschäftsbeziehung. Implementieren Sie ein gestaffeltes Mahnsystem (1., 2., 3. Erinnerung) mit unterschiedlichen Tonalitäten, um aggressive Filter-Scores zu vermeiden.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Authentifizierung</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">DMARC-Policy verschärfen</div>
+    
+    
+    <div class="finding-action">Ihr DMARC zeigt 'bestguesspass' — dies deutet auf unvollständiges Alignment hin. Setzen Sie eine explizite DMARC-Policy (p=quarantine oder p=reject) mit korrektem Alignment (aspf=r, adkim=r für relaxed mode) und richten Sie Reporting-Adressen ein (rua=, ruf=).</div>
+    
+  </div><div class="finding prio-niedrig">
+    <div class="finding-header">
+      <span class="f-category">Engagement</span>
+      <span class="f-priority">niedrig</span>
+    </div>
+    <div class="finding-title">Engagement-Signale durch Multi-Channel-Kommunikation</div>
+    
+    
+    <div class="finding-action">Ergänzen Sie Zahlungserinnerungen per Post oder SMS bei höheren Beträgen. Dies reduziert das Volumen kritischer E-Mails und verbessert die Engagement-Rate der verbleibenden E-Mails (weniger Ignoring, weniger Spam-Reports).</div>
+    
+  </div><div class="finding prio-niedrig">
+    <div class="finding-header">
+      <span class="f-category">Infrastruktur</span>
+      <span class="f-priority">niedrig</span>
+    </div>
+    <div class="finding-title">Microsoft 365-Tenant-Reputation prüfen</div>
+    
+    
+    <div class="finding-action">Prüfen Sie die Gesamt-Reputation Ihres Microsoft 365-Tenants über das Microsoft 365 Admin Center (Security &amp; Compliance). Stellen Sie sicher, dass keine anderen Nutzer im Tenant Spam versenden, da dies die gemeinsame IP-Reputation belastet.</div>
+    
+  </div>
+  </section>
+
+  <footer class="rpt-footer">
+    Generated by Spam Scorer v2.0.21 · 5/7/2026, 2:40:19 PM
+  </footer>
+
+</div>
+</body>
+</html>

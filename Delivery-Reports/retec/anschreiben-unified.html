@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anschreiben – E-Mail-Zustellbarkeit RETEC Unternehmensgruppe</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background-color: #fff; padding: 60px 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 4px; }
+        .date { font-size: 14px; color: #666; margin-bottom: 30px; }
+        .salutation { margin-bottom: 25px; font-size: 16px; }
+        .paragraph { margin-bottom: 20px; font-size: 15px; line-height: 1.8; }
+        .highlight-problem { background-color: #fff3cd; padding: 20px; border-left: 4px solid #ff9800; margin: 25px 0; border-radius: 3px; }
+        .highlight-problem p { margin: 0 0 10px; font-size: 15px; line-height: 1.7; }
+        .highlight-problem p:last-child { margin-bottom: 0; }
+        .systems-list { margin: 16px 0 0 0; padding-left: 0; list-style: none; }
+        .systems-list li { padding: 6px 0 6px 20px; font-size: 14px; line-height: 1.6; position: relative; }
+        .systems-list li::before { content: "→"; position: absolute; left: 0; color: #e65100; font-weight: 700; }
+        .offer-section { background-color: #e8f5e9; padding: 20px; border-left: 4px solid #4caf50; margin: 25px 0; border-radius: 3px; }
+        .offer-section h3 { color: #2e7d32; font-size: 16px; margin-bottom: 15px; }
+        .offer-option { margin-bottom: 15px; font-size: 15px; line-height: 1.7; }
+        .offer-option strong { color: #1b5e20; }
+        .offer-option:last-child { margin-bottom: 0; }
+        .closing { margin-top: 35px; font-size: 15px; line-height: 1.7; }
+        .signature { margin-top: 40px; font-size: 15px; }
+        .signature-name { font-weight: 600; margin-bottom: 8px; }
+        .signature-contact { color: #0066cc; margin-bottom: 3px; }
+        .signature-contact a { color: #0066cc; text-decoration: none; }
+        .signature-contact a:hover { text-decoration: underline; }
+        .signature-location { color: #666; font-size: 14px; }
+        .recipient-email { margin-bottom: 30px; font-size: 14px; }
+        .recipient-email a { color: #0066cc; text-decoration: none; }
+        .recipient-email a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="recipient-email">
+            An: <a href="mailto:m.hauke@retec-regenwassertechnik.de">m.hauke@retec-regenwassertechnik.de</a>
+        </div>
+
+        <div class="date">München, 7. Mai 2026</div>
+
+        <div class="salutation">
+            Sehr geehrter Herr Hauke,
+        </div>
+
+        <div class="paragraph">
+            ich habe in den letzten Wochen mehrere E-Mails Ihres Unternehmens analysiert — aus verschiedenen Abteilungen und über verschiedene Kanäle. Was ich dabei festgestellt habe, möchte ich Ihnen direkt mitteilen: <strong>Nahezu jedes E-Mail-System, das Ihr Unternehmen nutzt, hat ein strukturelles Zustellbarkeitsproblem.</strong>
+        </div>
+
+        <div class="paragraph">
+            Das ist kein Vorwurf, sondern ein Muster, das ich regelmäßig bei mittelständischen Unternehmen sehe, die über Jahre hinweg verschiedene Systeme aufgebaut haben, ohne sie zentral zu koordinieren. Und es ist behebbar — wenn man es als Ganzes angeht.
+        </div>
+
+        <div class="highlight-problem">
+            <p><strong>Was ich konkret analysiert habe:</strong></p>
+            <ul class="systems-list">
+                <li><strong>retec-regenwassertechnik.de / Microsoft 365</strong> (Ihre geschäftliche Kommunikation, z.B. m.hauke@): DKIM signiert mit onmicrosoft.com statt Ihrer eigenen Domain — Microsoft-Empfänger stufen das als Misalignment ein. OFR:SpamFilter überstimmt den Auth-Pass.</li>
+                <li><strong>rechnung@retec-regenwassertechnik.de</strong> (Finanzabteilung): Zahlungserinnerungen landen mit SCL 6 im Junk — trotz bestandener Authentifizierung. Betreff und Content-Muster triggern zusätzlich Spam-Filter.</li>
+                <li><strong>retec-shop@retec-regenwassertechnik.de</strong> (Shopware/Bestellbestätigungen): SPF schlägt fehl, kein DKIM, kein DMARC. Bestellbestätigungen aus Ihrem Shop werden von vielen Empfänger-Systemen aktiv blockiert.</li>
+                <li><strong>retec-water-technology.de</strong> (Dogado-Hosting): DKIM-Schlüssel vorhanden, aber ungültig (DNS-Key fehlt) → DKIM FAIL, SCL 6, Junk-Zustellung.</li>
+                <li><strong>retec-water-technology@t-online.de</strong> (Consumer-ISP): Kein DKIM, keine eigene Infrastruktur — Versand über T-Online Consumer-IP mit SCL 6 und OFR-Override bei Microsoft.</li>
+            </ul>
+        </div>
+
+        <div class="paragraph">
+            Das bedeutet im Alltag: Kunden, die eine Bestellung aufgeben, sehen die Bestätigung nicht. Rechnungen und Zahlungserinnerungen erreichen Empfänger nicht zuverlässig. Geschäftliche Korrespondenz landet im Junk. Das alles passiert still — Sie bekommen keine Fehlermeldung, die E-Mail wird einfach nicht gelesen.
+        </div>
+
+        <div class="paragraph">
+            Was diese Situation besonders ist: Die Probleme sind auf jeder Ebene unterschiedlicher Natur — ein anderer Hosting-Provider hier, ein ungepflegter DNS-Eintrag dort, eine falsch konfigurierte Microsoft-365-Instanz woanders. Wer nur eine Baustelle schließt, löst das Problem nicht. Es braucht eine koordinierte Bestandsaufnahme über alle Versandwege.
+        </div>
+
+        <div class="offer-section">
+            <h3>Wie ich Ihnen helfen kann</h3>
+            <div class="offer-option">
+                <strong>Option A – Erfolgsbasiert:</strong> Ich analysiere Ihre gesamte E-Mail-Infrastruktur systemübergreifend, identifiziere alle Konfigurationslücken und begleite die Behebung — von DNS-Einträgen bis zur Microsoft-365-DKIM-Konfiguration. Mein Honorar von <strong>€ 600</strong> wird erst fällig, wenn die Zustellbarkeit nachweislich verbessert ist. Sie gehen kein Risiko ein.
+            </div>
+            <div class="offer-option">
+                <strong>Option B – Kollegial:</strong> Falls Sie lieber zunächst ein Gespräch führen möchten, um einzuschätzen, was realistisch ist und was nicht — das ist selbstverständlich möglich, ohne jede Verpflichtung.
+            </div>
+        </div>
+
+        <div class="closing">
+            Ich stehe für ein kurzes Gespräch jederzeit zur Verfügung. In 20 Minuten kann ich Ihnen zeigen, wo genau die Probleme liegen und was konkret zu tun ist.
+        </div>
+
+        <div class="signature">
+            <div class="signature-name">Freundliche Grüße</div>
+            <div style="margin-top: 25px;">
+                <div class="signature-name">Thomas Felber</div>
+                <div class="signature-contact">
+                    <a href="mailto:felber@live.de?subject=E-Mail-Zustellbarkeit%20RETEC">felber@live.de</a>
+                </div>
+                <div class="signature-contact">
+                    <a href="tel:+491709064924">+49 170 906 49 24</a>
+                </div>
+                <div class="signature-location">München</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

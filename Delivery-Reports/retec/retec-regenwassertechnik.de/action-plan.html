@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deliverability Action Plan – retec-regenwassertechnik.de</title>
+<style>
+  :root {
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --primary: #1a3a5c;
+    --accent: #2563eb;
+    --danger: #dc2626;
+    --warn: #d97706;
+    --ok: #16a34a;
+    --low: #6b7280;
+    --border: #d1d5db;
+    --code-bg: #f1f5f9;
+    --text: #1f2937;
+    --sub: #4b5563;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+  header { background: var(--primary); color: #fff; padding: 24px 32px; }
+  header h1 { font-size: 20px; font-weight: 700; }
+  header p { font-size: 12px; color: #a0aec0; margin-top: 4px; }
+  .meta-bar { background: #1e4976; color: #cbd5e1; font-size: 12px; padding: 8px 32px; display: flex; gap: 32px; flex-wrap: wrap; }
+  .meta-bar span strong { color: #fff; }
+  main { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+  section { background: var(--card); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 20px; overflow: hidden; }
+  .sec-header { background: var(--primary); color: #fff; padding: 10px 20px; font-size: 13px; font-weight: 700; letter-spacing: .4px; display: flex; align-items: center; gap: 8px; }
+  .sec-header .num { background: var(--accent); border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+  .sec-body { padding: 16px 20px; }
+  h3 { font-size: 13px; font-weight: 700; color: var(--primary); margin: 14px 0 6px; }
+  h3:first-child { margin-top: 0; }
+  p { margin-bottom: 8px; }
+  ul { padding-left: 20px; margin-bottom: 8px; }
+  li { margin-bottom: 4px; }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 12px; color: #374151; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+  .b-danger { background: #fee2e2; color: var(--danger); }
+  .b-warn { background: #fef3c7; color: var(--warn); }
+  .b-ok { background: #dcfce7; color: var(--ok); }
+  .b-low { background: #f3f4f6; color: var(--low); }
+  .b-info { background: #dbeafe; color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f1f5f9; color: var(--primary); font-weight: 700; padding: 8px 10px; text-align: left; border-bottom: 2px solid var(--border); }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f9fafb; }
+  .row-crit td:first-child { border-left: 3px solid var(--danger); }
+  .row-high td:first-child { border-left: 3px solid var(--warn); }
+  .row-med td:first-child { border-left: 3px solid #eab308; }
+  .row-low td:first-child { border-left: 3px solid var(--low); }
+  .auth-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 8px; }
+  .auth-card { border: 1px solid var(--border); border-radius: 5px; padding: 10px 12px; }
+  .auth-card .label { font-size: 11px; font-weight: 700; color: var(--sub); text-transform: uppercase; }
+  .auth-card .value { font-size: 13px; font-weight: 700; margin: 4px 0 2px; }
+  .auth-card .detail { font-size: 11px; color: var(--sub); }
+  .ok-border { border-top: 3px solid var(--ok); }
+  .warn-border { border-top: 3px solid var(--warn); }
+  .danger-border { border-top: 3px solid var(--danger); }
+  .info-box { background: #eff6ff; border-left: 4px solid var(--accent); padding: 10px 14px; border-radius: 0 4px 4px 0; margin: 8px 0; font-size: 13px; }
+  .warn-box { background: #fffbeb; border-left: 4px solid var(--warn); padding: 10px 14px; border-radius: 0 4px 4px 0; margin: 8px 0; font-size: 13px; }
+  .danger-box { background: #fef2f2; border-left: 4px solid var(--danger); padding: 10px 14px; border-radius: 0 4px 4px 0; margin: 8px 0; font-size: 13px; }
+  .ok-box { background: #f0fdf4; border-left: 4px solid var(--ok); padding: 10px 14px; border-radius: 0 4px 4px 0; margin: 8px 0; font-size: 13px; }
+  .score-box { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 10px; }
+  .score-item { text-align: center; padding: 12px 20px; border-radius: 6px; border: 1px solid var(--border); min-width: 100px; }
+  .score-item .s-val { font-size: 28px; font-weight: 800; }
+  .score-item .s-lbl { font-size: 11px; color: var(--sub); margin-top: 2px; }
+  .s-red { color: var(--danger); }
+  .s-green { color: var(--ok); }
+  footer { text-align: center; font-size: 11px; color: var(--sub); padding: 20px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📧 E-Mail Deliverability Action Plan</h1>
+  <p>Technische Analyse &amp; Maßnahmenplan für Absender-Infrastruktur</p>
+</header>
+
+<div class="meta-bar">
+  <span><strong>Absender:</strong> m.hauke@retec-regenwassertechnik.de</span>
+  <span><strong>Betreff:</strong> AW: Gutschrift zurückgesendete Membran</span>
+  <span><strong>Datum:</strong> Mi, 29. April 2026, 06:05 UTC</span>
+  <span><strong>Add-in Score:</strong> 4/10</span>
+  <span><strong>AI Score:</strong> 1/10 (ham)</span>
+  <span><strong>Sendende IP:</strong> 52.101.69.111</span>
+  <span><strong>Infrastruktur:</strong> Microsoft 365 / Exchange Online</span>
+</div>
+
+<main>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     1. EXECUTIVE SUMMARY
+═══════════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="sec-header"><span class="num">1</span> Executive Summary</div>
+  <div class="sec-body">
+    <div class="score-box">
+      <div class="score-item"><div class="s-val s-red">4/10</div><div class="s-lbl">Add-in Score</div></div>
+      <div class="score-item"><div class="s-val s-green">1/10</div><div class="s-lbl">AI Score (ham)</div></div>
+      <div class="score-item"><div class="s-val" style="color:var(--ok);">HAM</div><div class="s-lbl">KI-Verdict</div></div>
+      <div class="score-item"><div class="s-val" style="color:var(--warn);">OFR</div><div class="s-lbl">SpamFilter Override</div></div>
+    </div>
+    <p>Die E-Mail von <code>m.hauke@retec-regenwassertechnik.de</code> ist inhaltlich eindeutig legitime Geschäftskorrespondenz (KI-Verdict: ham, Score 1/10), wird jedoch von Microsofts Spam-Filterschicht (<code>OFR:SpamFilter</code>) blockiert, weil kritische Infrastruktur-Mismatches das maschinelle Vertrauen untergraben. Der Kernkonflikt: SPF ist korrekt aligned, DKIM wird aber von der <code>onmicrosoft.com</code>-Standarddomain signiert, nicht von <code>retec-regenwassertechnik.de</code>, was DMARC nur auf <code>bestguesspass</code> statt <code>pass</code> hebt.</p>
+    <p>Drei sofort adressierbare technische Defizite — fehlende benutzerdefinierte DKIM-Domain, kein expliziter DMARC-Record sowie HELO/Envelope-Mismatch — verursachen zusammen den erhöhten Add-in-Score. Die vollständige Behebung dieser Punkte würde die Zustellrate auf Microsoft-Empfänger (Outlook, Hotmail, Live) und weitere ISPs signifikant verbessern, ohne die Infrastruktur grundlegend zu ändern.</p>
+    <p>Priorität KRITISCH: Custom-DKIM-Signatur aktivieren. Priorität HOCH: DMARC-Record mit Reporting einrichten und anschließend auf <code>p=quarantine</code> → <code>p=reject</code> verschärfen.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     2. CRITICAL FINDINGS
+═══════════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="sec-header"><span class="num">2</span> Critical Findings</div>
+  <div class="sec-body">
+    <ul>
+      <li><span class="badge b-danger">KRITISCH</span> <strong>DKIM-Domain-Mismatch:</strong> Signatur unter <code>retecregenwassertechnik.onmicrosoft.com</code> statt <code>retec-regenwassertechnik.de</code>. DMARC-Identifier-Alignment schlägt fehl → Ergebnis nur <code>bestguesspass</code> (Microsoft-proprietär, wird von Drittanbietern nicht anerkannt).</li>
+      <li><span class="badge b-danger">KRITISCH</span> <strong>OFR:SpamFilter Override:</strong> Microsoft Exchange Spam-Filter hat die bestandenen Auth-Checks explizit überstimmt. Dies deutet auf einen negativ bewerteten SCL-Wert hin, der trotz Auth-Pass zugewiesen wurde — primär durch die oben genannten Alignment-Defizite ausgelöst.</li>
+      <li><span class="badge b-danger">KRITISCH</span> <strong>DMARC fehlt oder unvollständig:</strong> <code>dmarc=bestguesspass</code> zeigt, dass kein expliziter <code>_dmarc.retec-regenwassertechnik.de</code> TXT-Record existiert oder dieser keine Policy enthält. Ohne publizierten DMARC-Record kein Reporting, kein Schutz, reduziertes Sender-Vertrauen.</li>
+      <li><span class="badge b-warn">HOCH</span> <strong>HELO-Domain-Mismatch:</strong> HELO-Greeting lautet <code>AM0PR83CU005.outbound.protection.outlook.com</code> — nicht die Unternehmens-Domain. Für Exchange Online normal, aber in Kombination mit den anderen Signalen verstärkt es das Misstrauen.</li>
+      <li><span class="badge b-warn">HOCH</span> <strong>PTR / Reverse-DNS:</strong> Kein PTR-Eintrag für <code>52.101.69.111</code> auf die Unternehmens-Domain nachweisbar. Einige empfangende MX-Server werten dies negativ.</li>
+      <li><span class="badge b-warn">HOCH</span> <strong>Sehr langer Subdomain-Name:</strong> <code>AM0PR83CU005.outbound.protection.outlook.com</code> triggert bei einigen heuristischen Filtern eine Subdomainlängen-Warnung (Add-in-Signal bestätigt).</li>
+      <li><span class="badge b-low">NIEDRIG</span> <strong>ARC-Chain i=2 via microsoft.com:</strong> ARC ist korrekt gesiegelt und validiert (cv=pass), jedoch nur mit Microsoft-eigenem ARC-Sealer. Bei Weiterleitung zu Nicht-Microsoft-Systemen kann diese Chain nicht vollständig validiert werden.</li>
+      <li><span class="badge b-ok">INFO</span> <strong>SPF, CompAuth, TLS:</strong> SPF pass korrekt, CompAuth reason=109 (bestguesspass), TLS 1.2/1.3 durchgängig — diese Punkte sind positiv und bedürfen keiner Änderung.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     3. AUTHENTICATION ANALYSIS
+═══════════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="sec-header"><span class="num">3</span> Authentication Analysis</div>
+  <div class="sec-body">
+
+    <div class="auth-grid">
+      <div class="auth-card ok-border">
+        <div class="label">SPF</div>
+        <div class="value" style="color:var(--ok);">PASS ✓</div>
+        <div class="detail">IP <code>52.101.69.111</code> ist in SPF-Record von <code>retec-regenwassertechnik.de</code> autorisiert (via Microsoft 365 include). <code>smtp.mailfrom</code> aligned.</div>
+      </div>
+      <div class="auth-card danger-border">
+        <div class="label">DKIM</div>
+        <div class="value" style="color:var(--warn);">PASS – falsche Domain ⚠</div>
+        <div class="detail">Signatur verifiziert, aber <code>header.d=retecregenwassertechnik.onmicrosoft.com</code>. Kein Alignment mit <code>header.from=retec-regenwassertechnik.de</code> → DMARC-Alignment-Fail.</div>
+      </div>
+      <div class="auth-card danger-border">
+        <div class="label">DMARC</div>
+        <div class="value" style="color:var(--warn);">bestguesspass ⚠</div>
+        <div class="detail">Kein publizierter DMARC-Record. Microsoft nutzt proprietäres <code>bestguesspass</code>. Externe Empfänger ohne diesen Fallback sehen DMARC-Fail.</div>
+      </div>
+      <div class="auth-card ok-border">
+        <div class="label">ARC</div>
+        <div class="value" style="color:var(--ok);">PASS ✓</div>
+        <div class="detail">ARC i=2, <code>cv=pass</code>, gesiegelt von <code>microsoft.com</code> (arcselector10001). Forwarding-Kette intern vollständig valide.</div>
+      </div>
+      <div class="auth-card warn-border">
+        <div class="label">CompAuth</div>
+        <div class="value" style="color:var(--warn);">pass reason=109</div>
+        <div class="detail">Reason 109 = Microsoft-interne Heuristik-Überschreibung (bestguesspass). Kein Standard-DMARC-Ergebnis. Nur Microsoft-intern vertrauenswürdig.</div>
+      </div>
+      <div class="auth-card warn-border">
+        <div class="label">DKIM-Alignment</div>
+        <div class="value" style="color:var(--danger);">FAIL ✗</div>
+        <div class="detail"><code>d=retecregenwassertechnik.onmicrosoft.com</code> vs. <code>From: @retec-regenwassertechnik.de</code>. Weder strict noch relaxed alignment erfüllt.</div>
+      </div>
+      <div class="auth-card ok-border">
+        <div class="label">SPF-Alignment</div>
+        <div class="value" style="color:var(--ok);">PASS ✓</div>
+        <div class="detail"><code>smtp.mailfrom=retec-regenwassertechnik.de</code> matched <code>header.from</code> (relaxed). SPF-DMARC-Alignment erfüllt.</div>
+      </div>
+      <div class="auth-card warn-border">
+        <div class="label">Return-Path</div>
+        <div class="value" style="color:var(--ok);">aligned ✓</div>
+        <div class="detail">Envelope-Sender <code>retec-regenwassertechnik.de</code> matched From-Domain. Return-Path korrekt gesetzt.</div>
+      </div>
+    </div>
+
+    <h3>DMARC-Alignment-Analyse (Detail)</h3>
+    <div class="danger-box">
+      <strong>Problem:</strong> DMARC verlangt, dass mindestens SPF <em>oder</em> DKIM im Identifier-Alignment mit der <code>header.from</code>-Domain bestehen. SPF ist aligned (<code>retec-regenwassertechnik.de = retec-regenwassertechnik.de</code>), reicht aber nur, wenn ein expliziter DMARC-Record publiziert ist. Da kein <code>_dmarc</code>-Record existiert, kann DMARC nicht evaluiert werden — Microsoft füllt diese Lücke mit <code>bestguesspass</code>, ein Verhalten, das andere ESPs nicht replizieren.
+    </div>
+
+    <h3>ARC-Chain-Bewertung</h3>
+    <div class="info-box">
+      Die ARC-Kette mit <code>i=2</code> zeigt, dass die Nachricht durch mindestens zwei Verarbeitungsschritte innerhalb von Microsoft-Infrastruktur gegangen ist (Frontend-Transport → interne Relay-Hops). <code>oda=1</code> und <code>ltdi=1</code> im ARC-Pass-Detail bestätigen: Original DKIM (<code>header.d=retec-regenwassertechnik.de</code> in i=1-Layer vorhanden) wurde von der ARC-Chain bewahrt. Dies erklärt, warum intern CompAuth pass erzielt wird — extern ohne ARC-Vertrauen würde DMARC als <em>none/fail</em> erscheinen.
+    </div>
+
+    <h3>Empfehlung: DKIM-Konfiguration (Microsoft 365)</h3>
+    <ul>
+      <li>Im <strong>Microsoft 365 Defender Admin Center</strong> unter <em>Email &amp; collaboration → Policies → DKIM</em> die Domain <code>retec-regenwassertechnik.de</code> auswählen und aktivieren.</li>
+      <li>Zwei CNAME-Records im DNS publizieren:<br>
+        <code>selector1._domainkey.retec-regenwassertechnik.de → selector1-retec-regenwassertechnik-de._domainkey.retecregenwassertechnik.onmicrosoft.com</code><br>
+        <code>selector2._domainkey.retec-regenwassertechnik.de → selector2-retec-regenwassertechnik-de._domainkey.retecregenwassertechnik.onmicrosoft.com</code>
+      </li>
+      <li>Nach DNS-Propagation (TTL abwarten) DKIM in M365 aktivieren — ab diesem Moment signiert Exchange mit <code>d=retec-regenwassertechnik.de</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     4. HEADER ANALYSIS
+═══════════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="sec-header"><span class="num">4</span> Header Analysis</div>
+  <div class="sec-body">
+
+    <h3>Microsoft SCL / BCL / Routing-Disposition</h3>
+    <table>
+      <tr><th>Header / Signal</th><th>Wert</th><th>Bewertung</th></tr>
+      <tr><td><code>OFR:SpamFilter</code></td><td>Override aktiv</td><td><span class="badge b-danger">KRITISCH</span> Spam-Filter hat Auth-Pass überstimmt. SCL wurde trotz pass auf ≥5 gesetzt.</td></tr>
+      <tr><td><code>compauth reason=109</code></td><td>bestguesspass</td><td><span class="badge b-warn">WARN</span> Nicht-standard Composit-Auth-Ergebnis. Nur M365-intern.</td></tr>
+      <tr><td><code>dmarc=bestguesspass</code></td><td>action=none</td><td><span class="badge b-warn">WARN</span> Kein echter DMARC-Record → kein Standard-Enforcement.</td></tr>
+      <tr><td>TLS Inbound</td><td>TLS 1.3 / TLS 1.2</td><td><span class="badge b-ok">OK</span> Vollständig verschlüsselte Transportkette.</td></tr>
+      <tr><td>Received-Chain Hops</td><td>4 Hops (intern)</td><td><span class="badge b-ok">OK</span> Alle Hops innerhalb von Microsoft-Infrastruktur. Keine externen Relays.</td></tr>
+    </table>
+
+    <h3>HELO / PTR / Envelope</h3>
+    <div class="warn-box">
+      <strong>HELO:</strong> <code>AM0PR83CU005.outbound.protection.outlook.com</code> — Dies ist der Standard-HELO für Exchange Online Shared Infrastructure. Eine eigene HELO-Domain ist für M365 Standard-Tenants nicht direkt konfigurierbar. Alternativ: Dedicated Outbound IP via M365 Enterprise (E3/E5) anfordern, was eine eigene PTR-Konfiguration ermöglicht.
+    </div>
+    <div class="warn-box">
+      <strong>PTR (52.101.69.111):</strong> Shared Microsoft-Pool-IP — PTR zeigt auf Microsoft-Infrastruktur, nicht auf Unternehmens-Domain. Für Shared-Tenants nicht direkt änderbar. Für kritische Sender-Reputation: Dedicated IP-Adresse bei Microsoft beantragen oder zu einem ESP mit dedizierter IP wechseln.
+    </div>
+
+    <h3>Received-Chain-Analyse</h3>
+    <table>
+      <tr><th>Hop</th><th>Von → Nach</th><th>Protokoll</th><th>Befund</th></tr>
+      <tr><td>1</td><td><code>AM0PR83CU005.outbound.protection.outlook.com</code> → <code>DU6PEPF0000A7DF.eurprd02</code></td><td>SMTP / TLS 1.3</td><td><span class="badge b-ok">OK</span> Eingehend aus M365-Outbound-Pool</td></tr>
+      <tr><td>2</td><td><code>DU6PEPF0000A7DF</code> → <code>CWLP123CA0220</code></td><td>Frontend Transport</td><td><span class="badge b-ok">OK</span> Interne EOP-Verarbeitung</td></tr>
+      <tr><td>3</td><td><code>CWLP123CA0220</code> → <code>PA1P195MB2581</code></td><td>SMTP TLS 1.2</td><td><span class="badge b-ok">OK</span> Mailbox-Delivery</td></tr>
+      <tr><td>4</td><td><code>PA1P195MB2581</code> → <code>DU0P195MB2839</code></td><td>HTTPS</td><td><span class="badge b-ok">OK</span> HTTPS-Submission (Outlook-Client)</td></tr>
+    </table>
+
+    <h3>Subdomain-Länge</h3>
+    <div class="warn-box">
+      <code>AM0PR83CU005.outbound.protection.outlook.com</code>: Der erste Label <code>AM0PR83CU005</code> ist mit 12 Zeichen nicht ungewöhnlich lang, aber in Kombination mit dem Gesamtpfad (47 Zeichen) triggern einige heuristische Filter (z.B. SpamAssassin <code>RDNS_DYNAMIC</code>-ähnliche Regeln). Da die HELO-Domain nicht kontrollierbar ist (M365 Shared), ist die einzige Abhilfe hier die Verbesserung der anderen Authentifizierungssignale.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     5. HTML & CONTENT ANALYSIS
+═══════════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="sec-header"><span class="num">5</span> HTML &amp; Content Technical Analysis</div>
+  <div class="sec-body">
+
+    <h3>MIME-Struktur &amp; Encoding</h3>
+    <table>
+      <tr><th>Parameter</th><th>Befund</th><th>Bewertung</th></tr>
+      <tr><td>MIME-Typ</td><td>Multipart (Reply-Chain, Signatur)</td><td><span class="badge b-ok">OK</span></td></tr>
+      <tr><td>Encoding</td><td>Quoted-Printable / UTF-8 (impliziert aus deutschen Sonderzeichen)</td><td><span class="badge b-ok">OK</span></td></tr>
+      <tr><td>Sprache</td><td>Deutsch, professionelle Geschäftssprache</td><td><span class="badge b-ok">OK</span></td></tr>
+      <tr><td>Text-zu-HTML-Verhältnis</td>
