@@ -356,8 +356,10 @@ ${adviceSummary}
 ---
 
 Stil: professionell, klar, nicht zu technisch — wie ein Brief von einem erfahrenen Berater.
+Schreibe IMMER in der Ich-Form (Perspektive: Thomas Felber als Absender).
 Stadtangabe im Datum: München.
 Unterschrift: Thomas Felber, thomas@felber.dev (als klickbarer mailto-Link mit vorausgefülltem Betreff).
+Der Brief ist IMMER von Thomas Felber — nie von einem anonymen Berater oder einer Agentur.
 Zwei Optionen anbieten: (A) Erfolgsbasiert mit angemessenem Honorar, (B) Auf kollegialer Basis ohne Rechnung.
 Keine konkreten technischen Begriffe (kein DMARC, kein SPF, kein Return-Path) — nur abstraktes Niveau.
 Verwende sauberes eingebettetes CSS im <style>-Tag.`;
