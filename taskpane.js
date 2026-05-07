@@ -1474,7 +1474,8 @@ async function generateArtifact(mode) {
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
-    const html     = data.html || '';
+    const html = data.html || '';
+    if (!html || !html.includes('<')) throw new Error('Generierung fehlgeschlagen — leere Antwort vom Modell. Bitte erneut versuchen.');
     const blob     = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url      = URL.createObjectURL(blob);
     const date     = new Date().toISOString().slice(0, 10);

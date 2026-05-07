@@ -20,7 +20,7 @@ const MODEL_ACTION_PLAN     = 'claude-sonnet-4-6';
 const MODEL_ANSCHREIBEN     = 'claude-haiku-4-5';
 const MAX_TOKENS            = 1024;
 const MAX_TOKENS_ADVICE     = 2048;
-const MAX_TOKENS_ACTION_PLAN = 4500;
+const MAX_TOKENS_ACTION_PLAN = 7500;
 const MAX_TOKENS_ANSCHREIBEN = 2000;
 
 const CORS_HEADERS = {
@@ -246,10 +246,11 @@ async function handleActionPlan(payload, env) {
   const aiVerdict  = claudeResult?.verdict  || '?';
   const aiSignals  = (claudeResult?.signals || []).map(s => `  - ${s}`).join('\n') || '  (none)';
 
+  // Keep advice concise — top 6 recs, essential fields only
   const adviceSection = adviceResult?.recommendations?.length
-    ? `\n=== REPUTATION RECOMMENDATIONS (already generated) ===\nSummary: ${adviceResult.summary || ''}\n${
-        adviceResult.recommendations.map(r =>
-          `[${r.priority?.toUpperCase() || '?'}] ${r.category} — ${r.title}: ${r.action}${r.ist ? ` (Ist: ${r.ist})` : ''}${r.soll ? ` → Soll: ${r.soll}` : ''}`
+    ? `\n=== REPUTATION RECOMMENDATIONS (already generated) ===\nSummary: ${(adviceResult.summary || '').slice(0, 300)}\n${
+        adviceResult.recommendations.slice(0, 6).map(r =>
+          `[${r.priority?.toUpperCase() || '?'}] ${r.category} — ${r.title}: ${(r.action || '').slice(0, 150)}`
         ).join('\n')
       }`
     : '';
@@ -258,6 +259,7 @@ async function handleActionPlan(payload, env) {
 Produce a comprehensive, senior-level technical deliverability action plan for the sender below.
 Output ONLY a complete, self-contained HTML document (<!DOCTYPE html> … </html>) — no JSON, no markdown fences.
 The HTML must be readable standalone in a browser. Use clean CSS embedded in <style>. German language throughout.
+Keep CSS minimal and prose concise — priority is completeness of all sections over verbosity.
 
 === EMAIL BEING ANALYSED ===
 Subject     : ${subject || '(unknown)'}
@@ -275,10 +277,10 @@ ${aiSignals}
 ${aiSummary}
 ${adviceSection}
 === KEY HEADERS (truncated) ===
-${headers.slice(0, 4000)}
+${headers.slice(0, 3000)}
 
 === BODY TEXT (truncated) ===
-${bodyText.slice(0, 2500)}
+${bodyText.slice(0, 1500)}
 
 ---
 
