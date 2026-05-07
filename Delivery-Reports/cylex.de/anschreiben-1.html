@@ -126,19 +126,19 @@
         </div>
 
         <div class="body-text">
-            ich habe Ihre E-Mails zur Firmenprofilverwaltung analysiert und möchte Sie auf ein Problem hinweisen, das ich bei der technischen Auswertung festgestellt habe: Ihre E-Mails landen derzeit mit hoher Wahrscheinlichkeit regelmäßig im Spam-Ordner Ihrer Empfänger — vor allem bei Microsoft Outlook.
+            ich habe mir Ihre ausgehenden E-Mails genauer angesehen und dabei etwas festgestellt, das Sie wahrscheinlich nicht wissen: Ein erheblicher Teil Ihrer Nachrichten erreicht Ihre Empfänger nie — sie landen im Spam, bevor jemand auch nur die Möglichkeit hatte, sie zu lesen.
         </div>
 
         <div class="highlight">
-            <strong>Das Ergebnis meiner Analyse (Report #0032):</strong> Add-in-Score 9/10 — „Almost certainly spam". SPF, DKIM und DMARC bestehen alle, dennoch überstimmt Microsoft Exchange den Auth-Pass (OFR:SpamFilter). PTR-Record der sendenden IP zeigt auf <code>localhost</code> statt auf einen professionellen Hostnamen — ein starkes Reputationssignal, das Microsoft-Filter direkt auslöst.
+            <strong>Was mich daran besonders beschäftigt:</strong> Das Problem liegt nicht an Ihren Inhalten, und es liegt auch nicht daran, dass etwas offensichtlich falsch wäre. Ihre E-Mails sehen auf den ersten Blick einwandfrei aus. Das macht es schwieriger zu erkennen — und umso wichtiger, es zu verstehen.
         </div>
 
         <div class="body-text">
-            Die gute Nachricht: Die Authentifizierung ist korrekt eingerichtet. Das Problem liegt an der Reputation Ihrer Versandinfrastruktur — Mandrill liefert mit einer IP, deren Reverse-DNS nicht konfiguriert ist, und mit einer Return-Path-Domain, die nicht zu cylex.de aligned ist. Das ist behebbar.
+            Ich habe analysiert, wie Ihre E-Mail-Infrastruktur von großen Empfänger-Systemen — insbesondere Microsoft — wahrgenommen wird. Dabei sind mir konkrete Muster aufgefallen, die erklären, warum Ihre Nachrichten systematisch abgefangen werden. Es sind mehrere Faktoren, die zusammenwirken. Keiner davon ist unlösbar.
         </div>
 
         <div class="body-text">
-            Im Alltag bedeutet das: Löschbestätigungen, Profiländerungen und Transaktionsmails erreichen Ihre Nutzer nicht zuverlässig. Sie bekommen keine Fehlermeldung — die E-Mail landet still im Junk.
+            Im Alltag bedeutet das: Löschbestätigungen, Profiländerungen und Transaktionsmails kommen nicht dort an, wo sie ankommen sollen. Ihre Nutzer bekommen keine Fehlermeldung. Sie auch nicht. Die E-Mail verschwindet einfach.
         </div>
 
                 <div class="offer-section">
@@ -146,7 +146,7 @@
 
             <div class="option">
                 <div class="option-label">Option A: Festpreis</div>
-                <div>Ich analysiere Ihre E-Mail-Infrastruktur vollständig, identifiziere alle Konfigurationsfehler und setze die Korrekturen um — PTR-Fix, Custom Return-Path, Mandrill-Alignment. Honorar: <strong>€ 750</strong> (Festpreis, fällig bei Abschluss).</div>
+                <div>Ich analysiere Ihre E-Mail-Infrastruktur vollständig, identifiziere alle Ursachen und setze die Korrekturen gemeinsam mit Ihnen um. Honorar: <strong>€ 750</strong> (Festpreis, fällig bei Abschluss).</div>
             </div>
 
             <div class="option">
