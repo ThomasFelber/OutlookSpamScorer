@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spam Analysis Report #0011</title>
+  <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.5; background: #f1f5f9; color: #1e293b; }
+.page { max-width: 820px; margin: 0 auto; padding: 24px; }
+
+/* Header */
+.rpt-header { display: flex; justify-content: space-between; align-items: flex-start; background: linear-gradient(135deg, #1e3a5f 0%, #0f4c81 100%); color: white; border-radius: 12px 12px 0 0; padding: 24px 28px; }
+.rpt-header h1 { font-size: 20px; font-weight: 700; }
+.rpt-meta { margin-top: 4px; font-size: 11px; opacity: .7; }
+.rpt-header-badge { background: rgba(255,255,255,.15); border-radius: 20px; padding: 4px 14px; font-size: 11px; white-space: nowrap; margin-top: 4px; }
+
+/* Subject box */
+.rpt-subject-box { background: #fff; border: 1px solid #e2e8f0; border-top: none; padding: 16px 24px; margin-bottom: 16px; }
+.meta-table { width: 100%; border-collapse: collapse; }
+.meta-table th { text-align: left; font-weight: 600; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; width: 80px; padding: 3px 10px 3px 0; vertical-align: top; }
+.meta-table td { padding: 3px 0; font-size: 13px; word-break: break-word; }
+
+/* Metrics grid */
+.rpt-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.metric-card { background: #fff; border-radius: 10px; padding: 16px 20px; border-top: 4px solid var(--accent, #94a3b8); text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.metric-score { font-size: 38px; font-weight: 800; color: var(--accent, #1e293b); line-height: 1; }
+.metric-denom { font-size: 18px; font-weight: 400; color: #94a3b8; }
+.metric-label { font-size: 10px; text-transform: uppercase; color: #64748b; margin-top: 6px; letter-spacing: .05em; }
+.metric-verdict { font-size: 12px; font-weight: 600; margin-top: 4px; color: var(--accent, #1e293b); }
+
+/* Sections */
+.rpt-section { background: #fff; border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.rpt-section h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #1e3a5f; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 14px; }
+.rpt-section ul { padding-left: 20px; }
+.rpt-section li { margin-bottom: 4px; font-size: 13px; }
+.none { color: #94a3b8; font-style: italic; font-size: 13px; }
+.ai-summary, .advice-intro { background: #f8fafc; border-left: 3px solid #60a5fa; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 12px; color: #374151; font-size: 13px; }
+
+/* Auth badges */
+.rpt-auth-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.rpt-auth-badge { padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1px solid transparent; }
+.auth-pass     { background: #dcfce7; color: #166534; border-color: #86efac; }
+.auth-fail     { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+.auth-softfail { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+.auth-warn     { background: #fff7ed; color: #9a3412; border-color: #fdba74; }
+.auth-none     { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
+
+/* Findings */
+.finding { background: #fff; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; border-left: 4px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.finding.prio-hoch    { border-left-color: #dc2626; }
+.finding.prio-mittel  { border-left-color: #d97706; }
+.finding.prio-niedrig { border-left-color: #16a34a; }
+.finding-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.f-category { background: #eff6ff; color: #1d4ed8; border-radius: 20px; padding: 2px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.f-priority { border-radius: 20px; padding: 2px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.prio-hoch    .f-priority { background: #fee2e2; color: #991b1b; }
+.prio-mittel  .f-priority { background: #fef9c3; color: #854d0e; }
+.prio-niedrig .f-priority { background: #dcfce7; color: #166534; }
+.finding-title { font-weight: 700; font-size: 14px; margin-bottom: 10px; color: #0f172a; }
+.finding-ist-soll { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.finding-ist, .finding-soll { display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; padding: 4px 10px; font-size: 12px; }
+.finding-ist  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.finding-soll { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.f-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; opacity: .7; }
+.f-arrow { font-size: 16px; color: #94a3b8; }
+.finding-details { margin-bottom: 8px; }
+.det-ist  { font-size: 12px; color: #991b1b; margin-bottom: 3px; }
+.det-soll { font-size: 12px; color: #166534; margin-bottom: 3px; }
+.finding-action { font-size: 13px; color: #374151; line-height: 1.6; }
+.finding-callout { border-radius: 6px; padding: 10px 14px; margin-top: 12px; }
+.finding-callout strong { display: block; margin-bottom: 4px; font-size: 12px; }
+.finding-callout p { font-size: 12px; line-height: 1.5; margin: 0; }
+.co-ok   { background: #f0fdf4; border: 1px solid #86efac; color: #14532d; }
+.co-diag { background: #eff6ff; border: 1px solid #93c5fd; color: #1e3a8a; }
+.co-warn { background: #fff7ed; border: 1px solid #fdba74; color: #7c2d12; }
+
+/* Hidden-text section */
+.rpt-hidden-info { font-size: 12px; color: #64748b; margin-bottom: 12px; }
+.rpt-hidden-list { list-style: none; padding: 0; margin: 0; }
+.rpt-hidden-item { display: flex; gap: 10px; align-items: flex-start; background: #fef9c3; border-left: 3px solid #ca8a04; padding: 8px 12px; margin-bottom: 6px; border-radius: 0 6px 6px 0; }
+.rpt-hidden-num { color: #854d0e; font-weight: 700; font-size: 12px; flex-shrink: 0; min-width: 24px; }
+.rpt-hidden-code { font-family: 'Cascadia Code', 'Consolas', 'Menlo', monospace; font-size: 12px; color: #422006; word-break: break-word; white-space: pre-wrap; line-height: 1.5; }
+
+/* Footer */
+.rpt-footer { text-align: center; color: #94a3b8; font-size: 11px; padding: 20px 0 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="rpt-header">
+    <div>
+      <h1>E-Mail Deliverability Report</h1>
+      <p class="rpt-meta">Report #0011 · Created: 5/7/2026, 10:33:21 AM</p>
+    </div>
+    <div class="rpt-header-badge">Spam Scorer v2.0.12</div>
+  </header>
+
+  <div class="rpt-subject-box">
+    <table class="meta-table">
+      <tr><th>Subject</th><td>Newsletter FIN LAW April 2026</td></tr>
+      <tr><th>Sender</th><td>FIN LAW - Legal Financial Advisory &lt;finlawblog@fin-law.de&gt;</td></tr>
+      <tr><th>Date</th><td>Mon, 04 May 2026 13:00:03 +0200</td></tr>
+    </table>
+  </div>
+
+  <div class="rpt-metrics">
+    <div class="metric-card" style="--accent: #7f1d1d">
+      <div class="metric-score">10<span class="metric-denom">/10</span></div>
+      <div class="metric-label">Add-in Score</div>
+      <div class="metric-verdict">Almost certainly spam</div>
+    </div>
+    <div class="metric-card" style="--accent: #16a34a">
+      <div class="metric-score">2<span class="metric-denom">/10</span></div>
+      <div class="metric-label">AI Score</div>
+      <div class="metric-verdict">ham · 78%</div>
+    </div>
+  </div>
+
+  <section class="rpt-section">
+    <h2>Authentication</h2>
+    <div class="rpt-auth-row"><span class="rpt-auth-badge auth-pass">SPF PASS</span><span class="rpt-auth-badge auth-pass">DKIM PASS</span><span class="rpt-auth-badge auth-warn">DMARC NONE</span><span class="rpt-auth-badge auth-fail">compauth FAIL</span></div>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Add-in Spam Indicators</h2>
+    <ul><li>compauth=fail — Microsoft Composite Auth versagt</li><li>Microsoft SCL 6: als Junk eingestuft</li><li>Microsoft Exchange: an Junk-Ordner zugestellt</li><li>Microsoft Exchange: Spam-Filter hat Auth-Pass überstimmt (OFR:SpamFilter)</li><li>Microsoft Exchange: Doppel-Signal — Junk-Zustellung UND Filter-Override</li><li>Return-Path-Domain abweichend (newslettertogo.com)</li><li>HELO-Domain abweichend (m13345.newslettertogo.com ≠ fin-law.de)</li><li>Glücksspiel/Casino</li><li>Versteckter/unsichtbarer Text gefunden (substantiell, abweichend vom sichtbaren Inhalt — 241 Zeichen)</li><li>Zero-Width-Space-Obfuskation (285 unsichtbare Zeichen) — Spam-Filter-Umgehung</li></ul>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Hidden Text in HTML</h2>
+    <p class="rpt-hidden-info">1 hidden text block found — excerpt (max. 100 chars each):</p>
+    <ul class="rpt-hidden-list">
+    <li class="rpt-hidden-item">
+      <span class="rpt-hidden-num">1.</span>
+      <code class="rpt-hidden-code">‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ …</code>
+    </li></ul>
+  </section>
+
+  <section class="rpt-section">
+    <h2>AI Analysis</h2>
+    <p class="ai-summary">Dies ist ein legitimer Newsletter der FIN LAW-Anwaltskanzlei über rechtliche und finanzielle Themen aus April 2026. Die E-Mail stammt über einen etablierten Newsletter-Service (newslettertogo.com) mit korrekten Authentifizierungen und professionellem Inhalt.</p>
+    <ul><li>DKIM signature verified for fin-law.de (legitimate domain alignment)</li><li>SPF pass for sending IP 62.138.90.240</li><li>Reply-To and From address both fin-law.de (consistent)</li><li>Newsletter infrastructure via newslettertogo.com (legitimate ESP)</li><li>Legitimate newsletter content in German and English about legal/financial topics</li><li>Proper List-Unsubscribe headers with RFC 2369 compliance</li><li>No suspicious merge tags, URL shorteners, or encoding issues</li><li>Professional subject line matching newsletter theme</li><li>compauth=fail reason=001 due to Return-Path mismatch (minor - typical for legitimate ESPs using bounce handlers)</li></ul>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Recommendations for the Sender</h2>
+    <p class="advice-intro">Die E-Mail wird trotz korrekter DKIM- und SPF-Authentifizierung als Spam eingestuft, weil Microsoft Composite Authentication fehlschlägt und manipulative Techniken (Zero-Width-Spaces, versteckter Text) erkannt wurden. Die Hauptprobleme sind fehlende DMARC-Konfiguration, Nutzung von Spam-Umgehungstechniken und Return-Path-Inkonsistenzen.</p>
+    <div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Authentifizierung</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">DMARC-Policy implementieren</div>
+    
+    
+    <div class="finding-action">Richten Sie einen DMARC-Eintrag für fin-law.de ein (mindestens p=none, besser p=quarantine) mit rua-Reporting, um compauth=fail zu beheben und Domain-Alignment zu gewährleisten.</div>
+    
+  </div><div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">Zero-Width-Spaces und versteckten Text entfernen</div>
+    
+    
+    <div class="finding-action">Entfernen Sie sofort alle 285 unsichtbaren Zero-Width-Zeichen und 241 Zeichen versteckten Text aus dem Newsletter-Template – diese werden als Spam-Filter-Umgehungsversuch gewertet.</div>
+    
+  </div><div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Infrastruktur</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">Return-Path Domain-Alignment korrigieren</div>
+    
+    
+    <div class="finding-action">Konfigurieren Sie newslettertogo.com so, dass Return-Path und HELO-Domain mit fin-law.de aligned sind, oder nutzen Sie CMAIL/subdomain delegation (z.B. newsletter.fin-law.de).</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">Glücksspiel-Keywords prüfen und entfernen</div>
+    
+    
+    <div class="finding-action">Überprüfen Sie den Newsletter-Inhalt auf Begriffe wie 'Binäre Optionen', 'Prediction Markets' und umformulieren Sie diese juristischen Fachbegriffe mit erklärendem Kontext, um False-Positive-Spam-Trigger zu vermeiden.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Infrastruktur</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">IP-Reputation überwachen</div>
+    
+    
+    <div class="finding-action">Prüfen Sie die Reputation der Versand-IP 62.138.90.240 bei Microsoft SNDS und anderen Blacklist-Diensten und klären Sie mit newslettertogo.com ab, ob dedizierte IP-Pools für professionelle Absender verfügbar sind.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Listen-Hygiene</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">Engagement-basierte Segmentierung einführen</div>
+    
+    
+    <div class="finding-action">Segmentieren Sie Ihre Empfängerliste nach Engagement (Öffnungen, Klicks) und versenden Sie bevorzugt an aktive Abonnenten, um positive Signale an Microsoft Exchange zu senden.</div>
+    
+  </div><div class="finding prio-niedrig">
+    <div class="finding-header">
+      <span class="f-category">Engagement</span>
+      <span class="f-priority">niedrig</span>
+    </div>
+    <div class="finding-title">Subscriber-Aktivierung durch Kampagne</div>
+    
+    
+    <div class="finding-action">Führen Sie eine Re-Engagement-Kampagne durch, um inaktive Abonnenten zu reaktivieren oder zu entfernen – dies verbessert Ihre Sender-Reputation bei Microsoft.</div>
+    
+  </div><div class="finding prio-niedrig">
+    <div class="finding-header">
+      <span class="f-category">Authentifizierung</span>
+      <span class="f-priority">niedrig</span>
+    </div>
+    <div class="finding-title">BIMI-Record für visuelles Vertrauen</div>
+    
+    
+    <div class="finding-action">Nach erfolgreicher DMARC-Implementierung (p=quarantine/reject) erwägen Sie einen BIMI-Eintrag mit verifiziertem Logo, um die Markenwahrnehmung im Posteingang zu stärken.</div>
+    
+  </div>
+  </section>
+
+  <footer class="rpt-footer">
+    Generated by Spam Scorer v2.0.12 · 5/7/2026, 10:33:21 AM
+  </footer>
+
+</div>
+</body>
+</html>

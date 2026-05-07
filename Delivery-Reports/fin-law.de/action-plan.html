@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Technischer Aktionsplan -- DMARC, DKIM, SPF und Microsoft compauth</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --ink: #172033;
+      --muted: #5f6b7a;
+      --line: #d9dee7;
+      --accent: #8b1d1d;
+      --accent-soft: #fff1f1;
+      --good: #166534;
+      --warn: #92400e;
+      --bad: #991b1b;
+      --code-bg: #111827;
+      --code-ink: #f9fafb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      line-height: 1.55;
+      font-size: 15px;
+    }
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+    header {
+      background: #0f172a;
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 22px;
+    }
+    .stamp {
+      color: #cbd5e1;
+      font-size: 13px;
+      margin-bottom: 8px;
+      letter-spacing: .02em;
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.2;
+      font-weight: 760;
+    }
+    .lead {
+      margin: 14px 0 0;
+      color: #e5e7eb;
+      max-width: 760px;
+    }
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin: 18px 0;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+    }
+    h2 {
+      font-size: 20px;
+      margin: 0 0 14px;
+      color: #0f172a;
+    }
+    h3 {
+      font-size: 16px;
+      margin: 20px 0 8px;
+      color: #172033;
+    }
+    p { margin: 8px 0 12px; }
+    ul { margin: 8px 0 8px 22px; padding: 0; }
+    li { margin: 4px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 4px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: #f1f5f9;
+      font-weight: 700;
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+    .high { background: #fee2e2; color: var(--bad); }
+    .medium { background: #fef3c7; color: var(--warn); }
+    .low { background: #dcfce7; color: var(--good); }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin: 12px 0;
+    }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+    pre {
+      background: var(--code-bg);
+      color: var(--code-ink);
+      padding: 14px 16px;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.5;
+      margin: 10px 0 16px;
+    }
+    .muted { color: var(--muted); }
+    .checklist li { margin-bottom: 7px; }
+    footer {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+      margin-top: 26px;
+    }
+    @media print {
+      body { background: #fff; }
+      .page { max-width: none; padding: 0; }
+      section, header { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="stamp">20260507-1107 CET</div>
+      <h1>Technischer Aktionsplan -- DMARC, DKIM, SPF und Microsoft compauth</h1>
+      <p class="lead"><strong>Entscheidend.</strong> Der größte Hebel liegt nicht mehr im Content, sondern in Domain-Alignment, Microsoft-Reputation, DMARC-Policy, Return-Path-Control und sauberen Tracking-/Bounce-Domains.</p>
+    </header>
+
+    <section>
+      <h2>Aktueller Status</h2>
+      <table>
+        <thead>
+          <tr><th>Bereich</th><th>Status</th><th>Bewertung</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>SPF</td><td>PASS</td><td>gut</td></tr>
+          <tr><td>DKIM</td><td>PASS</td><td>gut</td></tr>
+          <tr><td>DMARC</td><td>none</td><td>schlecht</td></tr>
+          <tr><td>Microsoft compauth</td><td>FAIL</td><td>kritisch</td></tr>
+          <tr><td>Return-Path Alignment</td><td>abweichend</td><td>kritisch</td></tr>
+          <tr><td>Hidden Text</td><td>erkannt</td><td>kritisch</td></tr>
+          <tr><td>SCL</td><td>5–6</td><td>kritisch</td></tr>
+          <tr><td>IP-Reputation</td><td>unbekannt / shared ESP</td><td>Risiko</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Priorität A -- Sofortmaßnahmen</h2>
+
+      <h3>1. DMARC sauber aktivieren <span class="tag high">hoch</span></h3>
+      <p>Aktuell ist <code>dmarc=none</code> gesetzt. Das ist für professionelle Newsletter heute nicht mehr ausreichend.</p>
+      <p><strong>Empfehlung initial:</strong></p>
+      <pre>_dmarc.fin-law.de
+
+v=DMARC1; p=quarantine; pct=100; adkim=s; aspf=s;
+rua=mailto:dmarc@fin-law.de;
+ruf=mailto:dmarc@fin-law.de;
+fo=1</pre>
+      <p><strong>Warum:</strong></p>
+      <ul>
+        <li>Microsoft bewertet fehlendes DMARC negativ.</li>
+        <li>compauth FAIL entsteht oft trotz SPF PASS und DKIM PASS.</li>
+        <li>Strict Alignment verbessert Reputation und Anti-Phishing-Signale.</li>
+      </ul>
+      <p><strong>Späterer Zielzustand:</strong></p>
+      <pre>p=reject</pre>
+
+      <h3>2. Return-Path Alignment korrigieren <span class="tag high">hoch</span></h3>
+      <p>Aktuell:</p>
+      <pre>Return-Path:
+newslettertogo.com
+
+From:
+fin-law.de</pre>
+      <p>Diese Abweichung schwächt das Domain Alignment und kann Microsoft compauth FAIL auslösen.</p>
+
+      <h3>3. Eigene Bounce-/Tracking-Domain verwenden <span class="tag high">hoch</span></h3>
+      <p>Nicht mehr generische ESP-Domains verwenden:</p>
+      <pre>newslettertogo.com</pre>
+      <p>Besser branded Subdomains nutzen:</p>
+      <pre>mail.fin-law.de
+news.fin-law.de
+bounce.fin-law.de
+track.fin-law.de</pre>
+      <table>
+        <thead>
+          <tr><th>Funktion</th><th>Domain</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>DKIM</td><td>mail.fin-law.de</td></tr>
+          <tr><td>Return-Path</td><td>bounce.fin-law.de</td></tr>
+          <tr><td>Tracking</td><td>track.fin-law.de</td></tr>
+          <tr><td>Visible Sender</td><td>fin-law.de</td></tr>
+        </tbody>
+      </table>
+      <p class="muted">Bei ESPs heißt das meist Custom Tracking Domain, Branded Links, Custom Return Path oder CNAME Delegation.</p>
+    </section>
+
+    <section>
+      <h2>Priorität B -- Microsoft Reputation</h2>
+
+      <h3>4. Microsoft SNDS registrieren <span class="tag medium">mittel</span></h3>
+      <p>SNDS zeigt Spam Complaint Rate, Trap Hits, IP Reputation und Junking-Tendenzen.</p>
+      <pre>https://sendersupport.olc.protection.outlook.com/snds/</pre>
+
+      <h3>5. JMRP aktivieren <span class="tag medium">mittel</span></h3>
+      <p>JMRP liefert echte Spam Complaints von Outlook/Hotmail und hilft bei Listenbereinigung.</p>
+      <pre>https://sendersupport.olc.protection.outlook.com/snds/JMRP.aspx</pre>
+
+      <h3>6. Shared IP vermeiden <span class="tag medium">mittel</span></h3>
+      <p>Shared sending pools bergen Reputationsrisiken durch andere Absender.</p>
+      <ul>
+        <li>Ideal: dedizierte IP.</li>
+        <li>Notwendig: sauberer Warmup.</li>
+        <li>Wichtig: kontrolliertes Versandvolumen.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Priorität C -- SPF/DKIM Optimierung</h2>
+
+      <h3>7. SPF verschlanken <span class="tag medium">mittel</span></h3>
+      <p>Nur notwendige Sender eintragen. Keine Altlasten.</p>
+      <pre>v=spf1 include:spf.brevo.com -all</pre>
+      <ul>
+        <li>Maximal 10 DNS-Lookups.</li>
+        <li>Keine alten Versanddienste.</li>
+        <li>Keine unnötigen Includes.</li>
+      </ul>
+
+      <h3>8. DKIM auf 2048 Bit prüfen <span class="tag medium">mittel</span></h3>
+      <ul>
+        <li>RSA 2048 statt 1024.</li>
+        <li>Saubere Selector-Struktur.</li>
+        <li>Regelmäßige Rotation nach internem Verfahren.</li>
+      </ul>
+
+      <h3>9. Strict Alignment aktivieren <span class="tag high">hoch</span></h3>
+      <pre>adkim=s
+aspf=s</pre>
+      <p>Strict Alignment verbessert compauth, DMARC Trust und Anti-Phishing-Bewertung.</p>
+    </section>
+
+    <section>
+      <h2>Priorität D -- HTML & Content</h2>
+
+      <h3>10. Hidden Text vollständig entfernen <span class="tag high">hoch</span></h3>
+      <p>Nie verwenden:</p>
+      <ul>
+        <li>Zero-width spaces.</li>
+        <li>Versteckte DIVs.</li>
+        <li>Preheader padding chains.</li>
+        <li><code>display:none</code> Text Stuffing.</li>
+      </ul>
+
+      <h3>11. Link-Domains vereinheitlichen <span class="tag medium">mittel</span></h3>
+      <p>Weniger Cross-Domain-Redirects und weniger URL-Entropie.</p>
+      <pre>track.fin-law.de</pre>
+
+      <h3>12. Plaintext-Part verbessern <span class="tag low">niedrig</span></h3>
+      <ul>
+        <li>Echter natürlicher Text.</li>
+        <li>Gleiche Reihenfolge wie HTML.</li>
+        <li>Keine kaputten Quoted-Printable-Strukturen.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Priorität E -- Reputation & Engagement</h2>
+
+      <h3>13. Nur engagierte Empfänger anschreiben <span class="tag high">hoch</span></h3>
+      <p>Nach 90–180 Tagen sollten inaktive Empfänger entfernt oder separat reaktiviert werden.</p>
+      <p>Microsoft misst unter anderem Öffnungen, Löschungen, Junk-Klicks, Antworten und Lesedauer.</p>
+
+      <h3>14. Volumen konsistent halten <span class="tag medium">mittel</span></h3>
+      <p>Keine langen Pausen mit anschließendem hohen Versandvolumen. Besser ist eine planbare Versandfrequenz.</p>
+
+      <h3>15. DNS vollständig absichern <span class="tag low">niedrig</span></h3>
+      <p>Zusätzliche Schutzmechanismen:</p>
+      <pre>_mta-sts.fin-law.de
+_smtp._tls.fin-law.de
+default._bimi.fin-law.de</pre>
+      <p>BIMI erst nach stabiler DMARC-Policy mit <code>p=quarantine</code> oder <code>p=reject</code> prüfen.</p>
+    </section>
+
+    <section>
+      <h2>Zielzustand</h2>
+      <table>
+        <thead>
+          <tr><th>Bereich</th><th>Ziel</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>SPF</td><td>PASS</td></tr>
+          <tr><td>DKIM</td><td>PASS</td></tr>
+          <tr><td>DMARC</td><td>PASS + aligned</td></tr>
+          <tr><td>compauth</td><td>PASS</td></tr>
+          <tr><td>Return-Path</td><td>aligned</td></tr>
+          <tr><td>Tracking Domain</td><td>branded</td></tr>
+          <tr><td>SCL</td><td>0–1</td></tr>
+          <tr><td>Microsoft Delivery</td><td>Inbox</td></tr>
+          <tr><td>Hidden Text</td><td>none</td></tr>
+          <tr><td>IP Reputation</td><td>high</td></tr>
+          <tr><td>Complaint Rate</td><td>&lt;0.1%</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Kritischster Punkt</h2>
+      <div class="callout">
+        <p><strong>1. Custom Return-Path + DMARC Strict Alignment.</strong></p>
+        <p>Das ist wahrscheinlich der wichtigste einzelne technische Fix und kann bei Outlook eine deutliche SCL-Verbesserung auslösen.</p>
+      </div>
+      <div class="callout">
+        <p><strong>2. Entfernung von Obfuskation und Hidden-Text-Techniken.</strong></p>
+        <p>Zero-Width-Zeichen und versteckter Text wirken wie Spam-Filter-Umgehung und müssen vollständig entfernt werden.</p>
+      </div>
+      <div class="callout">
+        <p><strong>3. Dedizierte saubere Versanddomain.</strong></p>
+        <p>Branded Bounce-, Tracking- und Versanddomains reduzieren Reputationsverlust durch fremde ESP-Domains.</p>
+      </div>
+    </section>
+
+    <footer>
+      Technischer Aktionsplan · erstellt am 20260507-1107 CET
+    </footer>
+  </main>
+</body>
+</html>

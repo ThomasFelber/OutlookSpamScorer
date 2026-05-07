@@ -163,6 +163,71 @@
     <p>E-Mail-Deliverability-Analysen auf Basis realer Microsoft-Exchange-Header — gruppiert nach Absender-Domain.</p>
   </header>
 
+  <!-- ── fin-law.de ──────────────────────────────────────────────────────── -->
+  <div class="domain-block">
+    <div class="domain-header">
+      <div class="domain-icon">⚖️</div>
+      <div>
+        <div class="domain-name">fin-law.de</div>
+        <div class="domain-meta">newslettertogo.com · 1 Report + Aktionsplan</div>
+      </div>
+    </div>
+
+    <div class="report-grid">
+
+      <div class="report-card" onclick="openModal('fin-law.de/report-0011.html','Report #0011 — Spam Scorer Analysis · fin-law.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0011 — Spam Scorer Analysis</div>
+          <div class="card-meta">4. Mai 2026 · finlawblog@fin-law.de via newslettertogo.com · Spam Scorer v2.0.12</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass</span></div>
+            <div class="metric">DMARC <span class="warn">None</span></div>
+            <div class="metric">compauth <span class="bad">Fail</span></div>
+            <div class="metric">SCL <span class="bad">6/9</span></div>
+            <div class="metric">Zustellung <span class="bad">Junk</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">3 × hoch</span>
+            <span class="pill pill-amber">3 × mittel</span>
+            <span class="pill pill-gray">2 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> compauth FAIL + DMARC None + 285 Zero-Width-Spaces + versteckter Text (241 Zeichen) · Return-Path abweichend (newslettertogo.com ≠ fin-law.de) · SCL 6
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="fin-law.de/report-0011.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="fin-law.de/report-0011.html" download="fin-law.de-NewsletterApril2026-0011.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('fin-law.de/action-plan.html','Technischer Aktionsplan · fin-law.de')">
+        <div class="card-left">
+          <div class="card-title">Technischer Aktionsplan — DMARC, DKIM, SPF, compauth</div>
+          <div class="card-meta">7. Mai 2026 · fin-law.de · 15 priorisierte Maßnahmen</div>
+          <div class="pills">
+            <span class="pill pill-red">5 × hoch</span>
+            <span class="pill pill-amber">6 × mittel</span>
+            <span class="pill pill-gray">4 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Kritischster Punkt:</strong> Custom Return-Path + DMARC Strict Alignment + Entfernung von Obfuskation/Hidden-Text + dedizierte Branded Bounce-/Tracking-Domains
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="fin-law.de/action-plan.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="fin-law.de/action-plan.html" download="fin-law.de-TechnischerAktionsplan-DMARC.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ── pparena.de ──────────────────────────────────────────────────────── -->
   <div class="domain-block">
     <div class="domain-header">

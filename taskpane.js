@@ -975,7 +975,6 @@ Office.onReady(info => {
 
   UI_LANG = detectUiLang();
 
-  document.getElementById('btn-apply').addEventListener('click', applyCategory);
   document.getElementById('btn-retry').addEventListener('click', analyzeCurrentItem);
   document.getElementById('btn-copy-headers').addEventListener('click', () => copyToClipboard(lastHeaders, 'Header kopiert'));
   document.getElementById('btn-copy-body').addEventListener('click',    () => copyToClipboard(lastBodyText, 'Body-Text kopiert'));
@@ -1053,68 +1052,6 @@ function analyzeCurrentItem() {
     document.getElementById('error-message').textContent = 'Fehler: ' + err.message;
     showState('error');
   });
-}
-
-// ─── Apply category ────────────────────────────────────────────────────────────
-
-async function applyCategory() {
-  if (currentScore === null) return;
-
-  const btn         = document.getElementById('btn-apply');
-  const newCategory = `Spam: ${currentScore}`;
-  const item        = Office.context.mailbox.item;
-
-  if (!item?.categories) {
-    showToast('Kategorien nicht verfügbar (Mailbox API 1.8+ erforderlich)', true);
-    return;
-  }
-
-  btn.disabled    = true;
-  btn.textContent = 'Speichern…';
-
-  try {
-    // 1. Ensure the category exists in the master list (required before adding to item)
-    if (Office.context.mailbox.masterCategories) {
-      await new Promise(resolve => {
-        Office.context.mailbox.masterCategories.addAsync(
-          [{ displayName: newCategory, color: Office.MailboxEnums.CategoryColor.Preset0 }],
-          () => resolve()   // ignore "already exists" error
-        );
-      });
-    }
-
-    // 2. Read existing Spam: categories on this item
-    const existing = await new Promise((resolve, reject) => {
-      item.categories.getAsync(r => {
-        if (r.status === Office.AsyncResultStatus.Succeeded) resolve(r.value);
-        else reject(new Error(r.error?.message || 'Kategorien konnten nicht gelesen werden'));
-      });
-    });
-
-    // 3. Remove any previous Spam: N category
-    const oldSpam = existing
-      .filter(c => /^Spam: \d+$/.test(c.displayName))
-      .map(c => c.displayName);
-
-    if (oldSpam.length > 0) {
-      await new Promise(resolve => item.categories.removeAsync(oldSpam, () => resolve()));
-    }
-
-    // 4. Add the new category
-    await new Promise((resolve, reject) => {
-      item.categories.addAsync([newCategory], r => {
-        if (r.status === Office.AsyncResultStatus.Succeeded) resolve();
-        else reject(new Error(r.error?.message || 'Kategorie konnte nicht gesetzt werden'));
-      });
-    });
-
-    showToast(`Kategorie "${newCategory}" gesetzt`, false);
-  } catch (err) {
-    showToast('Fehler: ' + err.message, true);
-  } finally {
-    btn.disabled    = false;
-    btn.textContent = 'Als Kategorie speichern';
-  }
 }
 
 // ─── Rendering ─────────────────────────────────────────────────────────────────
