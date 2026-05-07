@@ -222,6 +222,7 @@ async function handleActionPlan(payload, env) {
     addinScore   = null,
     addinSignals = [],
     claudeResult = null,
+    adviceResult = null,
   } = payload;
 
   const signalList = (addinSignals || []).map(s => `  - ${s}`).join('\n') || '  (none)';
@@ -229,6 +230,14 @@ async function handleActionPlan(payload, env) {
   const aiScore    = claudeResult?.score    ?? '?';
   const aiVerdict  = claudeResult?.verdict  || '?';
   const aiSignals  = (claudeResult?.signals || []).map(s => `  - ${s}`).join('\n') || '  (none)';
+
+  const adviceSection = adviceResult?.recommendations?.length
+    ? `\n=== REPUTATION RECOMMENDATIONS (already generated) ===\nSummary: ${adviceResult.summary || ''}\n${
+        adviceResult.recommendations.map(r =>
+          `[${r.priority?.toUpperCase() || '?'}] ${r.category} — ${r.title}: ${r.action}${r.ist ? ` (Ist: ${r.ist})` : ''}${r.soll ? ` → Soll: ${r.soll}` : ''}`
+        ).join('\n')
+      }`
+    : '';
 
   const userPrompt = `You are a senior email deliverability and infrastructure specialist.
 Produce a comprehensive, senior-level technical deliverability action plan for the sender below.
@@ -249,7 +258,7 @@ ${aiSignals}
 
 === AI SUMMARY ===
 ${aiSummary}
-
+${adviceSection}
 === KEY HEADERS (truncated) ===
 ${headers.slice(0, 4000)}
 
@@ -317,11 +326,15 @@ async function handleAnschreiben(payload, env) {
     addinScore   = null,
     addinSignals = [],
     claudeResult = null,
+    adviceResult = null,
   } = payload;
 
   const topSignals = (addinSignals || []).slice(0, 5).map(s => `  - ${s}`).join('\n') || '  (keine)';
   const aiSummary  = claudeResult?.summary || '(nicht verfügbar)';
   const aiScore    = claudeResult?.score   ?? '?';
+  const adviceSummary = adviceResult?.summary
+    ? `\n=== BERATUNGS-ZUSAMMENFASSUNG (bereits generiert) ===\n${adviceResult.summary}`
+    : '';
 
   const userPrompt = `Du bist ein professioneller E-Mail-Deliverability-Spezialist.
 Erstelle ein professionelles deutsches Anschreiben an den Absender der analysierten E-Mail.
@@ -339,7 +352,7 @@ ${topSignals}
 
 === KI-ZUSAMMENFASSUNG ===
 ${aiSummary}
-
+${adviceSummary}
 ---
 
 Stil: professionell, klar, nicht zu technisch — wie ein Brief von einem erfahrenen Berater.

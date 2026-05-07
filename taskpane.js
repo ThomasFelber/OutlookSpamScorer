@@ -886,7 +886,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION    = '2.0.13';
+const VERSION    = '2.0.14';
 const WORKER_URL = 'https://spam-scorer-ai.felber.workers.dev';
 
 /**
@@ -981,6 +981,7 @@ Office.onReady(info => {
   document.getElementById('btn-claude').addEventListener('click', runClaudeCheck);
   document.getElementById('btn-toggle-hidden').addEventListener('click', toggleHiddenText);
   document.getElementById('btn-advice').addEventListener('click', runAdviceCheck);
+  document.getElementById('btn-delivery-report').addEventListener('click', downloadDeliverabilityReport);
   document.getElementById('btn-action-plan').addEventListener('click', () => generateArtifact('action-plan'));
   document.getElementById('btn-anschreiben').addEventListener('click', () => generateArtifact('anschreiben'));
 
@@ -1443,6 +1444,7 @@ async function generateArtifact(mode) {
         addinScore:   currentScore,
         addinSignals: lastAnalysis?.reasons || [],
         claudeResult: lastClaudeResult,
+        adviceResult: lastAdviceResult,
       }),
     });
 
@@ -1639,18 +1641,8 @@ function renderAdviceResult(data) {
       }).join('') + '</ul>'
     : '<p class="advice-none">Keine Empfehlungen gefunden.</p>';
 
-  // Download button — report is built client-side, zero extra API calls
-  const downloadHtml = `
-    <div class="advice-download-row">
-      <button id="btn-download-report" class="btn btn-download">⬇ HTML-Bericht herunterladen</button>
-    </div>`;
-
-  resultEl.innerHTML = summaryHtml + recsHtml + downloadHtml;
+  resultEl.innerHTML = summaryHtml + recsHtml;
   resultEl.classList.remove('hidden');
-
-  // Wire up download button after inserting HTML
-  document.getElementById('btn-download-report')
-    ?.addEventListener('click', downloadDeliverabilityReport);
 }
 
 function resetAdviceResult() {
