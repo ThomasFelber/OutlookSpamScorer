@@ -711,16 +711,24 @@ class SpamAnalyzer {
                       || this._getHeader(headers, 'ARC-Authentication-Results')
                       || '';
 
-      // Microsoft delivery verdicts
-      if (hasDestJ && authFullyPasses && hasOFR) {
-        tech += 2.5;
-        oppReasons.push('dest:J + Auth-Pass + OFR — Infrastrukturproblem trotz sauberem Auth');
-      } else if (hasDestJ && authFullyPasses) {
-        tech += 2.0;
-        oppReasons.push('dest:J trotz vollständiger Authentifizierung — IP/Reputation');
-      } else if (hasDestJ) {
-        tech += 1.5;
-        oppReasons.push('dest:J — Exchange Junk-Zustellung; Reputationsarbeit nötig');
+      // Microsoft delivery verdicts.
+      // Auth-fail cases score as high as auth-pass cases: broken DMARC alignment
+      // is MORE fixable than an IP reputation problem on correctly authenticated mail.
+      if (hasDestJ) {
+        if (hasOFR) {
+          tech += 2.5;
+          if (authFullyPasses) {
+            oppReasons.push('dest:J + Auth-Pass + OFR — Infrastrukturproblem trotz sauberem Auth');
+          } else {
+            oppReasons.push('dest:J + Auth-Fehler + OFR — DMARC-Alignment, IP-Reputation und Inhalt beheben');
+          }
+        } else if (authFullyPasses) {
+          tech += 2.0;
+          oppReasons.push('dest:J trotz vollständiger Authentifizierung — IP/Reputation');
+        } else {
+          tech += 2.0;
+          oppReasons.push('dest:J mit Auth-Fehlern — DMARC-Alignment + Infrastruktur verbessern');
+        }
       }
       if (hasOFR && !hasDestJ) {
         tech += 1.0;
@@ -737,6 +745,10 @@ class SpamAnalyzer {
         } else if (scl >= 5 && authFullyPasses) {
           tech += 1.0;
           oppReasons.push(`SCL ${scl} trotz vollst. Auth — Junk-Einstufung gezielt behebbar`);
+        } else if (scl >= 5) {
+          // SCL elevated AND auth broken — fixing alignment will directly reduce SCL
+          tech += 0.8;
+          oppReasons.push(`SCL ${scl} — Auth-Alignment-Fix wird SCL direkt senken`);
         }
       }
 
@@ -748,18 +760,26 @@ class SpamAnalyzer {
         oppReasons.push(`BCL ${bclVal} — erhöhte Beschwerderate`);
       }
 
-      // DMARC enforcement level
+      // DMARC enforcement level.
+      // Microsoft Authentication-Results reports "action=none/quarantine/reject"
+      // (what Exchange did) rather than "p=none/quarantine/reject" (the DNS record).
+      // When dmarc=fail + action=none it always means p=none — check both forms.
       const dmarcSeg = (authLine.match(/dmarc=[^;]+/i) || [''])[0];
-      const policyM  = dmarcSeg.match(/\bp=(none|quarantine|reject)\b/i);
-      if (policyM) {
-        const p = policyM[1].toUpperCase();
-        if (p === 'NONE') {
-          tech += 1.5;
-          oppReasons.push('DMARC p=NONE — keine Durchsetzung; auf REJECT anheben');
-        } else if (p === 'QUARANTINE') {
-          tech += 0.8;
-          oppReasons.push('DMARC p=QUARANTINE — noch nicht auf REJECT gesetzt');
-        }
+      let dPolicy = null;
+      const pM = dmarcSeg.match(/\bp=(none|quarantine|reject)\b/i);
+      if (pM) {
+        dPolicy = pM[1].toUpperCase();
+      } else if (/dmarc=fail/i.test(dmarcSeg)) {
+        // action=none on a fail → p=none; action=quarantine → p=quarantine etc.
+        const aM = dmarcSeg.match(/\baction=(none|quarantine|reject)\b/i);
+        if (aM) dPolicy = aM[1].toUpperCase();
+      }
+      if (dPolicy === 'NONE') {
+        tech += 1.5;
+        oppReasons.push('DMARC p=NONE — keine Durchsetzung; auf REJECT anheben');
+      } else if (dPolicy === 'QUARANTINE') {
+        tech += 0.8;
+        oppReasons.push('DMARC p=QUARANTINE — noch nicht auf REJECT gesetzt');
       }
 
       // Return-Path domain mismatch
@@ -1073,7 +1093,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.1.0';
+const VERSION            = '2.1.1';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 const AUTHORIZED_ACCOUNT = 'felber@live.de';
 
