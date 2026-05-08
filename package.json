@@ -1,5 +1,5 @@
 {
   "scripts": {
-    "deploy": "npx wrangler pages deploy . --project-name outlook-spam-scorer --branch main"
+    "deploy": "npx wrangler pages deploy . --project-name outlook-spam-scorer --branch production"
   }
 }

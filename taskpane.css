@@ -23,6 +23,23 @@
   --critical:      #a4262c;
   --critical-bg:   #fde7e9;
   --critical-border: #f1a7ab;
+
+  /* Opportunity score colour scale (inverted: high score = good prospect) */
+  --opp-minimal:         #616161;
+  --opp-minimal-bg:      #f5f5f5;
+  --opp-minimal-border:  #e0e0e0;
+
+  --opp-moderate:        #005a9e;
+  --opp-moderate-bg:     #e8f1fb;
+  --opp-moderate-border: #9dc0e8;
+
+  --opp-good:            #7a4a00;
+  --opp-good-bg:         #fff3cd;
+  --opp-good-border:     #f0c060;
+
+  --opp-excellent:       #0e6b0e;
+  --opp-excellent-bg:    #dff6dd;
+  --opp-excellent-border:#a8d5a2;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -68,12 +85,37 @@ body {
 
 /* ── Score display ───────────────────────────────────────────────────────── */
 
+/* Flex row container — both score boxes side-by-side when .dual */
+.scores-area {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.scores-area > .score-wrap,
+.scores-area > .opp-wrap {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+/* Compact number font in dual view */
+.scores-area.dual .score-number { font-size: 42px; letter-spacing: -1px; }
+
+.score-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.65;
+  margin-bottom: 2px;
+}
+
 .score-wrap {
   text-align: center;
   padding: 16px;
   border-radius: 8px;
   border: 1px solid transparent;
-  margin-bottom: 12px;
   transition: background 0.25s, border-color 0.25s;
 }
 
@@ -111,7 +153,7 @@ body {
   margin-top: 4px;
 }
 
-/* Level colour sets */
+/* Score 1 level colour sets */
 .score-wrap.lvl-low      { color: var(--low);      background: var(--low-bg);      border-color: var(--low-border); }
 .score-wrap.lvl-medium   { color: var(--medium);    background: var(--medium-bg);   border-color: var(--medium-border); }
 .score-wrap.lvl-high     { color: var(--high);      background: var(--high-bg);     border-color: var(--high-border); }
@@ -121,6 +163,27 @@ body {
 .score-bar-fill.lvl-medium   { background: #ffb900; }
 .score-bar-fill.lvl-high     { background: var(--high); }
 .score-bar-fill.lvl-critical { background: var(--critical); }
+
+/* ── Opportunity score widget (Score 2) ──────────────────────────────────── */
+
+.opp-wrap {
+  text-align: center;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+/* Opportunity level colour sets (inverted semantics: high = good for Thomas) */
+.opp-wrap.opp-minimal  { color: var(--opp-minimal);  background: var(--opp-minimal-bg);  border-color: var(--opp-minimal-border); }
+.opp-wrap.opp-moderate { color: var(--opp-moderate); background: var(--opp-moderate-bg); border-color: var(--opp-moderate-border); }
+.opp-wrap.opp-good     { color: var(--opp-good);     background: var(--opp-good-bg);     border-color: var(--opp-good-border); }
+.opp-wrap.opp-excellent{ color: var(--opp-excellent);background: var(--opp-excellent-bg);border-color: var(--opp-excellent-border); }
+
+.score-bar-fill.opp-minimal  { background: var(--opp-minimal); }
+.score-bar-fill.opp-moderate { background: var(--opp-moderate); }
+.score-bar-fill.opp-good     { background: #d4860a; }
+.score-bar-fill.opp-excellent{ background: var(--opp-excellent); }
 
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
 

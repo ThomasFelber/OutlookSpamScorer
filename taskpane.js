@@ -16,11 +16,16 @@ class SpamAnalyzer {
     // for engagement signals, and look at headers Microsoft already filled in.
     const deliverabilityNotes = this._collectDeliverabilityNotes(headers || '', bodyHtml || '');
 
+    // Score 2: improvement potential / business opportunity (authorized account only)
+    const opp = headers ? this._computeOpportunityScore(headers, bodyHtml || '') : { score: 0, reasons: [] };
+
     return {
       score: Math.min(10, Math.round(hScore + bScore)),
       reasons,
       hiddenText,
       deliverabilityNotes,
+      opportunityScore:   opp.score,
+      opportunityReasons: opp.reasons,
     };
   }
 
@@ -184,57 +189,17 @@ class SpamAnalyzer {
     if (/^\s*yes/i.test(xSpamStatus)) { score += 2; reasons.push('Server: als Spam markiert (X-Spam-Status)'); }
     if (/yes/i.test(xSpamFlag))       { score += 1; reasons.push('Server: X-Spam-Flag gesetzt'); }
 
-    // Microsoft Exchange spam intelligence signals
-    // SCL (Spam Confidence Level): 0–4 = clean, 5–6 = junk, 7–9 = spam
-    const scl = parseInt(this._getHeader(headers, 'X-MS-Exchange-Organization-SCL') || '', 10);
-    if (!isNaN(scl)) {
-      if (authFullyPasses) {
-        // Legitimate ESPs often get SCL 5–6; only flag SCL 7+ even with full auth
-        if (scl >= 7) { score += 1; reasons.push(`Microsoft SCL ${scl} (Spam-Score trotz vollständiger Authentifizierung)`); }
-      } else {
-        if (scl >= 7)      { score += 2.5; reasons.push(`Microsoft SCL ${scl}: als Spam eingestuft`); }
-        else if (scl >= 5) { score += 1.5; reasons.push(`Microsoft SCL ${scl}: als Junk eingestuft`); }
-      }
-    }
-
-    // BCL (Bulk Complaint Level) in X-Microsoft-Antispam: 0 = not bulk, 4–7 = bulk, 8–9 = high complaints
-    // bclVal is hoisted so it can gate the dest:J reduction below and be shared with _analyzeBody.
+    // Microsoft Exchange signals — declared here, NOT scored here.
+    // SCL, BCL, dest:J and OFR reflect the *recipient* MTA's verdict, not the
+    // content quality. Including them in Score 1 would make the spam verdict
+    // dependent on which email system receives the test message.
+    // They are used exclusively in _computeOpportunityScore (Score 2).
+    const scl        = parseInt(this._getHeader(headers, 'X-MS-Exchange-Organization-SCL') || '', 10); // eslint-disable-line no-unused-vars
     const msAntispam = this._getHeader(headers, 'X-Microsoft-Antispam') || '';
-    const bclM   = msAntispam.match(/BCL:(\d+)/);
-    const bclVal = bclM ? parseInt(bclM[1], 10) : 0;
-    if (bclM) {
-      if (bclVal >= 8)      { score += 2;   reasons.push(`Microsoft BCL ${bclVal}: sehr hohe Beschwerderate`); }
-      else if (bclVal >= 7) { score += 2.5; reasons.push(`Microsoft BCL ${bclVal}: hohe Beschwerderate (Bulk-Mail)`); }
-      else if (bclVal >= 4) { score += 0.8; reasons.push(`Microsoft BCL ${bclVal}: erhöhte Beschwerderate`); }
-    }
-
-    // dest:J = Exchange delivered to Junk — the server already classified it as spam.
-    // The authFullyPasses reduction only applies when BCL < 7 AND OFR is absent.
-    // OFR:SpamFilter means the spam filter explicitly overrode an auth-pass decision —
-    // if the server already decided it's spam despite clean auth, the ESP exemption
-    // should not apply (e.g. BCL 6 + OFR = confirmed spam, not a legitimate ESP sender).
-    const msDelivery = this._getHeader(headers, 'X-Microsoft-Antispam-Mailbox-Delivery') || '';
-    const hasOFR     = /OFR:SpamFilter/i.test(msDelivery);
-    if (/dest:J/i.test(msDelivery)) {
-      if (authFullyPasses && bclVal < 7 && !hasOFR) {
-        score += 0.5; reasons.push('Microsoft Exchange: Junk-Zustellung (aber vollständige Authentifizierung — evtl. ESP)');
-      } else {
-        score += 2; reasons.push('Microsoft Exchange: an Junk-Ordner zugestellt');
-      }
-    }
-
-    // OFR:SpamFilterAuthJ = Exchange spam filter explicitly overrode an auth-based pass decision.
-    // Strong signal: the server identified spam characteristics despite clean auth.
-    if (/OFR:SpamFilter/i.test(msDelivery)) {
-      score += 1.5;
-      reasons.push('Microsoft Exchange: Spam-Filter hat Auth-Pass überstimmt (OFR:SpamFilter)');
-    }
-
-    // Combo: dest:J AND OFR together = two independent Microsoft verdicts → stronger than either alone
-    if (/dest:J/i.test(msDelivery) && /OFR:SpamFilter/i.test(msDelivery)) {
-      score += 0.5;
-      reasons.push('Microsoft Exchange: Doppel-Signal — Junk-Zustellung UND Filter-Override');
-    }
+    const bclM       = msAntispam.match(/BCL:(\d+)/);
+    const bclVal     = bclM ? parseInt(bclM[1], 10) : 0;   // shared with _analyzeBody via this._lastBclVal
+    const msDelivery = this._getHeader(headers, 'X-Microsoft-Antispam-Mailbox-Delivery') || ''; // eslint-disable-line no-unused-vars
+    const hasOFR     = /OFR:SpamFilter/i.test(msDelivery); // eslint-disable-line no-unused-vars
 
     // Reply-To domain differs from From domain — classic phishing pattern.
     // Use root-domain comparison so subdomain senders (noreply@mail.company.com) replying
@@ -713,6 +678,135 @@ class SpamAnalyzer {
     return score;
   }
 
+  // ── Score 2: Opportunity / Improvement-Potential ─────────────────────────────
+  // High score = many fixable issues = strong business opportunity.
+  // Weights:  technical configuration (highest — easy money),
+  //           content / markup quality (second — how-to guide territory).
+  // Relies on this._lastAuthFullyPasses and this._lastBclVal set by _analyzeHeaders.
+  _computeOpportunityScore(headers, bodyHtml) {
+    const oppReasons      = [];
+    let   oppScore        = 0;
+
+    const authFullyPasses = this._lastAuthFullyPasses || false;
+    const bclVal          = this._lastBclVal          || 0;
+
+    // ── Microsoft delivery verdicts (highest-value technical signals) ─────────
+    const msDelivery = this._getHeader(headers, 'X-Microsoft-Antispam-Mailbox-Delivery') || '';
+    const hasDestJ   = /dest:J/i.test(msDelivery);
+    const hasOFR     = /OFR:SpamFilter/i.test(msDelivery);
+    const scl        = parseInt(this._getHeader(headers, 'X-MS-Exchange-Organization-SCL') || '', 10);
+
+    // Combo: all three Microsoft verdicts → perfect opportunity (auth is clean,
+    // yet still blocked → fix is specifically reputation/infrastructure)
+    if (hasDestJ && authFullyPasses && hasOFR) {
+      oppScore += 3.0;
+      oppReasons.push('dest:J + vollst. Auth + OFR — Infrastruktur-Problem trotz sauberem Auth');
+    } else if (hasDestJ && authFullyPasses) {
+      oppScore += 2.5;
+      oppReasons.push('dest:J trotz vollständiger Authentifizierung — IP/Reputationsproblem');
+    } else if (hasDestJ) {
+      oppScore += 2.0;
+      oppReasons.push('dest:J — Exchange liefert in Junk; Reputationsarbeit nötig');
+    }
+    if (hasOFR && !hasDestJ) {
+      oppScore += 1.5;
+      oppReasons.push('OFR:SpamFilter — Filter-Override trotz Auth; IP-Reputation schwach');
+    }
+
+    // SCL signals
+    if (!isNaN(scl)) {
+      if (scl >= 7 && authFullyPasses) {
+        oppScore += 1.5;
+        oppReasons.push(`SCL ${scl} trotz vollst. Auth — starkes Reputationssignal`);
+      } else if (scl >= 7) {
+        oppScore += 1.0;
+        oppReasons.push(`SCL ${scl} — Microsoft klassifiziert als Spam`);
+      } else if (scl >= 5 && authFullyPasses) {
+        oppScore += 1.0;
+        oppReasons.push(`SCL ${scl} trotz vollst. Auth — Junk-Einstufung gezielt behebbar`);
+      }
+    }
+
+    // BCL signals
+    if (bclVal >= 7) {
+      oppScore += 1.5;
+      oppReasons.push(`BCL ${bclVal} — hohe Beschwerderate; Listen-Hygiene + Reputationsaufbau`);
+    } else if (bclVal >= 4) {
+      oppScore += 0.8;
+      oppReasons.push(`BCL ${bclVal} — erhöhte Beschwerderate`);
+    }
+
+    // ── Technical configuration gaps ─────────────────────────────────────────
+    const authLine = this._getHeader(headers, 'Authentication-Results')
+                  || this._getHeader(headers, 'ARC-Authentication-Results')
+                  || '';
+
+    // DMARC policy p=none / p=quarantine → advise escalation to p=reject
+    const dmarcSection = (authLine.match(/dmarc=[^;]+/i) || [''])[0];
+    const policyM      = dmarcSection.match(/\bp=(none|quarantine|reject)\b/i);
+    if (policyM) {
+      const policy = policyM[1].toUpperCase();
+      if (policy === 'NONE' || policy === 'QUARANTINE') {
+        oppScore += 1.0;
+        oppReasons.push(`DMARC p=${policy} — Richtlinie noch nicht auf REJECT gesetzt`);
+      }
+    }
+
+    // Return-Path domain mismatch (ESP configuration opportunity)
+    const fromHeader  = this._getHeader(headers, 'From')        || '';
+    const returnPath  = this._getHeader(headers, 'Return-Path') || '';
+    if (fromHeader && returnPath) {
+      const fromRoot = this._extractRootDomain(this._extractDomain(fromHeader));
+      const rpRoot   = this._extractRootDomain(this._extractDomain(returnPath));
+      if (fromRoot && rpRoot && fromRoot !== rpRoot) {
+        oppScore += 0.7;
+        oppReasons.push(`Return-Path-Domain abweichend — ESP-Konfiguration anpassen`);
+      }
+    }
+
+    // DKIM signing domain ≠ From domain
+    const dkimSig  = this._getHeader(headers, 'DKIM-Signature') || '';
+    const dkimDomM = dkimSig.match(/\bd=([\w.-]+)/i);
+    if (dkimDomM && fromHeader) {
+      const dkimRoot = this._extractRootDomain(dkimDomM[1].toLowerCase());
+      const fromRoot = this._extractRootDomain(this._extractDomain(fromHeader));
+      const dkimRelay = /privaterelay\.appleid\.com|icloud\.com|groups\.google\.com/i;
+      if (dkimRoot && fromRoot && dkimRoot !== fromRoot && !dkimRelay.test(dkimDomM[1])) {
+        oppScore += 0.7;
+        oppReasons.push(`DKIM d= abweichend — Signatur-Domain nicht mit From ausgerichtet`);
+      }
+    }
+
+    // ── Content / markup quality (how-to guide signals) ──────────────────────
+    if (bodyHtml) {
+      const plainText = this._stripHtml(bodyHtml).replace(/\s+/g, ' ').trim();
+      const imgCount  = (bodyHtml.match(/<img\b/gi) || []).length;
+
+      // Near-empty plain-text alternative — common, easy recommendation
+      if (plainText.length < 200 && bodyHtml.length > 1000) {
+        oppScore += 0.5;
+        oppReasons.push('Plain-Text-Inhalt sehr kurz — Alternative fehlt oder minimal');
+      }
+
+      // Generic CTA
+      if (/klicken\s*sie\s*hier|click\s*here|jetzt\s*klicken/i.test(plainText)) {
+        oppScore += 0.3;
+        oppReasons.push('Generische Klick-Aufforderung — durch spezifischen CTA ersetzen');
+      }
+
+      // Image-heavy with little text
+      if (imgCount >= 3 && plainText.length < 150) {
+        oppScore += 0.4;
+        oppReasons.push(`Bildlastige E-Mail (${imgCount} Bilder, kaum Text) — Text-Bild-Verhältnis verbessern`);
+      }
+    }
+
+    return {
+      score:   Math.min(10, Math.round(oppScore)),
+      reasons: oppReasons,
+    };
+  }
+
   // Extract truly visible text from HTML by walking the DOM and skipping any
   // descendant of an element that is hidden via inline style. This is what the
   // recipient actually sees — _stripHtml() does NOT do this; it just removes
@@ -886,7 +980,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.0.22';
+const VERSION            = '2.1.0';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 const AUTHORIZED_ACCOUNT = 'felber@live.de';
 
@@ -960,16 +1054,17 @@ const REPORT_STRINGS = {
 function rStr() { return REPORT_STRINGS[UI_LANG] || REPORT_STRINGS.de; }
 
 const analyzer = new SpamAnalyzer();
-let isAuthorizedAccount = false;
-let currentScore    = null;
-let lastHeaders     = '';
-let lastBodyHtml    = '';   // raw HTML — for originalsrc extraction sent to worker
-let lastBodyText    = '';   // cleaned plain text — for copy button
-let lastHiddenText  = '';   // text extracted from hidden elements
-let lastAnalysis    = null; // { score, reasons, hiddenText }
-let lastClaudeResult = null;
-let lastAdviceResult = null;
-let lastDnsResult    = null;
+let isAuthorizedAccount      = false;
+let currentScore             = null;
+let currentOpportunityScore  = null;
+let lastHeaders              = '';
+let lastBodyHtml             = '';   // raw HTML — for originalsrc extraction sent to worker
+let lastBodyText             = '';   // cleaned plain text — for copy button
+let lastHiddenText           = '';   // text extracted from hidden elements
+let lastAnalysis             = null; // { score, reasons, hiddenText, opportunityScore, … }
+let lastClaudeResult         = null;
+let lastAdviceResult         = null;
+let lastDnsResult            = null;
 
 // ─── Office init ───────────────────────────────────────────────────────────────
 
@@ -1015,10 +1110,11 @@ Office.onReady(info => {
 
 function analyzeCurrentItem() {
   showState('loading');
-  currentScore  = null;
-  lastAnalysis  = null;
-  lastHiddenText = '';
-  lastDnsResult  = null;
+  currentScore            = null;
+  currentOpportunityScore = null;
+  lastAnalysis            = null;
+  lastHiddenText          = '';
+  lastDnsResult           = null;
 
   // Reset hidden text expander
   const htSection = document.getElementById('hidden-text-section');
@@ -1053,9 +1149,10 @@ function analyzeCurrentItem() {
     lastHeaders    = headers;
     lastBodyHtml   = bodyHtml;
     lastBodyText   = analyzer._cleanBody(bodyHtml);
-    const result   = analyzer.analyze(headers, bodyHtml, subject, senderEmail);
-    currentScore   = result.score;
-    lastAnalysis   = result;
+    const result            = analyzer.analyze(headers, bodyHtml, subject, senderEmail);
+    currentScore            = result.score;
+    currentOpportunityScore = result.opportunityScore ?? 0;
+    lastAnalysis            = result;
     lastHiddenText = result.hiddenText;
     renderResult(result, headers, subject, senderName || senderEmail);
     showState('result');
@@ -1068,6 +1165,7 @@ function analyzeCurrentItem() {
 // ─── Rendering ─────────────────────────────────────────────────────────────────
 
 function renderResult(result, headers, subject, senderDisplay) {
+  // ── Score 1: spam verdict ────────────────────────────────────────────────
   const scoreNum  = document.getElementById('score-number');
   const scoreBar  = document.getElementById('score-bar-fill');
   const scoreWrap = document.getElementById('score-wrap');
@@ -1080,6 +1178,25 @@ function renderResult(result, headers, subject, senderDisplay) {
   scoreBar.className      = `score-bar-fill lvl-${lvl}`;
   verdict.textContent     = verdictText(result.score);
   scoreBar.setAttribute('aria-valuenow', result.score);
+
+  // ── Score 2: improvement potential (rendered always; visibility toggled later)
+  const oppNum    = document.getElementById('opp-number');
+  const oppBar    = document.getElementById('opp-bar-fill');
+  const oppWrap   = document.getElementById('opp-wrap');
+  const oppVerdict = document.getElementById('opp-verdict');
+  const oppScore  = result.opportunityScore ?? 0;
+
+  if (oppNum && oppBar && oppWrap && oppVerdict) {
+    oppNum.textContent  = oppScore;
+    oppBar.style.width  = `${oppScore * 10}%`;
+    const oLvl          = oppLevel(oppScore);
+    // Preserve .hidden class — applyAccountVisibility() controls visibility
+    const wasHidden     = oppWrap.classList.contains('hidden');
+    oppWrap.className   = `opp-wrap opp-${oLvl}${wasHidden ? ' hidden' : ''}`;
+    oppBar.className    = `score-bar-fill opp-${oLvl}`;
+    oppVerdict.textContent = oppVerdictText(oppScore);
+    oppBar.setAttribute('aria-valuenow', oppScore);
+  }
 
   const list = document.getElementById('reasons-list');
   list.innerHTML = '';
@@ -1115,6 +1232,10 @@ function renderResult(result, headers, subject, senderDisplay) {
 function applyAccountVisibility() {
   document.getElementById('artifacts-section')?.classList.toggle('hidden', !isAuthorizedAccount);
   document.getElementById('export-section')?.classList.toggle('hidden',    isAuthorizedAccount);
+  // Score 2 widget visible only for the authorized account
+  document.getElementById('opp-wrap')?.classList.toggle('hidden',          !isAuthorizedAccount);
+  // Compact number font when both score boxes are shown side-by-side
+  document.getElementById('scores-area')?.classList.toggle('dual',         isAuthorizedAccount);
 }
 
 function buildAuthBadges(headers) {
@@ -1269,6 +1390,23 @@ function verdictText(score) {
   if (score <= 6)  return 'Verdächtig';
   if (score <= 8)  return 'Wahrscheinlich Spam';
   return 'Sehr wahrscheinlich Spam';
+}
+
+// Score 2 helpers
+function oppLevel(score) {
+  if (score <= 2) return 'minimal';
+  if (score <= 5) return 'moderate';
+  if (score <= 7) return 'good';
+  return 'excellent';
+}
+
+function oppVerdictText(score) {
+  if (score <= 1)  return 'Kein Potenzial';
+  if (score <= 2)  return 'Geringes Potenzial';
+  if (score <= 4)  return 'Moderates Potenzial';
+  if (score <= 6)  return 'Gutes Potenzial';
+  if (score <= 8)  return 'Hohes Potenzial';
+  return 'Sehr hohes Potenzial';
 }
 
 // ─── AI check ──────────────────────────────────────────────────────────────────

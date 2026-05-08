@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
   <title>Spam-Bewerter</title>
-  <link rel="stylesheet" href="taskpane.css?v=2.0.22">
+  <link rel="stylesheet" href="taskpane.css?v=2.1.0">
   <!-- Office.js muss synchron geladen werden (kein defer) -->
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
   <script src="jszip.min.js" defer></script>
-  <script src="taskpane.js?v=2.0.22" defer></script>
+  <script src="taskpane.js?v=2.1.0" defer></script>
 </head>
 <body>
 
@@ -42,14 +42,30 @@
   <!-- Ergebnis -->
   <div id="state-result" class="hidden">
 
-    <!-- Score-Anzeige -->
-    <div id="score-wrap" class="score-wrap">
-      <div id="score-number" class="score-number">0</div>
-      <div class="score-sublabel">von 10</div>
-      <div class="score-bar-track" role="meter" aria-label="Spam-Score" aria-valuemin="0" aria-valuemax="10">
-        <div id="score-bar-fill" class="score-bar-fill" style="width:0%"></div>
+    <!-- Score-Anzeige (Score 1: Spam | Score 2: Optimierungspotenzial) -->
+    <div id="scores-area" class="scores-area">
+
+      <div id="score-wrap" class="score-wrap">
+        <div class="score-label">Spam</div>
+        <div id="score-number" class="score-number">0</div>
+        <div class="score-sublabel">von 10</div>
+        <div class="score-bar-track" role="meter" aria-label="Spam-Score" aria-valuemin="0" aria-valuemax="10">
+          <div id="score-bar-fill" class="score-bar-fill" style="width:0%"></div>
+        </div>
+        <div id="score-verdict" class="score-verdict"></div>
       </div>
-      <div id="score-verdict" class="score-verdict"></div>
+
+      <!-- Score 2: only visible for authorized account (toggled by applyAccountVisibility) -->
+      <div id="opp-wrap" class="opp-wrap hidden">
+        <div class="score-label">Potenzial</div>
+        <div id="opp-number" class="score-number">0</div>
+        <div class="score-sublabel">von 10</div>
+        <div class="score-bar-track" role="meter" aria-label="Optimierungs-Potenzial" aria-valuemin="0" aria-valuemax="10">
+          <div id="opp-bar-fill" class="score-bar-fill" style="width:0%"></div>
+        </div>
+        <div id="opp-verdict" class="score-verdict"></div>
+      </div>
+
     </div>
 
     <!-- Spam-Indikatoren -->

@@ -386,15 +386,21 @@ KONTAKT DES ABSENDERS (Thomas Felber) — IMMER am Ende angeben, beide Angaben k
 E-Mail : <a href="mailto:felber@live.de?subject=Newsletter-Zustellbarkeit">felber@live.de</a>
 Telefon: <a href="tel:+491709064924">+49 170 9064924</a>  (wichtig für mobile Lesbarkeit — tel:-Link)
 
-DAS ANGEBOT — IMMER beide Optionen konkret nennen:
-(A) Erfolgsbasiert: Konkret einen Preis in EUR nennen, der sich an der Branche und den Margen orientiert.
+DAS ANGEBOT — IMMER alle drei Optionen nennen:
+(A) Festpreis: Konkret einen Preis in EUR nennen, der sich an der Branche und Margen orientiert.
     Mindestpreis: € 400,–. Nach oben anpassen je nach Branche:
     - Makler, Immobilien, Finanzdienstleister: € 700–900
     - Rechtsanwälte, Steuerberater, Unternehmensberater: € 800–1.200
     - Bauunternehmen, Handwerk mit hohen Umsätzen: € 600–900
     - Standardbetriebe / KMU: € 400–600
-    Der Preis ist erst nach nachgewiesener Verbesserung fällig (Erfolgsmodell).
-(B) Auf kollegialer Basis ohne Rechnung — kurz und natürlich formuliert.
+    Preis fällig bei Abschluss der Arbeiten. IMMER anmerken: "Sie gehen kein Risiko ein."
+(B) Erstanalyse: Vollständiger Analyse-Report mit identifizierten Problemen und priorisierten
+    Handlungsempfehlungen. Umsetzung liegt beim Kunden. Honorar: € 200,– (einmalig, fällig bei Übergabe).
+(C) Kollegial: Kurz und natürlich formuliert — offen für ein Gespräch ohne formales Mandat.
+    Was daraus entsteht, entscheiden wir gemeinsam.
+
+ABSCHLUSS DES BRIEFES (Closing):
+IMMER verwenden: "Für jedwede Rückfragen stehe ich gerne zur Verfügung."
 
 PROBLEMBESCHREIBUNG:
 Auf hohem Abstraktionsniveau — der Empfänger versteht, dass es ein strukturelles Problem gibt,
