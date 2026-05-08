@@ -683,126 +683,219 @@ class SpamAnalyzer {
   // Weights:  technical configuration (highest — easy money),
   //           content / markup quality (second — how-to guide territory).
   // Relies on this._lastAuthFullyPasses and this._lastBclVal set by _analyzeHeaders.
+  // ── Score 2: Opportunity / Improvement-Potential ─────────────────────────────
+  // Assumes the email is legitimate. Scores how much the spam classification
+  // can be improved through targeted, fixable changes.
+  //
+  // Category caps (sum = max 10):
+  //   tech    max 6  (60 %) — DNS / infrastructure / authentication config
+  //   struct  max 3  (30 %) — HTML/CSS structure, markup, encoding
+  //   content max 1  (10 %) — CTA wording, salutation, tone
   _computeOpportunityScore(headers, bodyHtml) {
     const oppReasons      = [];
-    let   oppScore        = 0;
+    let tech    = 0;  // max 6
+    let struct  = 0;  // max 3
+    let content = 0;  // max 1
 
     const authFullyPasses = this._lastAuthFullyPasses || false;
     const bclVal          = this._lastBclVal          || 0;
 
-    // ── Microsoft delivery verdicts (highest-value technical signals) ─────────
-    const msDelivery = this._getHeader(headers, 'X-Microsoft-Antispam-Mailbox-Delivery') || '';
-    const hasDestJ   = /dest:J/i.test(msDelivery);
-    const hasOFR     = /OFR:SpamFilter/i.test(msDelivery);
-    const scl        = parseInt(this._getHeader(headers, 'X-MS-Exchange-Organization-SCL') || '', 10);
+    // ── TECHNICAL (max 6) ─────────────────────────────────────────────────────
 
-    // Combo: all three Microsoft verdicts → perfect opportunity (auth is clean,
-    // yet still blocked → fix is specifically reputation/infrastructure)
-    if (hasDestJ && authFullyPasses && hasOFR) {
-      oppScore += 3.0;
-      oppReasons.push('dest:J + vollst. Auth + OFR — Infrastruktur-Problem trotz sauberem Auth');
-    } else if (hasDestJ && authFullyPasses) {
-      oppScore += 2.5;
-      oppReasons.push('dest:J trotz vollständiger Authentifizierung — IP/Reputationsproblem');
-    } else if (hasDestJ) {
-      oppScore += 2.0;
-      oppReasons.push('dest:J — Exchange liefert in Junk; Reputationsarbeit nötig');
-    }
-    if (hasOFR && !hasDestJ) {
-      oppScore += 1.5;
-      oppReasons.push('OFR:SpamFilter — Filter-Override trotz Auth; IP-Reputation schwach');
-    }
+    if (headers) {
+      const msDelivery = this._getHeader(headers, 'X-Microsoft-Antispam-Mailbox-Delivery') || '';
+      const hasDestJ   = /dest:J/i.test(msDelivery);
+      const hasOFR     = /OFR:SpamFilter/i.test(msDelivery);
+      const scl        = parseInt(this._getHeader(headers, 'X-MS-Exchange-Organization-SCL') || '', 10);
+      const authLine   = this._getHeader(headers, 'Authentication-Results')
+                      || this._getHeader(headers, 'ARC-Authentication-Results')
+                      || '';
 
-    // SCL signals
-    if (!isNaN(scl)) {
-      if (scl >= 7 && authFullyPasses) {
-        oppScore += 1.5;
-        oppReasons.push(`SCL ${scl} trotz vollst. Auth — starkes Reputationssignal`);
-      } else if (scl >= 7) {
-        oppScore += 1.0;
-        oppReasons.push(`SCL ${scl} — Microsoft klassifiziert als Spam`);
-      } else if (scl >= 5 && authFullyPasses) {
-        oppScore += 1.0;
-        oppReasons.push(`SCL ${scl} trotz vollst. Auth — Junk-Einstufung gezielt behebbar`);
+      // Microsoft delivery verdicts
+      if (hasDestJ && authFullyPasses && hasOFR) {
+        tech += 2.5;
+        oppReasons.push('dest:J + Auth-Pass + OFR — Infrastrukturproblem trotz sauberem Auth');
+      } else if (hasDestJ && authFullyPasses) {
+        tech += 2.0;
+        oppReasons.push('dest:J trotz vollständiger Authentifizierung — IP/Reputation');
+      } else if (hasDestJ) {
+        tech += 1.5;
+        oppReasons.push('dest:J — Exchange Junk-Zustellung; Reputationsarbeit nötig');
       }
-    }
-
-    // BCL signals
-    if (bclVal >= 7) {
-      oppScore += 1.5;
-      oppReasons.push(`BCL ${bclVal} — hohe Beschwerderate; Listen-Hygiene + Reputationsaufbau`);
-    } else if (bclVal >= 4) {
-      oppScore += 0.8;
-      oppReasons.push(`BCL ${bclVal} — erhöhte Beschwerderate`);
-    }
-
-    // ── Technical configuration gaps ─────────────────────────────────────────
-    const authLine = this._getHeader(headers, 'Authentication-Results')
-                  || this._getHeader(headers, 'ARC-Authentication-Results')
-                  || '';
-
-    // DMARC policy p=none / p=quarantine → advise escalation to p=reject
-    const dmarcSection = (authLine.match(/dmarc=[^;]+/i) || [''])[0];
-    const policyM      = dmarcSection.match(/\bp=(none|quarantine|reject)\b/i);
-    if (policyM) {
-      const policy = policyM[1].toUpperCase();
-      if (policy === 'NONE' || policy === 'QUARANTINE') {
-        oppScore += 1.0;
-        oppReasons.push(`DMARC p=${policy} — Richtlinie noch nicht auf REJECT gesetzt`);
+      if (hasOFR && !hasDestJ) {
+        tech += 1.0;
+        oppReasons.push('OFR:SpamFilter — Filter-Override trotz Auth');
       }
-    }
 
-    // Return-Path domain mismatch (ESP configuration opportunity)
-    const fromHeader  = this._getHeader(headers, 'From')        || '';
-    const returnPath  = this._getHeader(headers, 'Return-Path') || '';
-    if (fromHeader && returnPath) {
-      const fromRoot = this._extractRootDomain(this._extractDomain(fromHeader));
-      const rpRoot   = this._extractRootDomain(this._extractDomain(returnPath));
-      if (fromRoot && rpRoot && fromRoot !== rpRoot) {
-        oppScore += 0.7;
-        oppReasons.push(`Return-Path-Domain abweichend — ESP-Konfiguration anpassen`);
+      if (!isNaN(scl)) {
+        if (scl >= 7 && authFullyPasses) {
+          tech += 1.5;
+          oppReasons.push(`SCL ${scl} trotz vollst. Auth — starkes Reputationssignal`);
+        } else if (scl >= 7) {
+          tech += 1.0;
+          oppReasons.push(`SCL ${scl} — Spam-Klassifikation`);
+        } else if (scl >= 5 && authFullyPasses) {
+          tech += 1.0;
+          oppReasons.push(`SCL ${scl} trotz vollst. Auth — Junk-Einstufung gezielt behebbar`);
+        }
       }
-    }
 
-    // DKIM signing domain ≠ From domain
-    const dkimSig  = this._getHeader(headers, 'DKIM-Signature') || '';
-    const dkimDomM = dkimSig.match(/\bd=([\w.-]+)/i);
-    if (dkimDomM && fromHeader) {
-      const dkimRoot = this._extractRootDomain(dkimDomM[1].toLowerCase());
-      const fromRoot = this._extractRootDomain(this._extractDomain(fromHeader));
+      if (bclVal >= 7) {
+        tech += 1.5;
+        oppReasons.push(`BCL ${bclVal} — hohe Beschwerderate`);
+      } else if (bclVal >= 4) {
+        tech += 0.8;
+        oppReasons.push(`BCL ${bclVal} — erhöhte Beschwerderate`);
+      }
+
+      // DMARC enforcement level
+      const dmarcSeg = (authLine.match(/dmarc=[^;]+/i) || [''])[0];
+      const policyM  = dmarcSeg.match(/\bp=(none|quarantine|reject)\b/i);
+      if (policyM) {
+        const p = policyM[1].toUpperCase();
+        if (p === 'NONE') {
+          tech += 1.5;
+          oppReasons.push('DMARC p=NONE — keine Durchsetzung; auf REJECT anheben');
+        } else if (p === 'QUARANTINE') {
+          tech += 0.8;
+          oppReasons.push('DMARC p=QUARANTINE — noch nicht auf REJECT gesetzt');
+        }
+      }
+
+      // Return-Path domain mismatch
+      const fromHeader = this._getHeader(headers, 'From')        || '';
+      const returnPath = this._getHeader(headers, 'Return-Path') || '';
+      if (fromHeader && returnPath) {
+        const fromRoot = this._extractRootDomain(this._extractDomain(fromHeader));
+        const rpRoot   = this._extractRootDomain(this._extractDomain(returnPath));
+        if (fromRoot && rpRoot && fromRoot !== rpRoot) {
+          tech += 0.8;
+          oppReasons.push('Return-Path-Domain abweichend — ESP-Konfiguration anpassen');
+        }
+      }
+
+      // DKIM domain mismatch / missing signature
+      const fromHdr2  = this._getHeader(headers, 'From') || '';
+      const dkimSig   = this._getHeader(headers, 'DKIM-Signature') || '';
+      const dkimDomM  = dkimSig.match(/\bd=([\w.-]+)/i);
       const dkimRelay = /privaterelay\.appleid\.com|icloud\.com|groups\.google\.com/i;
-      if (dkimRoot && fromRoot && dkimRoot !== fromRoot && !dkimRelay.test(dkimDomM[1])) {
-        oppScore += 0.7;
-        oppReasons.push(`DKIM d= abweichend — Signatur-Domain nicht mit From ausgerichtet`);
+      if (dkimDomM && fromHdr2) {
+        const dkimRoot = this._extractRootDomain(dkimDomM[1].toLowerCase());
+        const frRoot   = this._extractRootDomain(this._extractDomain(fromHdr2));
+        if (dkimRoot && frRoot && dkimRoot !== frRoot && !dkimRelay.test(dkimDomM[1])) {
+          tech += 0.8;
+          oppReasons.push('DKIM d= abweichend — Signatur-Domain nicht mit From ausgerichtet');
+        }
+      } else if (!dkimSig) {
+        tech += 1.0;
+        oppReasons.push('Keine DKIM-Signatur — E-Mail-Authentifizierung unvollständig');
       }
     }
 
-    // ── Content / markup quality (how-to guide signals) ──────────────────────
+    tech = Math.min(6, tech);
+
+    // ── STRUCTURAL (max 3) ────────────────────────────────────────────────────
+    // HTML/CSS markup quality, text/image balance, encoding practices.
+
+    if (bodyHtml) {
+      const plainText   = this._stripHtml(bodyHtml).replace(/\s+/g, ' ').trim();
+      const visibleText = this._extractVisibleText(bodyHtml);
+      const imgCount    = (bodyHtml.match(/<img\b/gi) || []).length;
+      const htmlLen     = bodyHtml.length;
+
+      // Plain-text alternative missing or near-empty (affects all non-HTML clients)
+      if (plainText.length < 100 && htmlLen > 500) {
+        struct += 1.2;
+        oppReasons.push('Plain-Text-Alternative fehlt — kritisch für alle E-Mail-Systeme');
+      } else if (plainText.length < 300 && htmlLen > 1500) {
+        struct += 0.8;
+        oppReasons.push('Plain-Text-Alternative zu kurz — vollständigen Inhalt spiegeln');
+      }
+
+      // Image-heavy / image-only body
+      if (imgCount >= 2 && plainText.length < 80) {
+        struct += 1.0;
+        oppReasons.push(`Nur-Bild-E-Mail (${imgCount} Bilder, kaum Text) — Inhalt als HTML-Text ergänzen`);
+      } else if (imgCount >= 3 && plainText.length < 300) {
+        struct += 0.5;
+        oppReasons.push(`Bildübergewicht (${imgCount} Bilder) — Text-Bild-Verhältnis verbessern`);
+      }
+
+      // CSS Flexbox/Grid layout instead of HTML tables (email client compatibility)
+      if (/display\s*:\s*(flex|grid|inline-flex|inline-grid)/i.test(bodyHtml)) {
+        struct += 0.6;
+        oppReasons.push('CSS Flexbox/Grid-Layout — E-Mail-Clients benötigen HTML-Tabellen-Struktur');
+      }
+
+      // display:none — spam filters see hidden content; responsive show/hide pattern
+      const displayNoneCount = (bodyHtml.match(/display\s*:\s*none/gi) || []).length;
+      if (displayNoneCount >= 5) {
+        struct += 0.7;
+        oppReasons.push(`${displayNoneCount}× display:none — Spam-Filter sehen versteckte Inhalte`);
+      } else if (displayNoneCount >= 2) {
+        struct += 0.4;
+        oppReasons.push(`${displayNoneCount}× display:none — versteckte Inhalte reduzieren`);
+      }
+
+      // Low visible-to-total text ratio (duplicate dark/light-mode content)
+      if (visibleText.length > 0 && plainText.length > 800
+          && visibleText.length < plainText.length * 0.25) {
+        struct += 0.6;
+        oppReasons.push('Sichtbarer Text <25% des HTML-Inhalts — responsive Duplikate reduzieren');
+      }
+
+      // Excessive inline style attributes (CSS-heavy template bloat)
+      const inlineStyleCount = (bodyHtml.match(/\bstyle\s*=/gi) || []).length;
+      if (inlineStyleCount > 100) {
+        struct += 0.5;
+        oppReasons.push(`${inlineStyleCount} inline style-Attribute — Template-Komplexität reduzieren`);
+      } else if (inlineStyleCount > 50) {
+        struct += 0.3;
+        oppReasons.push(`${inlineStyleCount} inline style-Attribute — CSS-Ballast verringern`);
+      }
+
+      // Quoted-Printable encoding in HTML (spam filter concern)
+      const qpCount = (bodyHtml.match(/=[0-9A-Fa-f]{2}/g) || []).length;
+      if (qpCount > 30 && htmlLen > 0 && (qpCount / (htmlLen / 100)) > 1.0) {
+        struct += 0.5;
+        oppReasons.push(`${qpCount} QP-Sequenzen (=XX) im HTML — auf UTF-8 ohne QP umstellen`);
+      }
+
+      // Pervasive white text (spam filter heuristic)
+      const whiteCount = (bodyHtml.match(/color\s*:\s*(white|#fff\b|#ffffff)/gi) || []).length;
+      if (whiteCount >= 8) {
+        struct += 0.4;
+        oppReasons.push(`${whiteCount}× color:white — gezielt einsetzen, Filter reagieren darauf`);
+      }
+    }
+
+    struct = Math.min(3, struct);
+
+    // ── CONTENT (max 1) ───────────────────────────────────────────────────────
+    // Word choice, CTA text, salutation — limited impact on deliverability.
+
     if (bodyHtml) {
       const plainText = this._stripHtml(bodyHtml).replace(/\s+/g, ' ').trim();
-      const imgCount  = (bodyHtml.match(/<img\b/gi) || []).length;
 
-      // Near-empty plain-text alternative — common, easy recommendation
-      if (plainText.length < 200 && bodyHtml.length > 1000) {
-        oppScore += 0.5;
-        oppReasons.push('Plain-Text-Inhalt sehr kurz — Alternative fehlt oder minimal');
-      }
-
-      // Generic CTA
       if (/klicken\s*sie\s*hier|click\s*here|jetzt\s*klicken/i.test(plainText)) {
-        oppScore += 0.3;
-        oppReasons.push('Generische Klick-Aufforderung — durch spezifischen CTA ersetzen');
+        content += 0.4;
+        oppReasons.push('Generischer CTA — konkreter formulieren');
       }
-
-      // Image-heavy with little text
-      if (imgCount >= 3 && plainText.length < 150) {
-        oppScore += 0.4;
-        oppReasons.push(`Bildlastige E-Mail (${imgCount} Bilder, kaum Text) — Text-Bild-Verhältnis verbessern`);
+      if (/^(liebe[rs]?\s+leser|sehr\s+geehrte[rs]?\s+(damen|herren)|dear\s+(customer|subscriber))/im.test(plainText)) {
+        content += 0.3;
+        oppReasons.push('Generische Massen-Anrede — Engagement durch Personalisierung verbessern');
+      }
+      const exclCount = (plainText.match(/!/g) || []).length;
+      if (exclCount > 5) {
+        content += 0.3;
+        oppReasons.push(`${exclCount} Ausrufezeichen — Ton natürlicher gestalten`);
       }
     }
 
+    content = Math.min(1, content);
+
     return {
-      score:   Math.min(10, Math.round(oppScore)),
+      score:   Math.min(10, Math.round(tech + struct + content)),
       reasons: oppReasons,
     };
   }
