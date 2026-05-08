@@ -795,20 +795,38 @@ class SpamAnalyzer {
       }
 
       // DKIM domain mismatch / missing signature
-      const fromHdr2  = this._getHeader(headers, 'From') || '';
-      const dkimSig   = this._getHeader(headers, 'DKIM-Signature') || '';
-      const dkimDomM  = dkimSig.match(/\bd=([\w.-]+)/i);
-      const dkimRelay = /privaterelay\.appleid\.com|icloud\.com|groups\.google\.com/i;
+      const fromHdr2    = this._getHeader(headers, 'From') || '';
+      const dkimSig     = this._getHeader(headers, 'DKIM-Signature') || '';
+      const dkimDomM    = dkimSig.match(/\bd=([\w.-]+)/i);
+      const dkimRelay   = /privaterelay\.appleid\.com|icloud\.com|groups\.google\.com/i;
+      // Default cloud DKIM: tenant hasn't configured custom domain signing
+      const dkimM365    = /\.onmicrosoft\.com$/i;
+      let   dkimAligned = false;  // used for auth-fragile check below
+
       if (dkimDomM && fromHdr2) {
         const dkimRoot = this._extractRootDomain(dkimDomM[1].toLowerCase());
         const frRoot   = this._extractRootDomain(this._extractDomain(fromHdr2));
+        dkimAligned    = !!(dkimRoot && frRoot && dkimRoot === frRoot);
         if (dkimRoot && frRoot && dkimRoot !== frRoot && !dkimRelay.test(dkimDomM[1])) {
-          tech += 0.8;
-          oppReasons.push('DKIM d= abweichend — Signatur-Domain nicht mit From ausgerichtet');
+          if (dkimM365.test(dkimDomM[1])) {
+            // Microsoft 365 default signing — trivially easy fix (2 CNAME records + M365 admin toggle)
+            tech += 1.5;
+            oppReasons.push('DKIM: M365-Standard-Signatur (onmicrosoft.com) — eigene Domain in 2 DNS-Einträgen aktivieren');
+          } else {
+            tech += 0.8;
+            oppReasons.push('DKIM d= abweichend — Signatur-Domain nicht mit From ausgerichtet');
+          }
         }
       } else if (!dkimSig) {
         tech += 1.0;
         oppReasons.push('Keine DKIM-Signatur — E-Mail-Authentifizierung unvollständig');
+      }
+
+      // Auth fragility: DMARC passes but only via SPF alignment; DKIM alignment
+      // is a second, independent factor — if the SPF record changes, DMARC fails.
+      if (dkimSig && !dkimAligned && /dmarc=pass/i.test(authLine)) {
+        tech += 1.0;
+        oppReasons.push('DMARC-Pass nur über SPF — DKIM-Alignment als zweiten Auth-Pfad einrichten');
       }
     }
 
@@ -1093,7 +1111,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.1.1';
+const VERSION            = '2.1.2';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 const AUTHORIZED_ACCOUNT = 'felber@live.de';
 
