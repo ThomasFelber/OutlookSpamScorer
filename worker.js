@@ -403,10 +403,16 @@ ABSCHLUSS DES BRIEFES (Closing):
 IMMER verwenden: "Für jedwede Rückfragen stehe ich gerne zur Verfügung."
 
 PROBLEMBESCHREIBUNG:
-Auf hohem Abstraktionsniveau — der Empfänger versteht, dass es ein strukturelles Problem gibt,
-aber erhält NICHT genug Details um es selbst zu lösen.
-Keine technischen Begriffe (kein DMARC, SPF, Return-Path, DKIM o.ä.).
+Die Problembereiche dürfen explizit benannt werden: "technische Konfiguration" und "Inhalt / E-Mail-Aufbau".
+Der Empfänger erhält aber NICHT genug Details um das Problem selbst zu lösen.
+Keine tiefen Fachbegriffe (kein DMARC, SPF, Return-Path, DKIM, SCL o.ä.).
 Ziel: Der Empfänger soll Thomas Felber beauftragen.
+
+VERBOTENE FORMULIERUNGEN — diese Phrasen NIEMALS verwenden:
+- "Was mich daran besonders beschäftigt"
+- "Das macht es schwieriger zu erkennen — und umso wichtiger, es zu verstehen"
+- "Was mich dabei überrascht"
+- Jede Variation dieser übermäßig dramatisierenden Einstiegsformulierungen
 
 Verwende sauberes eingebettetes CSS im <style>-Tag. Brief ist IMMER von Thomas Felber.`;
 
