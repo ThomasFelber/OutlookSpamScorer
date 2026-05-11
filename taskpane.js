@@ -330,6 +330,44 @@ class SpamAnalyzer {
       reasons.push(`Fabrizierte Business-Identität auf Free-Mail-Provider: "${fromLocalPart}@${fromDomain}"`);
     }
 
+    // "alert@" / "notify@" / "security@" local-parts are legitimate only on a
+    // narrow set of trusted senders (banks, government, major SaaS). Anywhere
+    // else they are a manufactured-trust pattern — typically used after a
+    // small-biz mailbox is compromised or for cheap throwaway domains.
+    const alertPrefix         = /^(?:alert|alerts|notify|notification|notifications|notice|security[-_]?alert|incident|warning|admin[-_]?alert)s?[-_]?\d*$/i;
+    const trustedAlertSenders = /(?:^|\.)(?:gov|mil|edu|police|amazon\.com|amazonaws\.com|paypal\.com|google\.com|microsoft\.com|apple\.com|github\.com|cloudflare\.com|sparkasse\.de|commerzbank\.de|postbank\.de|volksbank\.de|ing\.de|dkb\.de|n26\.com|revolut\.com|deutsche-bank\.de|fritz\.box)$/i;
+    if (alertPrefix.test(fromLocalPart) && fromDomain && !trustedAlertSenders.test(fromDomain)) {
+      score += 1.5;
+      reasons.push(`"${fromLocalPart}@"-Absender auf nicht-zertifizierter Domain ${fromDomain} — echte Alerts kommen von Banken/Behörden/großen SaaS-Providern`);
+    }
+
+    // Bulk-mail-infrastructure headers (X-Job-ID, X-Feedback-ID, X-Campaign-Id …)
+    // are normal on legitimate ESP traffic. They are a RED FLAG when the sender
+    // domain is a single-business artisan / small-shop type — those domains
+    // never run mass campaigns themselves. Combination = compromised mailbox or
+    // rented sending infrastructure abused for bulk.
+    const bulkInfraRe    = /^X-(?:Job-ID|Feedback-ID|Campaign(?:-(?:Id|Name))?|Mailer-RecptId|Mailgun-[\w-]+|SES-[\w-]+|Sendgrid-[\w-]+|MJ-Mid|Constant-Contact-ID|Mandrill-[\w-]+|Klaviyo-[\w-]+|HS-[\w-]+|Pardot-[\w-]+|Marketo-[\w-]+|Mta-Tag):/im;
+    const fromMainHdr    = (this._extractRootDomain(fromDomain || '') || '').split('.')[0] || '';
+    const smallBizDomain = /(?:acupunctur|chiropract|osteopath|physio|dentist|zahnarzt|arztpraxis|hausarzt|tierarzt|kinderarzt|salon|friseur|kosmetik|massag|yoga|pilates|fitnessstudio|photograph|fotograf|wedding|hochzeit|florist|blume(?:n)?laden|plumber|installateur|elektriker|maler|schreiner|tischler|carpenter|catering|baeckerei|bakery|metzger|barber|tattoo|piercing|spamassage|nageldesign|nailbar|notariat|kanzlei|praxis|pfarr|kirche|verein\b)/i;
+    const isSmallBiz     = smallBizDomain.test(fromMainHdr) && fromMainHdr.length <= 30;
+    if (bulkInfraRe.test(headers) && isSmallBiz) {
+      score += 2.5;
+      reasons.push(`Massenmail-Infrastruktur-Header auf Kleinunternehmer-Domain "${fromDomain}" — wahrscheinlich kompromittiertes Postfach oder gemietete Sendinfrastruktur`);
+    }
+
+    // More than 3 bulk-infra / campaign-tracking X-Headers WITHOUT a List-ID
+    // header (which would indicate a proper ESP newsletter list) suggest rented
+    // or abused sending infrastructure with uncertain provenance.
+    const xTrackingCount = (headers.match(/^X-(?:Campaign|Job|Mailer-Recpt|Feedback|Recipient|Subscriber|List(?:-Type)?|Tracking|Click|Open|Mta-Tag|MC-)[\w-]*:/gim) || []).length;
+    const hasListId      = /^List-ID:/im.test(headers);
+    if (xTrackingCount >= 3 && !hasListId) {
+      score += 0.8;
+      reasons.push(`${xTrackingCount} Tracking/Kampagnen-Header ohne List-Id — uneindeutige Versand-Herkunft`);
+    }
+
+    // Store small-biz flag for the body-side topic-domain-mismatch check below.
+    this._lastSmallBizDomain = isSmallBiz ? fromMainHdr.match(smallBizDomain)?.[0] : null;
+
     // Spam keywords in the From display name (e.g. "Detox Nachrichten" <alert@andressacupuncture.com>).
     // Spammers set an enticing display name that has nothing to do with the sender domain.
     // Only fires when the display name exists and is distinct from the domain name.
@@ -411,6 +449,30 @@ class SpamAnalyzer {
 
     for (const p of patterns) {
       if (p.re.test(fullLower)) { score += p.w; reasons.push(p.label); }
+    }
+
+    // ── Topic-Domain-Mismatch ─────────────────────────────────────────────────
+    // Sender-Domain hat eine erkennbare Business-Bedeutung (Akupunktur, Zahnarzt,
+    // Floristik …), aber der Mailinhalt behandelt ein völlig unverwandtes
+    // Mass-Market-Thema (Auto, Krypto, Diät …) — klassisches Zeichen für
+    // gekapertes Postfach oder gemietete Sendinfrastruktur. Konservativ:
+    // wir feuern nur bei deutlichen Topic-Keywords.
+    if (this._lastSmallBizDomain) {
+      const topicTriggers = [
+        { topic: 'Automotive',      re: /\b(auto|kfz|fahrzeug|car\s|wagen|notfall.{0,10}auto|garage|reifen|werkstatt|t[üu]v|[öo]lwechsel|motor.{0,10}defekt|sicherheitsgurt|airbag)\b/i },
+        { topic: 'Gewichtsabnahme', re: /\b(abnehm|di[äa]t|fettverbrenn|schlankheit(?:s)?|kalorien|keto\s|bauchfett|stoffwechsel)\b/i },
+        { topic: 'Krypto/Forex',    re: /\b(bitcoin|krypto|forex|trading|investment|rendite|fibonacci|broker(?:konto)?)\b/i },
+        { topic: 'Glücksspiel',     re: /\b(casino|jackpot|roulette|spielautomat|sportwetten|freispiel)\b/i },
+        { topic: 'Pharma/Potenz',   re: /\b(viagra|cialis|levitra|potenzmittel|libido|erektion|generika)\b/i },
+        { topic: 'Finanzkredit',    re: /\b(sofortkredit|umschuldung|privatdarlehen|kredit\s+ohne|schufa[-\s]?frei|effektiver\s+jahreszins)\b/i },
+      ];
+      for (const { topic, re } of topicTriggers) {
+        if (re.test(fullText)) {
+          score += 2.0;
+          reasons.push(`Themen-Domain-Mismatch: Domain deutet auf "${this._lastSmallBizDomain}", Inhalt ist Thema "${topic}" — wahrscheinlich missbrauchter Absender`);
+          break;
+        }
+      }
     }
 
     // ── Free-Mail-Provider + B2B-Outreach (Compound-Check) ─────────────────────
@@ -603,14 +665,14 @@ class SpamAnalyzer {
     // permits ! in paths but spam trackers use garbled strings like "ev7jtp!jhhhjhwwl1t!j!j21t5"
     // as obfuscated tracking tokens). Legitimate ESPs use proper base64/hex encoding.
     if (links.some(l => /[?&][a-z]{1,6}=[a-z0-9]{4,}![a-z0-9!]{4,}/i.test(l))) {
-      score += 1;
+      score += 1.5;
       reasons.push('Obfuskierte URL-Parameter mit Sonderzeichen — Spam-Tracking-Token');
     }
 
     if (linkCount > 0) {
       const textLen = plainText.length;
       if (textLen < 80 && linkCount >= 2) {
-        score += 1;
+        score += 1.3;
         reasons.push('Sehr kurzer Text mit mehreren Links');
       } else if (textLen > 0 && (linkCount / (textLen / 100)) > 0.4) {
         // Reduce link-density penalty for fully-authenticated, low-BCL senders only.
@@ -1223,7 +1285,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.3';
+const VERSION            = '2.2.4';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
