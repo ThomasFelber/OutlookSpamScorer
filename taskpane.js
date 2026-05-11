@@ -6,7 +6,7 @@
 class SpamAnalyzer {
   analyze(headers, bodyHtml, subject, senderEmail) {
     const reasons    = [];
-    const hScore     = headers ? this._analyzeHeaders(headers, reasons) : 0;
+    const hScore     = headers ? this._analyzeHeaders(headers, reasons, subject) : 0;
     const bScore     = this._analyzeBody(bodyHtml, subject, reasons);
     const hiddenText = this._extractHiddenTextFiltered(bodyHtml || '');
 
@@ -155,7 +155,7 @@ class SpamAnalyzer {
     return this._extractHiddenText(bodyHtml || '', compareText);
   }
 
-  _analyzeHeaders(headers, reasons) {
+  _analyzeHeaders(headers, reasons, subject = '') {
     let score = 0;
 
     // Authentication-Results (RFC 8601) — core email security checks
@@ -212,9 +212,53 @@ class SpamAnalyzer {
       const fromRoot      = this._extractRootDomain(fromDomain);
       const replyToRoot   = this._extractRootDomain(replyToDomain);
       if (fromRoot && replyToRoot && fromRoot !== replyToRoot) {
-        score += 1;
+        score += 1.2;
         reasons.push(`Reply-To-Domain abweichend (${replyToDomain} ≠ ${fromDomain})`);
       }
+
+      // Reply-To-Look-alike: Reply-To-Domain enthält einen Markennamen als
+      // Teilstring, ist aber NICHT die offizielle Brand-Domain. Klassisches
+      // Typosquatting bei Phishing — Antworten landen beim Angreifer.
+      if (replyToRoot) {
+        const replyToNormalized = replyToRoot.replace(/-/g, '');
+        const brandLookalikes = [
+          { sub: 'rayban',    official: /^(?:ray-?ban)\.com$/i },
+          { sub: 'meta',      official: /^(?:meta|facebook|fb|instagram|whatsapp)\.com$/i },
+          { sub: 'facebook',  official: /^facebook\.(?:com|net)$/i },
+          { sub: 'google',    official: /^(?:google\.(?:com|de|co\.uk)|googlemail\.com|gmail\.com|abc\.xyz|youtube\.com)$/i },
+          { sub: 'apple',     official: /^apple\.com$/i },
+          { sub: 'amazon',    official: /^amazon\.(?:com|de|co\.uk|fr|es|it|nl|pl|com\.au|co\.jp)$/i },
+          { sub: 'paypal',    official: /^paypal\.(?:com|de)$/i },
+          { sub: 'netflix',   official: /^netflix\.(?:com|net)$/i },
+          { sub: 'spotify',   official: /^spotify\.com$/i },
+          { sub: 'tesla',     official: /^tesla\.com$/i },
+          { sub: 'nike',      official: /^nike\.com$/i },
+          { sub: 'adidas',    official: /^adidas\.(?:com|de)$/i },
+          { sub: 'microsoft', official: /^(?:microsoft|live|hotmail|outlook|msn)\.com$/i },
+          { sub: 'linkedin',  official: /^linkedin\.com$/i },
+          { sub: 'tiktok',    official: /^tiktok\.com$/i },
+        ];
+        for (const { sub, official } of brandLookalikes) {
+          if (replyToNormalized.includes(sub) && !official.test(replyToRoot)) {
+            score += 2.0;
+            reasons.push(`Reply-To-Domain "${replyToRoot}" enthält Markennamen "${sub}" — Typosquat/Look-alike (Phishing-Indikator)`);
+            break;
+          }
+        }
+      }
+    }
+
+    // No-Code-/Low-Code-Plattformen (AppSheet, Typeform, Tally, JotForm …)
+    // sind legitime Infrastruktur, werden aber überdurchschnittlich häufig
+    // für Spear-Phishing missbraucht, weil sie korrekt authentifizieren.
+    // Kombination mit Recruitment-Pitch im Subject = roter Punkt.
+    const fromDomainNC      = this._extractDomain(fromHeader);
+    const fromRootNC        = this._extractRootDomain(fromDomainNC);
+    const noCodeSenderDomain = /^(?:appsheet\.com|typeform\.com|tally\.so|glide(?:apps)?\.com|airtable\.com|jotform\.com|wufoo\.com|notion\.so|softr\.io|adalo\.com|bubble\.io|smartsuite\.com|smartsheet\.com|formstack\.com|zapier\.com|make\.com|paperform\.co)$/i;
+    const recruitmentSubject = /\b(?:recruit(?:ing|ment|er)?|talent\s+(?:acquisition|core|hunt)|head[\s-]?hunt|job\s+(?:offer|opportunity)|career\s+opportunity|hiring|elite\s+(?:marketing|sales|leadership)|exceptional\s+(?:opportunity|leader)|exclusive\s+(?:position|opportunity)|advisor\s+(?:position|role)|chief\s+\w+\s+officer\s+(?:opportunity|position))\b/i;
+    if (fromRootNC && noCodeSenderDomain.test(fromRootNC) && recruitmentSubject.test(subject)) {
+      score += 2.0;
+      reasons.push(`Recruitment-Pitch via No-Code-Plattform (${fromRootNC}) — typische Spear-Phishing-Infrastruktur`);
     }
 
     // Return-Path domain mismatch — bounce addresses on a subdomain are normal
@@ -445,6 +489,16 @@ class SpamAnalyzer {
         w: 0.4, label: 'Cold-Pitch-Opener ("reaching out")' },
       { re: /\b(?:exciting|amazing|unique|great|fantastic|incredible)\s+(?:opportunity|chance|partnership|collaboration)\b/i,
         w: 0.5, label: 'Generisches Opportunity-Pitch-Adjektiv' },
+
+      // Recruitment-Phishing — unsolicited grand-title job offers
+      { re: /\b(?:elite|exclusive|exceptional|prestigious|high[-\s]?profile|top[-\s]?tier)\s+(?:marketing|sales|recruitment|talent|leadership|advisor|consultant)\s+(?:advisor|position|opportunity|role|consultant)?/i,
+        w: 1.5, label: 'Recruitment-Phishing-Phrase ("elite advisor", "exclusive position")' },
+      { re: /\bsignificant\s+(?:decision|opportunity|career\s+(?:move|step))|career[-\s]?changing\s+(?:opportunity|decision)|life[-\s]?changing\s+offer/i,
+        w: 0.8, label: 'High-Pressure Recruitment-Sprache' },
+      { re: /\b(?:Dear|Hi|Hello)\s+[A-ZÄÖÜ][a-zäöü]{2,15}\s*[,!.]?\s*(?:\r?\n|\s){1,3}\s*(?:I\s+(?:am|wanted|hope)|We\s+(?:are|have)|My\s+name\s+is)\b/i,
+        w: 0.5, label: 'Personalisierte Anrede + generischer Cold-Pitch-Opener' },
+      { re: /\bresonates?\s+with\s+you\b|\bspeak(?:s)?\s+to\s+(?:you|your\s+experience)\b|\baligned?\s+with\s+your\s+(?:career|experience|background)/i,
+        w: 0.5, label: 'Manipulative Resonanz-Sprache ("resonates with you")' },
     ];
 
     for (const p of patterns) {
@@ -549,6 +603,17 @@ class SpamAnalyzer {
         // Telecoms
         { re: /\btelekom\b|\bdeutsche\s*telekom\b/i, roots: ['telekom.de', 'telekom.com', 'deutschetelekom.com'] },
         { re: /\bvodafone\b/i,                       roots: ['vodafone.de', 'vodafone.com'] },
+        // Globale Marken (häufig im Spear-Phishing für Recruitment-Scams)
+        { re: /\bray[-\s]?ban\b/i,                   roots: ['ray-ban.com', 'rayban.com'] },
+        { re: /\bmeta\b(?!\s*(?:gen|tag|data|\sdescription))/i, roots: ['meta.com', 'facebook.com', 'fb.com', 'instagram.com'] },
+        { re: /\bfacebook\b/i,                       roots: ['facebook.com', 'fb.com', 'meta.com'] },
+        { re: /\binstagram\b/i,                      roots: ['instagram.com', 'facebook.com', 'meta.com'] },
+        { re: /\bgoogle\b/i,                         roots: ['google.com', 'google.de', 'googlemail.com', 'gmail.com', 'abc.xyz', 'youtube.com'] },
+        { re: /\btesla\b/i,                          roots: ['tesla.com'] },
+        { re: /\bnike\b/i,                           roots: ['nike.com'] },
+        { re: /\badidas\b/i,                         roots: ['adidas.com', 'adidas.de'] },
+        { re: /\blinkedin\b/i,                       roots: ['linkedin.com'] },
+        { re: /\btiktok\b/i,                         roots: ['tiktok.com'] },
       ];
       // Check subject first (high confidence, weight 2.5).
       // If the subject is clean, fall back to the first 800 chars of body text (weight 1.5)
@@ -1285,7 +1350,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.4';
+const VERSION            = '2.2.5';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
