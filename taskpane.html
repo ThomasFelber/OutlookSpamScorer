@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
   <title>Spam-Bewerter</title>
-  <link rel="stylesheet" href="taskpane.css?v=2.1.2">
+  <link rel="stylesheet" href="taskpane.css?v=2.1.16">
   <!-- Office.js muss synchron geladen werden (kein defer) -->
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
   <script src="jszip.min.js" defer></script>
-  <script src="taskpane.js?v=2.1.2" defer></script>
+  <script src="taskpane.js?v=2.1.16" defer></script>
 </head>
 <body>
 
@@ -68,10 +68,28 @@
 
     </div>
 
+    <!-- Header-Details Expander (Auth + MS-Spamfilter) -->
+    <div id="detail-expander" class="detail-expander">
+      <button id="btn-detail" class="btn-detail" aria-expanded="false" aria-controls="detail-panel">
+        <span class="det-chevron">›</span>
+        <span id="det-peek" class="det-peek"></span>
+      </button>
+      <div id="detail-panel" class="detail-panel hidden">
+        <div id="det-auth" class="det-group"></div>
+        <div id="det-ms"   class="det-group"></div>
+      </div>
+    </div>
+
     <!-- Spam-Indikatoren -->
     <section class="section">
       <h2>Spam-Indikatoren</h2>
       <ul id="reasons-list" class="reasons-list"></ul>
+    </section>
+
+    <!-- Potenzial-Indikatoren (nur für autorisierte Accounts) -->
+    <section class="section hidden" id="opp-reasons-section">
+      <h2>Potenzial-Indikatoren</h2>
+      <ul id="opp-reasons-list" class="reasons-list"></ul>
     </section>
 
     <!-- Versteckter Text (nur sichtbar wenn gefunden) -->
@@ -81,12 +99,6 @@
         <span class="expander-icon">▶</span> Anzeigen
       </button>
       <div id="hidden-text-content" class="hidden-text-content hidden" aria-live="polite"></div>
-    </section>
-
-    <!-- E-Mail-Authentifizierung (hidden when all pass) -->
-    <section class="section" id="auth-section">
-      <h2>Authentifizierung</h2>
-      <div id="auth-summary" class="auth-summary"></div>
     </section>
 
     <!-- AI Analyse (button hides after use) -->

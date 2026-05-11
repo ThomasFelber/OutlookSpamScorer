@@ -71,6 +71,7 @@
     .pill-amber  { background: #1c0e00; color: #fbbf24; border: 1px solid #78350f; }
     .pill-gray   { background: #0f172a; color: #64748b; border: 1px solid #1e293b; }
     .pill-green  { background: #052e16; color: #4ade80; border: 1px solid #14532d; }
+    .pill-blue   { background: #0a1628; color: #60a5fa; border: 1px solid #1e3a5f; }
 
     .key-issue {
       font-size: 12px; color: #94a3b8;
@@ -158,13 +159,11 @@
     .company-nav {
       position: sticky; top: 0; z-index: 90;
       background: #0f1117; border-bottom: 1px solid #1e293b;
-      padding: 10px 20px; overflow-x: auto; white-space: nowrap;
-      scrollbar-width: none;
+      padding: 10px 20px;
     }
-    .company-nav::-webkit-scrollbar { display: none; }
     .company-nav-inner {
       max-width: 860px; margin: 0 auto;
-      display: flex; gap: 6px; align-items: center;
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
     }
     .company-nav a {
       display: inline-flex; align-items: center; gap: 6px;
@@ -172,7 +171,7 @@
       color: #94a3b8; text-decoration: none;
       border: 1px solid #1e293b; background: #161b27;
       transition: color .15s, border-color .15s, background .15s;
-      white-space: nowrap; flex-shrink: 0;
+      white-space: nowrap;
     }
     .company-nav a:hover  { color: #e2e8f0; border-color: #334155; background: #1e293b; }
     .company-nav a:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
@@ -180,6 +179,28 @@
 
     /* offset so sticky nav doesn't cover the section header on anchor jump */
     .domain-block { scroll-margin-top: 58px; }
+
+    /* ── Search bar ─────────────────────────────────────────────────────── */
+    .search-bar {
+      max-width: 860px; margin: -24px auto 32px;
+      display: flex; gap: 10px; align-items: center;
+    }
+    .search-bar input {
+      flex: 1;
+      background: #1a1f2e; border: 1px solid #1e293b; border-radius: 8px;
+      color: #e2e8f0; font-size: 13px; padding: 9px 14px;
+      outline: none;
+    }
+    .search-bar input:focus { border-color: #334155; }
+    .search-bar input::placeholder { color: #475569; }
+    .search-count { font-size: 12px; color: #475569; white-space: nowrap; }
+    .domain-block.search-hidden { display: none; }
+    .report-card.search-hidden  { display: none; }
+    .search-no-results {
+      max-width: 860px; margin: 60px auto; text-align: center;
+      color: #334155; font-size: 14px; display: none;
+    }
+    .search-no-results.visible { display: block; }
 
     /* ── Scroll-to-top button ────────────────────────────────────────────── */
     .scroll-top {
@@ -220,6 +241,14 @@
     <p>E-Mail-Deliverability-Analysen auf Basis realer Microsoft-Exchange-Header — gruppiert nach Absender-Domain.</p>
   </header>
 
+  <!-- ── Search ───────────────────────────────────────────────────────── -->
+  <div class="search-bar">
+    <input type="search" id="search" placeholder="Domain, Report-Titel, ESP, Sender suchen…"
+           oninput="filterReports()" autocomplete="off" spellcheck="false">
+    <span class="search-count" id="search-count"></span>
+  </div>
+  <div class="search-no-results" id="no-results">Keine Einträge gefunden.</div>
+
   <!-- ── Company nav ──────────────────────────────────────────────────── -->
   <nav class="company-nav" aria-label="Zu Unternehmen springen">
     <div class="company-nav-inner">
@@ -231,6 +260,20 @@
       <a href="#pparena"><span class="company-nav-icon">🎯</span>pparena.de</a>
       <a href="#lerntraining"><span class="company-nav-icon">📚</span>lerntraining.de</a>
       <a href="#akademie"><span class="company-nav-icon">🎓</span>akademie-lernpaed.</a>
+      <a href="#artistical"><span class="company-nav-icon">🎭</span>artistical.de</a>
+      <a href="#hofreiter"><span class="company-nav-icon">🍓</span>hofis.com</a>
+      <a href="#blume2000"><span class="company-nav-icon">🌷</span>blume2000.de</a>
+      <a href="#hetmeier"><span class="company-nav-icon">⚖️</span>notar-hetmeier.de</a>
+      <a href="#brienner13"><span class="company-nav-icon">⚖️</span>brienner13.de</a>
+      <a href="#notar-hecht"><span class="company-nav-icon">⚖️</span>notar-hecht.de</a>
+      <a href="#notar-stadler"><span class="company-nav-icon">⚖️</span>notar-stadler.de</a>
+      <a href="#freie-finanzierer"><span class="company-nav-icon">💰</span>freie-finanzierer.de</a>
+      <a href="#peugeot-saveurs"><span class="company-nav-icon">🥄</span>peugeot-saveurs.com</a>
+      <a href="#shop-apotheke"><span class="company-nav-icon">💊</span>shop-apotheke.com</a>
+      <a href="#smartbroker"><span class="company-nav-icon">📈</span>smartbroker.de</a>
+      <a href="#tfbank"><span class="company-nav-icon">🏦</span>tfbank.de</a>
+      <a href="#ivario"><span class="company-nav-icon">🔬</span>IVARIO</a>
+      <a href="#kaiser"><span class="company-nav-icon">🏠</span>kaiser-immobilien.de</a>
     </div>
   </nav>
 
@@ -1055,6 +1098,892 @@
     </div>
   </div>
 
+  <!-- ── artistical.de ──────────────────────────────────────────────────────── -->
+  <div class="domain-block" id="artistical">
+    <div class="domain-header">
+      <div class="domain-icon">🎭</div>
+      <div>
+        <div class="domain-name">artistical.de</div>
+        <div class="domain-meta">CleverReach / crsend.com · 1 Report · 1 Anschreiben</div>
+      </div>
+    </div>
+
+    <div class="report-grid">
+
+      <div class="report-card" onclick="openModal('artistical.de/report-0034.html','Report #0034 — Spam Analysis · news@artistical.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0034 — Newsletter Double-Opt-In</div>
+          <div class="card-meta">8. Mai 2026 · news@artistical.de (GOP Artistical-Theater Essen) via CleverReach</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass 2×</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">SCL <span class="bad">5/9</span></div>
+            <div class="metric">BCL <span class="ok">0/9</span></div>
+            <div class="metric">Zustellung <span class="bad">Junk</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-amber">Add-in 9/10</span>
+            <span class="pill pill-green">AI 2/10</span>
+          </div>
+          <div class="key-issue">
+            <strong>Befund:</strong> Legitime DOI-Mail mit vollst. Auth (SPF/DKIM/DMARC pass), SCL 5 durch IP-Reputation · fehlender PTR für 194.42.96.8 · generische DOI-Formulierung · nahezu leerer Plain-Text-Part
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="artistical.de/report-0034.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="artistical.de/report-0034.html" download="artistical.de-NewsletterDOI-0034.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('artistical.de/anschreiben-1.html','Anschreiben — E-Mail-Zustellbarkeit optimieren · artistical.de')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben — E-Mail-Zustellbarkeit optimieren</div>
+          <div class="card-meta">8. Mai 2026 · GOP Artistical-Theater Essen</div>
+          <div class="pills">
+            <span class="pill pill-blue">Anschreiben</span>
+          </div>
+          <div class="key-issue">
+            Empfehlungsschreiben zur Behebung der SCL-5-Einstufung: PTR-Einrichtung, Custom Return-Path, DOI-Optimierung, Plain-Text-Ergänzung, DMARC-Eskalation
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="artistical.de/anschreiben-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="artistical.de/anschreiben-1.html" download="artistical.de-Anschreiben-Zustellbarkeit.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── hofreiter.de / hofis.com ───────────────────────────────────────────── -->
+  <div class="domain-block" id="hofreiter">
+    <div class="domain-header">
+      <div class="domain-icon">🍓</div>
+      <div>
+        <div class="domain-name">hofreiter.de → hofis.com</div>
+        <div class="domain-meta">RapidMail / smtp.net · Rebranding zu hofis.com (Erlebnispark Dasing) · 1 Report · 1 Anschreiben</div>
+      </div>
+    </div>
+
+    <div class="report-grid">
+
+      <div class="report-card" onclick="openModal('hofreiter.de/report-0035.html','Report #0035 — Spam Analysis · a.harnisch@hofreiter.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0035 — Newsletter Bestätigung</div>
+          <div class="card-meta">8. Mai 2026 · a.harnisch@hofreiter.de (hofis.com) via RapidMail/smtp.net</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="warn">Pass ⚠</span></div>
+            <div class="metric">DMARC <span class="bad">Fail</span></div>
+            <div class="metric">compauth <span class="bad">Fail</span></div>
+            <div class="metric">PTR <span class="bad">fehlt</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">Add-in 7/10</span>
+            <span class="pill pill-red">AI 7/10</span>
+          </div>
+          <div class="key-issue">
+            <strong>Kritisch:</strong> DMARC FAIL + compauth FAIL · DKIM signiert mit smtp.net statt hofreiter.de (kein Alignment) · Return-Path auf return-11.smtp.net · RapidMail nicht korrekt mit Domain verbunden · hofreiter.de läuft aus → Rebranding zu hofis.com
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="hofreiter.de/report-0035.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="hofreiter.de/report-0035.html" download="hofreiter.de-NewsletterBestaetigung-0035.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('hofreiter.de/anschreiben-1.html','Anschreiben – E-Mail-Zustellbarkeit · hofis.com')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben – E-Mail-Zustellbarkeit · hofis.com</div>
+          <div class="card-meta">8. Mai 2026 · GOP Artistical-Theater Essen</div>
+          <div class="pills">
+            <span class="pill pill-blue">Anschreiben</span>
+          </div>
+          <div class="key-issue">
+            Rebranding-Kontext: hofis.com als Neustart nutzen um RapidMail korrekt zu konfigurieren (DKIM-Alignment, Custom Return-Path, DMARC-Konformität) bevor die alten Probleme auf die neue Domain übertragen werden
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="hofreiter.de/anschreiben-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="hofreiter.de/anschreiben-1.html" download="hofreiter.de-Anschreiben-hofis.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── blume2000.de ───────────────────────────────────────────────────────── -->
+  <div class="domain-block" id="blume2000">
+    <div class="domain-header">
+      <div class="domain-icon">🌷</div>
+      <div>
+        <div class="domain-name">blume2000.de</div>
+        <div class="domain-meta">Mailjet (transaktional) + Emarsys (newsletter) · 5 Reports · 1 Anschreiben</div>
+      </div>
+    </div>
+
+    <div class="report-grid">
+
+      <div class="subdomain-label">service@ / shipping@blume2000.de — Mailjet / bnc3.mailjet.com</div>
+
+      <div class="report-card" onclick="openModal('blume2000.de/report-0037.html','Report #0037 — Versandbestätigung · shipping@blume2000.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0037 — Versandbestätigung</div>
+          <div class="card-meta">8. Mai 2026 · shipping@blume2000.de via Mailjet</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="warn">4/10</span></div>
+            <div class="metric">AI <span class="ok">1/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">2 × hoch</span>
+            <span class="pill pill-amber">3 × mittel</span>
+          </div>
+          <div class="key-issue">
+            <strong>Befund:</strong> Return-Path-Misalignment (mailjet.com) · DHL-Markennennung triggert Brand-Impersonation-Signal · hohe Link-Dichte (5 Links) · DMARC p=none
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="blume2000.de/report-0037.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="blume2000.de/report-0037.html" download="blume2000.de-Versandbestaetigung-0037.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('blume2000.de/report-0038.html','Report #0038 — Bestellbestätigung · service@blume2000.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0038 — Bestellbestätigung</div>
+          <div class="card-meta">8. Mai 2026 · service@blume2000.de via Mailjet</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="ok">2/10</span></div>
+            <div class="metric">AI <span class="ok">2/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">15.815 Zeichen Hidden Text</span>
+          </div>
+          <div class="key-issue">
+            <strong>Kritisch:</strong> 15.815 Zeichen unsichtbarer Text im Template (CSS-Kommentar im Body) — stärkstes Spam-Signal · Return-Path-Misalignment · systemischer Template-Fehler
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="blume2000.de/report-0038.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="blume2000.de/report-0038.html" download="blume2000.de-Bestellbestaetigung-0038.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('blume2000.de/report-0039.html','Report #0039 — Bestellbestätigung #2 · service@blume2000.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0039 — Bestellbestätigung #2</div>
+          <div class="card-meta">8. Mai 2026 · service@blume2000.de via Mailjet</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="ok">2/10</span></div>
+            <div class="metric">AI <span class="ok">1/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">15.897 Zeichen Hidden Text</span>
+          </div>
+          <div class="key-issue">
+            <strong>Bestätigt systemisch:</strong> 15.897 Zeichen Hidden Text in zweiter Bestellbestätigung — identisches Muster wie #0038, Template-Fix gilt für alle zukünftigen Sendungen
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="blume2000.de/report-0039.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="blume2000.de/report-0039.html" download="blume2000.de-Bestellbestaetigung-0039.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <!-- mailing.blume2000.de — Emarsys -->
+      <div class="subdomain-label">newsletter@mailing.blume2000.de — Emarsys / emsmtp.com · DMARC p=reject</div>
+
+      <div class="report-card" onclick="openModal('blume2000.de/report-0049.html','Report #0049 — DOI-Bestätigung · newsletter@mailing.blume2000.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0049 — Newsletter-Anmeldung (DOI)</div>
+          <div class="card-meta">9. Mai 2026 · newsletter@mailing.blume2000.de via Emarsys · Spam Scorer v2.1.10</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass 2×</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="ok">2/10</span></div>
+            <div class="metric">AI <span class="ok">1/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-amber">3 × mittel</span>
+            <span class="pill pill-gray">5 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Befund:</strong> Legitime DOI-Mail mit vollständiger Auth (SPF/DKIM/DMARC pass, p=reject). HELO-Mismatch (pmta41033.emsmtp.com) ESP-typisch · 11 Links · PTR nicht aufgelöst
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="blume2000.de/report-0049.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="blume2000.de/report-0049.html" download="mailing.blume2000.de-DOI-0049.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <div class="report-card" onclick="openModal('blume2000.de/report-0050.html','Report #0050 — Welcome-Mail · newsletter@mailing.blume2000.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0050 — Willkommens-E-Mail</div>
+          <div class="card-meta">9. Mai 2026 · newsletter@mailing.blume2000.de via Emarsys · Spam Scorer v2.1.10</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass 2×</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="ok">2/10</span></div>
+            <div class="metric">AI <span class="ok">1/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">30 Links</span>
+            <span class="pill pill-amber">3 × mittel</span>
+            <span class="pill pill-gray">5 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Befund:</strong> Welcome-Mail mit vollständiger Auth und starker DMARC-Policy. Hauptsignal: 30 Links (sehr hohe Dichte) · HELO-Mismatch ESP-typisch · PTR nicht aufgelöst
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="blume2000.de/report-0050.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="blume2000.de/report-0050.html" download="mailing.blume2000.de-Welcome-0050.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+      <!-- Konsolidiertes Anschreiben -->
+      <div class="subdomain-label">Konsolidiertes Anschreiben — alle 5 Reports · beide ESPs</div>
+
+      <div class="report-card" onclick="openModal('blume2000.de/anschreiben-1.html','Anschreiben – E-Mail-Zustellbarkeit · BLUME2000 SE')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben – E-Mail-Zustellbarkeit · BLUME2000 SE</div>
+          <div class="card-meta">9. Mai 2026 · Konsolidiert aus 5 Reports (Mailjet + Emarsys)</div>
+          <div class="pills">
+            <span class="pill" style="color:#60a5fa;border-color:#1e3a5f;background:#0a1628;">Festpreis · € 950</span>
+            <span class="pill pill-gray">Erstanalyse · € 200</span>
+            <span class="pill pill-gray">Kollegial</span>
+          </div>
+          <div class="key-issue">
+            Template-Fehler in Mailjet (~16.000 Zeichen Hidden Text systemisch) + Return-Path auf bounce.blume2000.de ausrichten + Link-Dichte in Emarsys-Welcome reduzieren. Emarsys-Kanal technisch stark (DMARC p=reject).
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="blume2000.de/anschreiben-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="blume2000.de/anschreiben-1.html" download="blume2000.de-Anschreiben-Zustellbarkeit.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── notar-hetmeier.de ──────────────────────────────────────────────── -->
+  <div class="domain-block" id="hetmeier">
+    <div class="domain-header">
+      <div class="domain-icon">⚖️</div>
+      <div>
+        <div class="domain-name">notar-hetmeier.de</div>
+        <div class="domain-meta">Notariat Dr. Fabian Hetmeier · Sophos E-Mail-Gateway · 1 Report + Anschreiben</div>
+      </div>
+    </div>
+    <div class="report-grid">
+      <div class="report-card" onclick="openModal('notar-hetmeier.de/report-0040.html','Report #0040 — Spam Scorer Analysis · info@notar-hetmeier.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0040 — KV-Korrespondenz</div>
+          <div class="card-meta">26. Feb 2026 · info@notar-hetmeier.de via Sophos E-Mail-Gateway · Spam Scorer v2.1.10</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="warn">Pass ⚠</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="ok">2/10</span></div>
+            <div class="metric">AI <span class="ok">1/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">4 × hoch</span>
+            <span class="pill pill-amber">4 × mittel</span>
+            <span class="pill pill-gray">4 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> DKIM signiert über Sophos-Domain (mail-dkim-eu-central-1.prod.hydra.sophos.com ≠ notar-hetmeier.de) → Alignment-Mismatch · HELO-Abweichung · eigene Domain für DKIM-Signing fehlt
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="notar-hetmeier.de/report-0040.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="notar-hetmeier.de/report-0040.html" download="notar-hetmeier.de-KVKorrespondenz-0040.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+      <div class="report-card" onclick="openModal('notar-hetmeier.de/anschreiben-1.html','Anschreiben · notar-hetmeier.de')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben — Deliverability-Angebot</div>
+          <div class="card-meta">8. Mai 2026 · Thomas Felber an Notariat Dr. Fabian Hetmeier</div>
+          <div class="pills">
+            <span class="pill" style="color:#60a5fa;border-color:#1e3a5f;background:#0a1628;">Festpreis · € 950</span>
+            <span class="pill pill-gray">Erstanalyse · € 200</span>
+            <span class="pill pill-gray">Kollegial</span>
+          </div>
+          <div class="key-issue">
+            DKIM-Signing auf eigene Domain umstellen (Sophos-Konfiguration), DMARC-Policy verschärfen, HELO-Alignment herstellen.
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="notar-hetmeier.de/anschreiben-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="notar-hetmeier.de/anschreiben-1.html" download="notar-hetmeier.de-Anschreiben-Deliverability.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── brienner13.de ──────────────────────────────────────────────────── -->
+  <div class="domain-block" id="brienner13">
+    <div class="domain-header">
+      <div class="domain-icon">⚖️</div>
+      <div>
+        <div class="domain-name">brienner13.de</div>
+        <div class="domain-meta">Notare Prof. Dr. Wicke und Herrler · direkt/MX · 1 Report + Anschreiben</div>
+      </div>
+    </div>
+    <div class="report-grid">
+      <div class="report-card" onclick="openModal('brienner13.de/report-0041.html','Report #0041 — Spam Scorer Analysis · Rager@brienner13.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0041 — Terminkorrespondenz</div>
+          <div class="card-meta">19. Feb 2026 · Rager@brienner13.de (Maria Rager) · direkt · Spam Scorer v2.1.10</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="warn">None</span></div>
+            <div class="metric">DMARC <span class="warn">BestGuess</span></div>
+            <div class="metric">Add-in <span class="ok">2/10</span></div>
+            <div class="metric">AI <span class="ok">1/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">5 × hoch</span>
+            <span class="pill pill-amber">5 × mittel</span>
+            <span class="pill pill-gray">4 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> Kein DKIM · DMARC nur BestGuessPass · False-Positive „Glücksspiel/Casino"-Signal · kein DMARC-Record publiziert · fehlende BIMI-Reputation
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="brienner13.de/report-0041.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="brienner13.de/report-0041.html" download="brienner13.de-Terminkorrespondenz-0041.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+      <div class="report-card" onclick="openModal('brienner13.de/anschreiben-1.html','Anschreiben · brienner13.de')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben — Deliverability-Angebot</div>
+          <div class="card-meta">8. Mai 2026 · Thomas Felber an Notare Wicke &amp; Herrler</div>
+          <div class="pills">
+            <span class="pill" style="color:#60a5fa;border-color:#1e3a5f;background:#0a1628;">Festpreis · € 950</span>
+            <span class="pill pill-gray">Erstanalyse · € 200</span>
+            <span class="pill pill-gray">Kollegial</span>
+          </div>
+          <div class="key-issue">
+            DKIM-Implementierung, DMARC p=quarantine/reject, False-Positive-Analyse (Glücksspiel-Signal), BIMI.
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="brienner13.de/anschreiben-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="brienner13.de/anschreiben-1.html" download="brienner13.de-Anschreiben-Deliverability.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── notar-hecht.de ─────────────────────────────────────────────────── -->
+  <div class="domain-block" id="notar-hecht">
+    <div class="domain-header">
+      <div class="domain-icon">⚖️</div>
+      <div>
+        <div class="domain-name">notar-hecht.de</div>
+        <div class="domain-meta">Notar Dr. Hecht München · direkt · 1 Report (kein Anschreiben — saubere E-Mail)</div>
+      </div>
+    </div>
+    <div class="report-grid">
+      <div class="report-card" onclick="openModal('notar-hecht.de/report-0042.html','Report #0042 — Spam Scorer Analysis · mail@notar-hecht.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0042 — Bürokorrespondenz</div>
+          <div class="card-meta">14. Mrz 2024 · mail@notar-hecht.de · direkt · Spam Scorer v2.1.10</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="warn">None</span></div>
+            <div class="metric">DMARC <span class="warn">BestGuess</span></div>
+            <div class="metric">Add-in <span class="ok">0/10</span></div>
+            <div class="metric">AI <span class="ok">1/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-green">Saubere E-Mail</span>
+            <span class="pill pill-gray">2 × hoch</span>
+            <span class="pill pill-gray">3 × mittel</span>
+          </div>
+          <div class="key-issue">
+            <strong>Befund:</strong> Add-in-Score 0/10 — keine Spam-Signale erkannt. Kein DKIM und kein expliziter DMARC-Record, aber einfache Direktkorrespondenz ohne Auffälligkeiten. Kein Anschreiben generiert.
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="notar-hecht.de/report-0042.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="notar-hecht.de/report-0042.html" download="notar-hecht.de-Burokorrespondenz-0042.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── notar-stadler.de ───────────────────────────────────────────────── -->
+  <div class="domain-block" id="notar-stadler">
+    <div class="domain-header">
+      <div class="domain-icon">⚖️</div>
+      <div>
+        <div class="domain-name">notar-stadler.de</div>
+        <div class="domain-meta">Notariat Stadler · 1 Anschreiben (kein Report)</div>
+      </div>
+    </div>
+    <div class="report-grid">
+      <div class="report-card" onclick="openModal('notar-stadler.de/anschreiben-1.html','Anschreiben · notar-stadler.de')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben — Deliverability-Angebot</div>
+          <div class="card-meta">8. Mai 2026 · Thomas Felber an Notariat Stadler</div>
+          <div class="pills">
+            <span class="pill" style="color:#60a5fa;border-color:#1e3a5f;background:#0a1628;">Festpreis · € 900</span>
+            <span class="pill pill-gray">Erstanalyse · € 200</span>
+            <span class="pill pill-gray">Kollegial</span>
+          </div>
+          <div class="key-issue">
+            Anschreiben ohne zugehörigen Report — direkt auf Basis der E-Mail-Analyse erstellt.
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="notar-stadler.de/anschreiben-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="notar-stadler.de/anschreiben-1.html" download="notar-stadler.de-Anschreiben-Deliverability.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── freie-finanzierer.de ──────────────────────────────────────────── -->
+  <div class="domain-block" id="freie-finanzierer">
+    <div class="domain-header">
+      <div class="domain-icon">💰</div>
+      <div>
+        <div class="domain-name">freie-finanzierer.de</div>
+        <div class="domain-meta">Herr T. Ruf · direkt · 1 Report + Anschreiben</div>
+      </div>
+    </div>
+    <div class="report-grid">
+      <div class="report-card" onclick="openModal('freie-finanzierer.de/report-0043.html','Report #0043 — Spam Scorer Analysis · t.ruf@freie-finanzierer.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0043 — Zinsindikation (2021)</div>
+          <div class="card-meta">25. Aug 2021 · t.ruf@freie-finanzierer.de · direkt · Spam Scorer v2.1.10</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="warn">None</span></div>
+            <div class="metric">DMARC <span class="warn">None</span></div>
+            <div class="metric">Add-in <span class="warn">4/10</span></div>
+            <div class="metric">AI <span class="ok">2/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">4 × hoch</span>
+            <span class="pill pill-amber">5 × mittel</span>
+            <span class="pill pill-gray">3 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> Kein DKIM · kein DMARC-Record · HELO-Mismatch · E-Mail aus 2021 (veraltete Infrastruktur) · Finanzdienstleistungs-Trigger ohne Schutz durch Authentication
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="freie-finanzierer.de/report-0043.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="freie-finanzierer.de/report-0043.html" download="freie-finanzierer.de-Zinsindikation-0043.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+      <div class="report-card" onclick="openModal('freie-finanzierer.de/anschreiben-1.html','Anschreiben · freie-finanzierer.de')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben — Deliverability-Angebot</div>
+          <div class="card-meta">8. Mai 2026 · Thomas Felber an Herrn T. Ruf</div>
+          <div class="pills">
+            <span class="pill" style="color:#60a5fa;border-color:#1e3a5f;background:#0a1628;">Festpreis · € 850</span>
+            <span class="pill pill-gray">Erstanalyse · € 200</span>
+            <span class="pill pill-gray">Kollegial</span>
+          </div>
+          <div class="key-issue">
+            DKIM-Implementierung, DMARC-Record publizieren, HELO-Alignment — grundlegende Authentication-Hygiene für Finanzdienstleistungs-Korrespondenz.
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="freie-finanzierer.de/anschreiben-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="freie-finanzierer.de/anschreiben-1.html" download="freie-finanzierer.de-Anschreiben-Deliverability.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── peugeot-saveurs.com ───────────────────────────────────────────── -->
+  <div class="domain-block" id="peugeot-saveurs">
+    <div class="domain-header">
+      <div class="domain-icon">🥄</div>
+      <div>
+        <div class="domain-name">peugeot-saveurs.com</div>
+        <div class="domain-meta">Klaviyo / klaviyomail.com · 1 Report + Anschreiben</div>
+      </div>
+    </div>
+    <div class="report-grid">
+      <div class="report-card" onclick="openModal('peugeot-saveurs.com/report-0044.html','Report #0044 — Spam Scorer Analysis · lea@peugeot-saveurs.com')">
+        <div class="card-left">
+          <div class="card-title">Report #0044 — Willkommensangebot</div>
+          <div class="card-meta">27. Mrz 2026 · lea@peugeot-saveurs.com via Klaviyo · Spam Scorer v2.1.10</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="warn">6/10</span></div>
+            <div class="metric">AI <span class="ok">1/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">4 × hoch</span>
+            <span class="pill pill-amber">5 × mittel</span>
+            <span class="pill pill-gray">4 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> 150 Zero-Width-Space-Zeichen (Obfuskationssignal) · 10 Links · DKIM-Alignment Klaviyo Shared-Domain · künstliche Dringlichkeitsformulierung
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="peugeot-saveurs.com/report-0044.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="peugeot-saveurs.com/report-0044.html" download="peugeot-saveurs.com-Willkommensangebot-0044.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+      <div class="report-card" onclick="openModal('peugeot-saveurs.com/anschreiben-1.html','Anschreiben · peugeot-saveurs.com')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben — Deliverability-Angebot</div>
+          <div class="card-meta">8. Mai 2026 · Thomas Felber an Léa de Peugeot Saveurs</div>
+          <div class="pills">
+            <span class="pill" style="color:#60a5fa;border-color:#1e3a5f;background:#0a1628;">Festpreis · € 600</span>
+            <span class="pill pill-gray">Erstanalyse · € 200</span>
+            <span class="pill pill-gray">Kollegial</span>
+          </div>
+          <div class="key-issue">
+            Zero-Width-Space-Obfuskation entfernen, Klaviyo Custom Sending Domain konfigurieren, Link-Dichte reduzieren.
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="peugeot-saveurs.com/anschreiben-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="peugeot-saveurs.com/anschreiben-1.html" download="peugeot-saveurs.com-Anschreiben-Deliverability.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── info.shop-apotheke.com ────────────────────────────────────────── -->
+  <div class="domain-block" id="shop-apotheke">
+    <div class="domain-header">
+      <div class="domain-icon">💊</div>
+      <div>
+        <div class="domain-name">info.shop-apotheke.com</div>
+        <div class="domain-meta">Shop Apotheke · srv2.de · 1 Report + Anschreiben</div>
+      </div>
+    </div>
+    <div class="report-grid">
+      <div class="report-card" onclick="openModal('info.shop-apotheke.com/report-0045.html','Report #0045 — Spam Scorer Analysis · noreply-redpoints@info.shop-apotheke.com')">
+        <div class="card-left">
+          <div class="card-title">Report #0045 — RedPoints Teilnahmebedingungen</div>
+          <div class="card-meta">28. Mrz 2026 · noreply-redpoints@info.shop-apotheke.com via srv2.de · Spam Scorer v2.1.10</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="warn">5/10</span></div>
+            <div class="metric">AI <span class="ok">2/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">4 × hoch</span>
+            <span class="pill pill-amber">5 × mittel</span>
+            <span class="pill pill-gray">4 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> Pharma-Spam-Signal durch Kontext · 5 Ausrufezeichen · HELO-Mismatch (mail23-71.srv2.de) · doppeltes DKIM (srv2.de + info.shop-apotheke.com)
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="info.shop-apotheke.com/report-0045.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="info.shop-apotheke.com/report-0045.html" download="shop-apotheke.com-RedPoints-0045.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+      <div class="report-card" onclick="openModal('info.shop-apotheke.com/anschreiben-1.html','Anschreiben · info.shop-apotheke.com')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben — Deliverability-Angebot</div>
+          <div class="card-meta">8. Mai 2026 · Thomas Felber an Shop Apotheke</div>
+          <div class="pills">
+            <span class="pill" style="color:#60a5fa;border-color:#1e3a5f;background:#0a1628;">Festpreis · € 600</span>
+            <span class="pill pill-gray">Erstanalyse · € 200</span>
+            <span class="pill pill-gray">Kollegial</span>
+          </div>
+          <div class="key-issue">
+            Pharma-Trigger-Reduktion, Ausrufezeichen bereinigen, HELO-Alignment bei srv2.de konfigurieren, DKIM auf einzelne Domain konsolidieren.
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="info.shop-apotheke.com/anschreiben-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="info.shop-apotheke.com/anschreiben-1.html" download="shop-apotheke.com-Anschreiben-Deliverability.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── news.smartbroker.de ───────────────────────────────────────────── -->
+  <div class="domain-block" id="smartbroker">
+    <div class="domain-header">
+      <div class="domain-icon">📈</div>
+      <div>
+        <div class="domain-name">news.smartbroker.de</div>
+        <div class="domain-meta">Smartbroker+ · Mailjet · 1 Report + Anschreiben</div>
+      </div>
+    </div>
+    <div class="report-grid">
+      <div class="report-card" onclick="openModal('news.smartbroker.de/report-0046.html','Report #0046 — Spam Scorer Analysis · redaktion@news.smartbroker.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0046 — Willkommens-Onboarding</div>
+          <div class="card-meta">28. Mrz 2026 · redaktion@news.smartbroker.de via Mailjet · Spam Scorer v2.1.10</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="warn">4/10</span></div>
+            <div class="metric">AI <span class="ok">2/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">675 Zeichen Hidden Text</span>
+            <span class="pill pill-red">201 Zero-Width-Spaces</span>
+            <span class="pill pill-amber">5 × mittel</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> 675 Zeichen versteckter Text + 201 Zero-Width-Spaces = doppelte Obfuskationssignale trotz korrekter Auth (SPF/DKIM/DMARC pass) · Return-Path Mailjet-typisch
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="news.smartbroker.de/report-0046.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="news.smartbroker.de/report-0046.html" download="news.smartbroker.de-Onboarding-0046.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+      <div class="report-card" onclick="openModal('news.smartbroker.de/anschreiben-1.html','Anschreiben · news.smartbroker.de')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben — Deliverability-Angebot</div>
+          <div class="card-meta">8. Mai 2026 · Thomas Felber an Smartbroker+ Redaktion</div>
+          <div class="pills">
+            <span class="pill" style="color:#60a5fa;border-color:#1e3a5f;background:#0a1628;">Festpreis · € 800</span>
+            <span class="pill pill-gray">Erstanalyse · € 200</span>
+            <span class="pill pill-gray">Kollegial</span>
+          </div>
+          <div class="key-issue">
+            Hidden-Text und Zero-Width-Spaces aus Templates entfernen, transaktionale und Marketing-Mails trennen, IP-Reputation überwachen.
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="news.smartbroker.de/anschreiben-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="news.smartbroker.de/anschreiben-1.html" download="news.smartbroker.de-Anschreiben-Deliverability.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── tfbank.de ──────────────────────────────────────────────────────── -->
+  <div class="domain-block" id="tfbank">
+    <div class="domain-header">
+      <div class="domain-icon">🏦</div>
+      <div>
+        <div class="domain-name">tfbank.de</div>
+        <div class="domain-meta">TF Bank · Carmamail · 1 Report + Anschreiben</div>
+      </div>
+    </div>
+    <div class="report-grid">
+      <div class="report-card" onclick="openModal('tfbank.de/report-0047.html','Report #0047 — Spam Scorer Analysis · info@tfbank.de')">
+        <div class="card-left">
+          <div class="card-title">Report #0047 — Cashback-Kampagne</div>
+          <div class="card-meta">8. Mai 2026 · info@tfbank.de via Carmamail · Spam Scorer v2.1.10</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="ok">3/10</span></div>
+            <div class="metric">AI <span class="ok">2/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">5 × hoch</span>
+            <span class="pill pill-amber">6 × mittel</span>
+            <span class="pill pill-gray">4 × niedrig</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> Hohe Link-Dichte · Return-Path über Carmamail (customer-2372-A106.carmamail.com) · Finanzangebot-Sprache triggert Content-Filter · fehlende dedizierte Sending-Domain
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="tfbank.de/report-0047.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="tfbank.de/report-0047.html" download="tfbank.de-CashbackKampagne-0047.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+      <div class="report-card" onclick="openModal('tfbank.de/anschreiben-1.html','Anschreiben · tfbank.de')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben — Deliverability-Angebot</div>
+          <div class="card-meta">8. Mai 2026 · Thomas Felber an TF Bank</div>
+          <div class="pills">
+            <span class="pill" style="color:#60a5fa;border-color:#1e3a5f;background:#0a1628;">Festpreis · € 850</span>
+            <span class="pill pill-gray">Erstanalyse · € 200</span>
+            <span class="pill pill-gray">Kollegial</span>
+          </div>
+          <div class="key-issue">
+            Custom Return-Path (bounce.tfbank.de), Link-Dichte reduzieren, Finanzangebot-Sprache optimieren, dedizierte Sending-Domain konfigurieren.
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="tfbank.de/anschreiben-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="tfbank.de/anschreiben-1.html" download="tfbank.de-Anschreiben-Deliverability.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── c.havemy.email (IVARIO) ───────────────────────────────────────── -->
+  <div class="domain-block" id="ivario">
+    <div class="domain-header">
+      <div class="domain-icon">🔬</div>
+      <div>
+        <div class="domain-name">IVARIO · c.havemy.email</div>
+        <div class="domain-meta">IVARIO Dienstleistungen GmbH · CleverReach / crsend.com · 1 Report + Anschreiben</div>
+      </div>
+    </div>
+    <div class="report-grid">
+      <div class="report-card" onclick="openModal('c.havemy.email/report-0048.html','Report #0048 — Spam Scorer Analysis · noreply=ivario.com@c.havemy.email')">
+        <div class="card-left">
+          <div class="card-title">Report #0048 — Asbest-Analyse Rabatt-Kampagne</div>
+          <div class="card-meta">28. Apr 2026 · noreply=ivario.com@c.havemy.email via CleverReach · Spam Scorer v2.1.10</div>
+          <div class="metrics">
+            <div class="metric">SPF <span class="ok">Pass</span></div>
+            <div class="metric">DKIM <span class="ok">Pass</span></div>
+            <div class="metric">DMARC <span class="ok">Pass</span></div>
+            <div class="metric">Add-in <span class="warn">7/10</span></div>
+            <div class="metric">AI <span class="ok">2/10</span></div>
+          </div>
+          <div class="pills">
+            <span class="pill pill-red">43 Zero-Width-Spaces</span>
+            <span class="pill pill-red">17 Links</span>
+            <span class="pill pill-amber">6 × mittel</span>
+          </div>
+          <div class="key-issue">
+            <strong>Hauptproblem:</strong> 43 Zero-Width-Space-Zeichen · 17 Links (hohe Dichte) · DKIM über crsend.com statt ivario.com · Return-Path bounce-eu2.crsend.com · Reply-To Domain-Mismatch (ivario.com ≠ c.havemy.email)
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="c.havemy.email/report-0048.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="c.havemy.email/report-0048.html" download="ivario.com-AsbestKampagne-0048.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+      <div class="report-card" onclick="openModal('c.havemy.email/anschreiben-1.html','Anschreiben · IVARIO / c.havemy.email')">
+        <div class="card-left">
+          <div class="card-title">Anschreiben — Deliverability-Angebot</div>
+          <div class="card-meta">8. Mai 2026 · Thomas Felber an IVARIO Dienstleistungen GmbH</div>
+          <div class="pills">
+            <span class="pill" style="color:#60a5fa;border-color:#1e3a5f;background:#0a1628;">Festpreis · € 650</span>
+            <span class="pill pill-gray">Erstanalyse · € 200</span>
+            <span class="pill pill-gray">Kollegial</span>
+          </div>
+          <div class="key-issue">
+            Zero-Width-Spaces entfernen, DKIM-Alignment auf ivario.com umstellen, Custom Return-Path (bounce.ivario.com) in CleverReach konfigurieren, Link-Dichte reduzieren.
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="c.havemy.email/anschreiben-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="c.havemy.email/anschreiben-1.html" download="ivario.com-Anschreiben-Deliverability.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── kaiser-immobilien.de ──────────────────────────────────────────── -->
+  <div class="domain-block" id="kaiser">
+    <div class="domain-header">
+      <div class="domain-icon">🏠</div>
+      <div>
+        <div class="domain-name">kaiser-immobilien.de</div>
+        <div class="domain-meta">Microsoft 365 · 1 Aktionsplan (kein Report)</div>
+      </div>
+    </div>
+    <div class="report-grid">
+      <div class="report-card" onclick="openModal('kaiser-immobilien.de/aktionsplan-1.html','Technischer Aktionsplan · kaiser-immobilien.de')">
+        <div class="card-left">
+          <div class="card-title">Technischer Aktionsplan — DKIM-Alignment, Datenschutz</div>
+          <div class="card-meta">8. Mai 2026 · kaiser-immobilien.de · Microsoft 365</div>
+          <div class="pills">
+            <span class="pill pill-red">KRITISCH: Passwort im Klartext</span>
+            <span class="pill pill-amber">DKIM onmicrosoft.com</span>
+          </div>
+          <div class="key-issue">
+            <strong>Kritischster Punkt:</strong> Klartextpasswort im E-Mail-Body (Datenschutzverstoß) · DKIM signiert über kaiserimmo.onmicrosoft.com statt kaiser-immobilien.de · sofortiger Handlungsbedarf
+          </div>
+        </div>
+        <div class="card-btns">
+          <a href="kaiser-immobilien.de/aktionsplan-1.html" target="_blank"
+             class="btn-card-newtab" onclick="event.stopPropagation()">↗ Neuer Tab</a>
+          <a href="kaiser-immobilien.de/aktionsplan-1.html" download="kaiser-immobilien.de-TechnischerAktionsplan.html"
+             class="btn-card-download" onclick="event.stopPropagation()">⬇ Download</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     function openModal(url, title) {
       document.getElementById('modal-title').textContent = title;
@@ -1084,10 +2013,62 @@
       }
     })();
 
+    // Search / filter
+    function filterReports() {
+      const q = document.getElementById('search').value.trim().toLowerCase();
+      const blocks = document.querySelectorAll('.domain-block');
+      let totalVisible = 0;
+
+      blocks.forEach(block => {
+        if (!q) {
+          block.classList.remove('search-hidden');
+          block.querySelectorAll('.report-card').forEach(c => c.classList.remove('search-hidden'));
+          totalVisible++;
+          return;
+        }
+
+        // Match cards individually
+        const cards = block.querySelectorAll('.report-card');
+        let blockHasMatch = false;
+        cards.forEach(card => {
+          const text = card.textContent.toLowerCase();
+          if (text.includes(q)) {
+            card.classList.remove('search-hidden');
+            blockHasMatch = true;
+          } else {
+            card.classList.add('search-hidden');
+          }
+        });
+
+        // Also match on domain header text even if no individual card matches
+        const headerText = block.querySelector('.domain-name, .domain-meta')?.textContent.toLowerCase() || '';
+        if (!blockHasMatch && headerText.includes(q)) {
+          cards.forEach(c => c.classList.remove('search-hidden'));
+          blockHasMatch = true;
+        }
+
+        if (blockHasMatch) {
+          block.classList.remove('search-hidden');
+          totalVisible++;
+        } else {
+          block.classList.add('search-hidden');
+        }
+      });
+
+      const countEl = document.getElementById('search-count');
+      const noRes   = document.getElementById('no-results');
+      if (q) {
+        countEl.textContent = `${totalVisible} Domain${totalVisible !== 1 ? 's' : ''}`;
+        noRes.classList.toggle('visible', totalVisible === 0);
+      } else {
+        countEl.textContent = '';
+        noRes.classList.remove('visible');
+      }
+    }
+
     // Scroll-to-top visibility
-    const scrollBtn = document.getElementById('scrollTop');
     window.addEventListener('scroll', () => {
-      scrollBtn.classList.toggle('visible', window.scrollY > 300);
+      document.getElementById('scrollTop')?.classList.toggle('visible', window.scrollY > 300);
     }, { passive: true });
   </script>
 

@@ -231,38 +231,21 @@ class SpamAnalyzer {
       }
     }
 
-    // HELO domain mismatch — connecting server's HELO name doesn't match envelope From domain.
-    // Known ESP hostnames are whitelisted. When auth fully passes, apply reduced penalty
-    // (spammers increasingly register throwaway domains with valid SPF/DKIM/DMARC but still
-    // use unrelated sending infrastructure, e.g. HELO=pitchbook.com for a .web.id sender).
-    const espHelo = /\.(mailgun\.net|sendgrid\.net|amazonses\.com|sparkpostmail\.com|exacttarget\.com|salesforceemails\.com|campaignmonitor\.com|createsend\.com|mandrill\.com|postmarkapp\.com|mimecast\.com|proofpoint\.com|constantcontact\.com|hubspot\.com|marketo\.net|klaviyo\.com|brevo\.com|mailjet\.com|elasticemail\.com)$/i;
-    const receivedSpf = this._getHeader(headers, 'Received-SPF') || '';
-    const heloM = receivedSpf.match(/helo=([\w.-]+)/i);
-    if (heloM) {
-      const heloDomain  = heloM[1].toLowerCase();
-      const fromDomainH = this._extractDomain(fromHeader);
-      if (fromDomainH && heloDomain !== fromDomainH
-          && !heloDomain.endsWith('.' + fromDomainH)
-          && !fromDomainH.endsWith('.' + heloDomain)
-          && !espHelo.test(heloDomain)) {
-        if (authFullyPasses) {
-          score += 0.5;
-          reasons.push(`HELO-Domain abweichend (${heloDomain} ≠ ${fromDomainH}) — trotz vollst. Auth`);
-        } else {
-          score += 1;
-          reasons.push(`HELO-Domain abweichend (${heloDomain} ≠ ${fromDomainH})`);
-        }
-      }
-    }
+    // HELO-Domain-Mismatch wird nicht mehr als Spam-Indikator gewertet — siehe
+    // _calculateOpportunityScore() für die Behandlung als Verbesserungspotenzial.
 
-    // DKIM signing domain ≠ From domain — but skip known relay services that legitimately re-sign.
+    // DKIM signing domain ≠ From domain (org-domain / relaxed alignment).
+    // Skip known relay services that legitimately re-sign.
     const dkimRelayWhitelist = /privaterelay\.appleid\.com|icloud\.com|groups\.google\.com/i;
     const dkimSig   = this._getHeader(headers, 'DKIM-Signature') || '';
     const dkimDomM  = dkimSig.match(/\bd=([\w.-]+)/i);
     if (dkimDomM) {
       const dkimDomain  = dkimDomM[1].toLowerCase();
       const fromDomainD = this._extractDomain(fromHeader);
-      if (fromDomainD && dkimDomain !== fromDomainD && !dkimRelayWhitelist.test(dkimDomain)) {
+      // Use relaxed (org-domain) alignment — subdomains like info.example.com align with example.com
+      const dkimRoot = this._extractRootDomain(dkimDomain);
+      const fromRoot = this._extractRootDomain(fromDomainD);
+      if (fromDomainD && dkimRoot !== fromRoot && !dkimRelayWhitelist.test(dkimDomain)) {
         score += 1.5;
         reasons.push(`DKIM-Signatur-Domain abweichend (${dkimDomain} ≠ ${fromDomainD})`);
       }
@@ -271,6 +254,7 @@ class SpamAnalyzer {
     // Multiple DKIM signatures from different domains → relaying through unrelated infrastructure.
     // Exclude known infrastructure providers (Amazon SES, SendGrid, …) that co-sign transactional
     // email on behalf of the real sender, and same-org subdomains.
+    // Also skip if at least one signing domain is aligned with From — the email is properly signed.
     const allDkimSigs = headers.match(/^DKIM-Signature:.+(?:\r?\n[ \t].+)*/gim) || [];
     if (allDkimSigs.length > 1) {
       const dkimDomains = new Set(
@@ -279,13 +263,14 @@ class SpamAnalyzer {
       const fromDomainC     = this._extractDomain(fromHeader);
       const fromRootDomainC = this._extractRootDomain(fromDomainC);
       const dkimInfraRe = /amazonses\.com|sendgrid\.net|mailgun\.net|sparkpostmail\.com|mandrill\.com|exacttarget\.com|postmarkapp\.com|brevo\.com|mailjet\.com|elasticemail\.com|klaviyo\.com/i;
+      const anyAligned  = [...dkimDomains].some(d => this._extractRootDomain(d) === fromRootDomainC);
       const foreignDoms = [...dkimDomains].filter(d =>
-        d !== fromDomainC &&
         this._extractRootDomain(d) !== fromRootDomainC &&
         !dkimInfraRe.test(d) &&
         !dkimRelayWhitelist.test(d)
       );
-      if (dkimDomains.size > 1 && foreignDoms.length > 0) {
+      // Only flag when no aligned signing domain exists — aligned multi-sig is legitimate ESP co-signing
+      if (dkimDomains.size > 1 && foreignDoms.length > 0 && !anyAligned) {
         score += 1.5;
         reasons.push(`Mehrere DKIM-Signaturen aus verschiedenen Domains: ${[...dkimDomains].join(', ')}`);
       }
@@ -471,11 +456,36 @@ class SpamAnalyzer {
       }
     }
 
-    // Exclamation mark abuse
-    const exclCount = (fullText.match(/!/g) || []).length;
-    if (exclCount > 3) {
-      score += Math.min(0.5, (exclCount - 3) * 0.08);
-      reasons.push(`${exclCount} Ausrufezeichen`);
+    // Exclamation mark analysis — density + subject + consecutive (not raw count)
+    const subjectExcl   = (subject || '').match(/!/g)?.length ?? 0;
+    const bodyExcl      = (plainText.match(/!/g) || []).length;
+    const wordCount     = Math.max(1, (plainText.match(/\b\w{2,}\b/g) || []).length);
+    const exclDensity   = (bodyExcl / wordCount) * 100;  // per 100 words
+    const hasConsec     = /!!/.test(fullText);
+
+    let exclScore = 0;
+    const exclDetails = [];
+
+    if (subjectExcl >= 2) {
+      exclScore += subjectExcl * 0.25;
+      exclDetails.push(`${subjectExcl}× Betreff`);
+    }
+    if (hasConsec) {
+      exclScore += 0.35;
+      exclDetails.push('!! Häufung');
+    }
+    if (exclDensity > 1.0) {
+      exclScore += Math.min(0.8, (exclDensity - 1.0) * 0.5);
+      exclDetails.push(`${exclDensity.toFixed(1)}/100 Wörter`);
+    } else if (bodyExcl > 5 && wordCount < 200) {
+      // High absolute count in a short email (B2B-like scenario)
+      exclScore += 0.25;
+      exclDetails.push(`${bodyExcl} bei <200 Wörtern`);
+    }
+
+    if (exclScore > 0) {
+      score += exclScore;
+      reasons.push(`Ausrufezeichen (${subjectExcl + bodyExcl}): ${exclDetails.join(', ')}`);
     }
 
     // Link analysis — inspect URLs textually, never follow them.
@@ -559,23 +569,24 @@ class SpamAnalyzer {
     //      • Fully authenticated, low-BCL sender → tolerate 500 chars (preheader
     //        is typically 100–250 chars and is a legitimate marketing pattern).
     //      • Unauthenticated or high-BCL sender → 60-char threshold (strict).
+    let hiddenTextFlagged = false;
     if (/color\s*:\s*(white|#fff\b|#ffffff)|font-size\s*:\s*[01]px|display\s*:\s*none|visibility\s*:\s*hidden/i.test(bodyHtml || '')) {
       const hiddenContent = this._extractHiddenTextFiltered(bodyHtml || '');
       const hiddenLen     = hiddenContent.length;
       const trustedSender = authFullyPasses && !highBcl;
-      // Trusted senders: tolerate up to 500 chars of hidden text (preheader + variants).
-      // Untrusted: 60-char threshold for the "substantial" flag.
-      const substantialThreshold = trustedSender ? 500 : 60;
+      // Only legitimate exception: preheader text (85–140 chars).
+      // Threshold: trusted sender 150 chars, untrusted 50 chars.
+      const substantialThreshold = trustedSender ? 150 : 50;
 
       if (hiddenLen > substantialThreshold) {
         score += 1.5;
-        reasons.push(`Versteckter/unsichtbarer Text gefunden (substantiell, abweichend vom sichtbaren Inhalt — ${hiddenLen} Zeichen)`);
-      } else if (hiddenLen > 60 && !trustedSender) {
-        // Modest amount of hidden text + weak auth → tracking pixel / minor obfuscation
+        reasons.push(`Versteckter/unsichtbarer Text gefunden (${hiddenLen} Zeichen — über Preheader-Norm, abweichend vom sichtbaren Inhalt)`);
+        hiddenTextFlagged = true;
+      } else if (hiddenLen > 0 && !trustedSender) {
         score += 0.5;
         reasons.push('Versteckte Elemente gefunden (Tracking-Pixel o.ä.)');
+        hiddenTextFlagged = true;
       }
-      // Trusted sender + ≤500 chars hidden → no penalty (legitimate preheader/responsive)
     }
 
     // Quoted-Printable obfuscation in HTML body — spam pipelines encode content to evade filters
@@ -589,11 +600,17 @@ class SpamAnalyzer {
 
     // Zero-width spaces / invisible Unicode characters — inserted between words to break
     // tokenization and evade keyword-based filters (U+200B ZWSP, U+200C ZWNJ, U+200D ZWJ,
-    // U+FEFF BOM, U+00AD soft hyphen). Legitimate email never contains >5 of these.
+    // U+FEFF BOM, U+00AD soft hyphen). No legitimate use in marketing email; 3+ is a signal.
     const zwsCount = ((bodyHtml || '').match(/[​‌‍﻿­]/g) || []).length;
-    if (zwsCount > 5) {
-      score += 1.5;
+    if (zwsCount > 2) {
+      const zwsScore = zwsCount >= 50 ? 2.0 : zwsCount >= 15 ? 1.5 : 1.0;
+      score += zwsScore;
       reasons.push(`Zero-Width-Space-Obfuskation (${zwsCount} unsichtbare Zeichen) — Spam-Filter-Umgehung`);
+      // Combined hidden-text + ZWS pattern: enterprise filters (Proofpoint, Mimecast, Defender) treat this as high-risk
+      if (hiddenTextFlagged) {
+        score += 0.5;
+        reasons.push('Kombination: Versteckter Text + ZWS — Enterprise-Filter stufen dies als High-Risk ein');
+      }
     }
 
     // Image-only body — no visible text, just image links (common for image-spam evading text filters)
@@ -828,6 +845,25 @@ class SpamAnalyzer {
         tech += 1.0;
         oppReasons.push('DMARC-Pass nur über SPF — DKIM-Alignment als zweiten Auth-Pfad einrichten');
       }
+
+      // HELO/EHLO domain mismatch — sending host announces a name unrelated to the
+      // From domain. Not a spam signal on its own (many ESPs do this legitimately),
+      // but worth surfacing as a deliverability improvement: aligned HELO improves
+      // reverse-DNS / FCrDNS reputation and reduces filter friction.
+      const espHelo = /\.(mailgun\.net|sendgrid\.net|amazonses\.com|sparkpostmail\.com|exacttarget\.com|salesforceemails\.com|campaignmonitor\.com|createsend\.com|mandrill\.com|postmarkapp\.com|mimecast\.com|proofpoint\.com|constantcontact\.com|hubspot\.com|marketo\.net|klaviyo\.com|brevo\.com|mailjet\.com|elasticemail\.com)$/i;
+      const receivedSpf = this._getHeader(headers, 'Received-SPF') || '';
+      const heloM = receivedSpf.match(/helo=([\w.-]+)/i);
+      if (heloM && fromHdr2) {
+        const heloDomain  = heloM[1].toLowerCase();
+        const fromDomainH = this._extractDomain(fromHdr2);
+        if (fromDomainH && heloDomain !== fromDomainH
+            && !heloDomain.endsWith('.' + fromDomainH)
+            && !fromDomainH.endsWith('.' + heloDomain)
+            && !espHelo.test(heloDomain)) {
+          tech += 0.5;
+          oppReasons.push(`HELO-Domain abweichend (${heloDomain} ≠ ${fromDomainH}) — Sending-Host an From-Domain ausrichten (FCrDNS/Reputation)`);
+        }
+      }
     }
 
     tech = Math.min(6, tech);
@@ -859,10 +895,21 @@ class SpamAnalyzer {
         oppReasons.push(`Bildübergewicht (${imgCount} Bilder) — Text-Bild-Verhältnis verbessern`);
       }
 
-      // CSS Flexbox/Grid layout instead of HTML tables (email client compatibility)
-      if (/display\s*:\s*(flex|grid|inline-flex|inline-grid)/i.test(bodyHtml)) {
+      // CSS Grid — fully removed by Gmail and classic Outlook; real layout breakage
+      const hasGrid = /display\s*:\s*(grid|inline-grid)/i.test(bodyHtml);
+      if (hasGrid) {
         struct += 0.6;
-        oppReasons.push('CSS Flexbox/Grid-Layout — E-Mail-Clients benötigen HTML-Tabellen-Struktur');
+        oppReasons.push('CSS Grid — wird von Gmail und klassischem Outlook vollständig entfernt; HTML-Tabellen als primäres Layout verwenden');
+      }
+
+      // Flexbox sub-properties — Gmail keeps display:flex but strips align-items,
+      // justify-content, flex-direction etc., causing broken layouts
+      const hasFlex    = /display\s*:\s*(flex|inline-flex)/i.test(bodyHtml);
+      const flexSubRe  = /\b(align-items|justify-content|flex-direction|flex-wrap|flex-grow|flex-shrink|flex-basis|align-self|align-content|flex-flow|order)\s*:/i;
+      const hasFlexSub = hasFlex && flexSubRe.test(bodyHtml);
+      if (!hasGrid && hasFlexSub) {
+        struct += 0.5;
+        oppReasons.push('Flexbox-Sub-Properties (align-items, justify-content …) — von Gmail gestripped während display:flex erhalten bleibt; Hybrid-Coding mit Tabellen als primäres Layout empfohlen');
       }
 
       // display:none — spam filters see hidden content; responsive show/hide pattern
@@ -1111,9 +1158,14 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.1.2';
+const VERSION            = '2.1.16';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
+
+let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
+let explanationBatchPromise = null; // resolves when batch fetch completes
+let explanationGeneration   = 0;   // incremented on each new email to discard stale batch results
 const AUTHORIZED_ACCOUNT = 'felber@live.de';
+const SAVE_TOKEN = 'XWqnAysvnXKpA6VAnOt6llM3OqHSq6J4HERW-xrwtWE';
 
 /**
  * Detect the Outlook UI language and return a two-letter BCP-47 base tag.
@@ -1195,6 +1247,8 @@ let lastHiddenText           = '';   // text extracted from hidden elements
 let lastAnalysis             = null; // { score, reasons, hiddenText, opportunityScore, … }
 let lastClaudeResult         = null;
 let lastAdviceResult         = null;
+let lastAnschreibenHtml      = null;
+let lastActionPlanHtml       = null;
 let lastDnsResult            = null;
 
 // ─── Office init ───────────────────────────────────────────────────────────────
@@ -1211,8 +1265,12 @@ Office.onReady(info => {
   document.getElementById('btn-copy-headers').addEventListener('click', () => copyToClipboard(lastHeaders, 'Header kopiert'));
   document.getElementById('btn-copy-body').addEventListener('click',    () => copyToClipboard(lastBodyText, 'Body-Text kopiert'));
   document.getElementById('btn-claude').addEventListener('click', runClaudeCheck);
+  document.getElementById('btn-detail').addEventListener('click', toggleDetailPanel);
   document.getElementById('btn-toggle-hidden').addEventListener('click', toggleHiddenText);
-  document.getElementById('btn-advice').addEventListener('click', runAdviceCheck);
+  document.getElementById('btn-advice').addEventListener('click', async () => {
+    await runAdviceCheck();
+    document.getElementById('advice-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
   document.getElementById('btn-delivery-report').addEventListener('click', downloadDeliverabilityReport);
   document.getElementById('btn-action-plan').addEventListener('click', () => generateArtifact('action-plan'));
   document.getElementById('btn-anschreiben').addEventListener('click', () => generateArtifact('anschreiben'));
@@ -1246,6 +1304,8 @@ function analyzeCurrentItem() {
   lastAnalysis            = null;
   lastHiddenText          = '';
   lastDnsResult           = null;
+  lastAnschreibenHtml     = null;
+  lastActionPlanHtml      = null;
 
   // Reset hidden text expander
   const htSection = document.getElementById('hidden-text-section');
@@ -1329,6 +1389,21 @@ function renderResult(result, headers, subject, senderDisplay) {
     oppBar.setAttribute('aria-valuenow', oppScore);
   }
 
+  // Potenzial-Indikatoren
+  const oppReasonsList = document.getElementById('opp-reasons-list');
+  if (oppReasonsList) {
+    oppReasonsList.innerHTML = '';
+    const oppReasonsData = result.opportunityReasons ?? [];
+    if (oppReasonsData.length === 0) {
+      const li = document.createElement('li');
+      li.className   = 'reason-ok';
+      li.textContent = 'Keine Optimierungspotenziale erkannt';
+      oppReasonsList.appendChild(li);
+    } else {
+      oppReasonsData.forEach(r => oppReasonsList.appendChild(createSignalLi(r)));
+    }
+  }
+
   const list = document.getElementById('reasons-list');
   list.innerHTML = '';
   if (result.reasons.length === 0) {
@@ -1337,11 +1412,7 @@ function renderResult(result, headers, subject, senderDisplay) {
     li.textContent = 'Keine Spam-Indikatoren gefunden';
     list.appendChild(li);
   } else {
-    result.reasons.forEach(r => {
-      const li = document.createElement('li');
-      li.textContent = r;
-      list.appendChild(li);
-    });
+    result.reasons.forEach(r => list.appendChild(createSignalLi(r)));
   }
 
   // Hidden text expander — show only when content was found
@@ -1353,18 +1424,121 @@ function renderResult(result, headers, subject, senderDisplay) {
     htSection.classList.add('hidden');
   }
 
-  const auth = buildAuthBadges(headers);
-  document.getElementById('auth-section').classList.toggle('hidden', auth.allPass);
-  document.getElementById('auth-summary').innerHTML = auth.html;
+  renderDetailPanel(headers);
 
   applyAccountVisibility();
+
+  // Prefetch all signal explanations in the background — ℹ buttons show instantly once loaded
+  const allSignals = [...(result.reasons || []), ...(result.opportunityReasons || [])];
+  explanationBatchPromise = prefetchExplanations(allSignals);
+}
+
+// ── Signal explain ────────────────────────────────────────────────────────────
+
+function createSignalLi(text) {
+  const li      = document.createElement('li');
+  const body    = document.createElement('div');
+  body.className = 'signal-body';
+
+  const row     = document.createElement('div');
+  row.className = 'signal-row';
+
+  const span    = document.createElement('span');
+  span.textContent = text;
+
+  const btn     = document.createElement('button');
+  btn.className = 'btn-explain';
+  btn.title     = 'Erklärung anzeigen';
+  btn.setAttribute('aria-label', 'Signal erklären');
+  btn.textContent = 'i';
+
+  const expDiv  = document.createElement('div');
+  expDiv.className = 'signal-explanation hidden';
+
+  row.appendChild(span);
+  row.appendChild(btn);
+  body.appendChild(row);
+  body.appendChild(expDiv);
+  li.appendChild(body);
+
+  btn.addEventListener('click', () => explainSignal(text, btn, expDiv));
+  return li;
+}
+
+async function explainSignal(signal, btn, expDiv) {
+  // Toggle already-loaded explanation
+  if (expDiv.dataset.loaded) {
+    expDiv.classList.toggle('hidden');
+    return;
+  }
+
+  // Cache hit — show instantly
+  if (signalExplanations[signal]) {
+    expDiv.className      = 'signal-explanation';
+    expDiv.textContent    = signalExplanations[signal];
+    expDiv.dataset.loaded = '1';
+    return;
+  }
+
+  btn.setAttribute('aria-busy', 'true');
+  expDiv.className  = 'signal-explanation loading';
+  expDiv.textContent = 'Lade Erklärung …';
+
+  try {
+    // Wait for batch, then recheck cache
+    await explanationBatchPromise;
+
+    if (signalExplanations[signal]) {
+      expDiv.className      = 'signal-explanation';
+      expDiv.textContent    = signalExplanations[signal];
+      expDiv.dataset.loaded = '1';
+      return;
+    }
+
+    // Batch missed this signal — individual fallback call
+    const res  = await fetch(WORKER_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ mode: 'explain', signal }),
+    });
+    const data = await res.json();
+    const text = data.explanation || data.error || 'Keine Erklärung verfügbar.';
+    expDiv.className      = 'signal-explanation';
+    expDiv.textContent    = text;
+    expDiv.dataset.loaded = '1';
+    if (data.explanation) signalExplanations[signal] = text;
+  } catch (err) {
+    expDiv.className  = 'signal-explanation';
+    expDiv.textContent = `Fehler: ${err.message}`;
+  } finally {
+    btn.removeAttribute('aria-busy');
+  }
+}
+
+async function prefetchExplanations(signals) {
+  if (!signals.length) return;
+  const gen         = ++explanationGeneration;
+  signalExplanations = {};
+  try {
+    const res  = await fetch(WORKER_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ mode: 'explain-batch', signals }),
+    });
+    const data = await res.json();
+    // Discard result if a newer email was opened while this was in flight
+    if (gen === explanationGeneration && data.explanations) {
+      Object.assign(signalExplanations, data.explanations);
+    }
+  } catch { /* fail silently — individual fallback in explainSignal handles it */ }
 }
 
 function applyAccountVisibility() {
   document.getElementById('artifacts-section')?.classList.toggle('hidden', !isAuthorizedAccount);
   document.getElementById('export-section')?.classList.toggle('hidden',    isAuthorizedAccount);
   // Score 2 widget visible only for the authorized account
-  document.getElementById('opp-wrap')?.classList.toggle('hidden',          !isAuthorizedAccount);
+  document.getElementById('opp-wrap')?.classList.toggle('hidden',            !isAuthorizedAccount);
+  document.getElementById('opp-reasons-section')?.classList.toggle('hidden', !isAuthorizedAccount);
   // Compact number font when both score boxes are shown side-by-side
   document.getElementById('scores-area')?.classList.toggle('dual',         isAuthorizedAccount);
 }
@@ -1424,26 +1598,27 @@ function buildAuthBadges(headers) {
     }
   }
 
-  // Hide section only when all three checks pass AND DKIM is aligned
-  const allPass = results.every(r => r.val === 'pass') && dkimAligned;
-  if (allPass) return { html: '', allPass: true };
-
   // ── Build badge row ────────────────────────────────────────────────────────
+  // DKIM alignment is merged into the DKIM badge itself — no separate badge.
   const badgesHtml = results.map(({ label, val }) => {
     if (!val) return `<span class="auth-badge auth-none">${label} —</span>`;
-    const cls = val === 'pass'     ? 'auth-pass'
-              : val === 'softfail' ? 'auth-softfail'
-              : val === 'fail'     ? 'auth-fail'
-              :                     'auth-warn';
-    const badge = `<span class="auth-badge ${cls}">${label} ${val.toUpperCase()}</span>`;
-    // Append alignment warning immediately after the DKIM badge
-    if (label === 'DKIM' && !dkimAligned && dkimMismatchDomain) {
-      return badge + `<span class="auth-badge auth-softfail">DKIM-Align ${escapeHtml(dkimMismatchDomain)} ⚠</span>`;
+    let cls = val === 'pass'     ? 'auth-pass'
+            : val === 'softfail' ? 'auth-softfail'
+            : val === 'fail'     ? 'auth-fail'
+            :                     'auth-warn';
+    let displayLabel = `${label} ${val.toUpperCase()}`;
+    // When DKIM passes but signing domain doesn't align to From domain, downgrade badge
+    if (label === 'DKIM' && dkimPassed && fromDomain && !dkimAligned) {
+      cls = 'auth-softfail';
+      displayLabel = `DKIM PASS ⚠ (${escapeHtml(dkimMismatchDomain || '?')})`;
     }
-    return badge;
+    return `<span class="auth-badge ${cls}">${displayLabel}</span>`;
   }).join('');
 
-  // ── Domain-path alignment table ───────────────────────────────────────────
+  // allPass: SPF + DKIM + DKIM-Align + DMARC all pass
+  const allPass = results.every(r => r.val === 'pass') && dkimAligned;
+
+  // ── Domain-path alignment table (only when there are mismatches worth showing) ──
   const returnPathDomain = dom(hdr('Return-Path'));
   const replyToDomain    = dom(hdr('Reply-To'));
   const dkimSigDomain    = (hdr('DKIM-Signature').match(/\bd=([\w.-]+)/i) || [])[1]?.toLowerCase() ?? null;
@@ -1456,7 +1631,8 @@ function buildAuthBadges(headers) {
   ].filter(r => r.domain);
 
   let alignHtml = '';
-  if (rows.length > 1) {
+  const hasMismatch = rows.some(r => !r.ref && r.domain !== fromDomain);
+  if (rows.length > 1 && hasMismatch) {
     const rowsHtml = rows.map(r => {
       if (r.ref) return `<tr><td class="ap-label">Von (From)</td><td class="ap-domain">${escapeHtml(r.domain)}</td><td class="ap-icon ap-ref">—</td></tr>`;
       const ok = r.domain === fromDomain;
@@ -1469,7 +1645,160 @@ function buildAuthBadges(headers) {
     alignHtml = `<table class="auth-paths">${rowsHtml}</table>`;
   }
 
-  return { html: badgesHtml + alignHtml, allPass: false };
+  return { html: badgesHtml + alignHtml, allPass };
+}
+
+// ─── Header-Details panel ─────────────────────────────────────────────────────
+
+const DETAIL_LS_KEY = 'spam-scorer:detail-open';
+
+function renderDetailPanel(headers) {
+  const hdr = name => {
+    if (!headers) return null;
+    const m = headers.match(new RegExp(`^${name}:\\s*(.+(?:\\r?\\n[ \\t].+)*)`, 'im'));
+    return m ? m[1].replace(/\r?\n[ \t]+/g, ' ').trim() : null;
+  };
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  const auth = buildAuthBadges(headers);
+
+  // ── MS spam indicators ────────────────────────────────────────────────────
+  const sclRaw  = hdr('X-MS-Exchange-Organization-SCL');
+  const scl     = sclRaw !== null ? parseInt(sclRaw, 10) : null;
+  const antispam = hdr('X-Microsoft-Antispam') || '';
+  const bclM    = antispam.match(/BCL:(\d+)/i);
+  const bcl     = bclM ? parseInt(bclM[1], 10) : null;
+  const delivery = hdr('X-Microsoft-Antispam-Mailbox-Delivery') || '';
+  const destM   = delivery.match(/dest:([A-Z]+)/i);
+  const dest    = destM ? destM[1].toUpperCase() : null;
+  const forefront = hdr('X-Forefront-Antispam-Report') || '';
+  const ff = k => { const m = forefront.match(new RegExp(`(?:^|;)\\s*${k}:([^;]+)`, 'i')); return m ? m[1].trim() : null; };
+  const sfv = ff('SFV');
+  const cat = ff('CAT');
+
+  const hasMsData = scl !== null || bcl !== null || dest || sfv;
+
+  // ── Build peek summary (shown in closed state) ────────────────────────────
+  const peekParts = [];
+
+  // Auth peek — derive icons from auth.allPass + DKIM align
+  if (headers) {
+    const authLine = headers.match(/^Authentication-Results:(.+(?:\r?\n[ \t].+)*)/im)
+                  || headers.match(/^ARC-Authentication-Results:(.+(?:\r?\n[ \t].+)*)/im);
+    if (authLine) {
+      const str = authLine[1];
+      [
+        { label: 'SPF',   re: /spf=(pass|fail|softfail|neutral|none)/i },
+        { label: 'DKIM',  re: /dkim=(pass|fail|none)/i },
+        { label: 'DMARC', re: /dmarc=(pass|fail|none|bestguesspass)/i },
+      ].forEach(({ label, re }) => {
+        const m   = str.match(re);
+        const val = m ? m[1].toLowerCase() : null;
+        const icon = !val ? '?' : val === 'pass' ? '✓' : '✗';
+        peekParts.push(`${label} ${icon}`);
+      });
+      // Alignment is merged into the DKIM badge — no separate Align entry in peek
+    }
+  }
+
+  // MS peek
+  if (scl !== null) peekParts.push(`SCL ${scl}`);
+  if (bcl !== null && bcl > 0) peekParts.push(`BCL ${bcl}`);
+  if (dest) peekParts.push(dest === 'I' ? 'Inbox' : dest === 'J' ? '⚠ Junk' : dest);
+  if (sfv && sfv !== 'NSPM') peekParts.push(`SFV:${sfv}`);
+
+  document.getElementById('det-peek').textContent = peekParts.length
+    ? peekParts.join('  ·  ')
+    : 'Header-Details';
+
+  // ── Auth group ────────────────────────────────────────────────────────────
+  const detAuth = document.getElementById('det-auth');
+  detAuth.innerHTML = auth.html
+    ? `<div class="det-group-label">Authentifizierung</div>
+       <div class="det-auth-row auth-summary">${auth.html}</div>`
+    : '';
+
+  // ── MS spam group ─────────────────────────────────────────────────────────
+  const detMs = document.getElementById('det-ms');
+  if (!hasMsData) {
+    detMs.innerHTML = '';
+  } else {
+    // ms(key, label, cls, shortTip, longTip?)
+    // longTip triggers an i-button; shortTip goes on the badge title
+    const ms = (key, label, cls, shortTip, longTip) => {
+      const infoBtn = longTip
+        ? `<button class="det-ms-info" data-tip="${escapeHtml(longTip)}" aria-label="${key} erklären">i</button><span class="det-ms-tip hidden"></span>`
+        : '';
+      return `<div class="det-ms-row">
+        <span class="det-ms-key">${key}</span>
+        <div class="det-ms-val-row">
+          <span class="det-ms-val det-ms-${cls}" title="${escapeHtml(shortTip)}">${escapeHtml(label)}</span>
+          ${infoBtn}
+        </div>
+      </div>`;
+    };
+
+    const sclCls   = scl === null ? 'none' : scl <= 1 ? 'ok' : scl <= 4 ? 'warn' : 'bad';
+    const sclLabel = scl === null ? '–' : scl === -1 ? '–1 Intern' : scl <= 1 ? `${scl} Kein Spam` : scl <= 4 ? `${scl} Gering` : scl <= 6 ? `${scl} Junk` : `${scl} Hohe Konfidenz`;
+    const sclShort = scl === null ? '' : scl <= 1 ? 'Microsoft hält E-Mail für legitim' : scl <= 4 ? 'Leicht erhöhter Verdacht' : scl <= 6 ? '→ Junk-Ordner' : 'Hohe Spam-Konfidenz';
+    const sclLong  = 'Spam Confidence Level (0–9): Microsofts eigene Spam-Bewertung beim Empfang. −1 = interne/vertrauenswürdige Quelle. 0–1 = kein Spam. 2–4 = leicht erhöht, trotzdem Posteingang. 5–6 = Junk-Ordner. 7–9 = hohe Konfidenz, kann direkt gelöscht werden.';
+
+    const bclCls   = bcl === null ? 'none' : bcl === 0 ? 'ok' : bcl <= 3 ? 'warn' : 'bad';
+    const bclLabel = bcl === null ? '–' : bcl === 0 ? '0 Kein Bulk' : bcl <= 3 ? `${bcl} Gering` : bcl <= 6 ? `${bcl} Mittel` : `${bcl} Hoch`;
+    const bclShort = bcl === null ? '' : bcl === 0 ? 'Keine Bulk-Beschwerden' : bcl <= 3 ? 'Wenige Beschwerden' : bcl <= 6 ? 'Erhöhte Beschwerderate' : 'Hohe Beschwerderate';
+    const bclLong  = 'Bulk Complaint Level (0–9): Wie viele Empfänger ähnliche E-Mails dieses Absenders als Spam markiert haben. 0 = keine bekannten Beschwerden. 1–3 = wenige Beschwerden, meist unkritisch. 4–7 = erhöhte Beschwerderate, Junk-Risiko steigt spürbar. 8–9 = hohe Beschwerderate, starker Reputationsnachteil.';
+
+    const destCls   = !dest ? 'none' : dest === 'I' ? 'ok' : dest === 'J' ? 'bad' : 'warn';
+    const destLabel = !dest ? '–' : dest === 'I' ? 'I Posteingang' : dest === 'J' ? 'J Junk' : dest === 'D' ? 'D Gelöscht' : dest;
+    const destShort = !dest ? '' : dest === 'I' ? 'Exchange → Posteingang' : dest === 'J' ? 'Exchange → Junk-Ordner' : dest === 'D' ? 'Exchange → Gelöscht' : '';
+
+    const sfvMap = { NSPM:'Kein Spam', SPM:'Spam', SKN:'Safe Sender', SFE:'Allowlist', BLK:'Blockiert', SKS:'Geblockt', SKB:'Blockierter Abs.' };
+    const sfvCls = !sfv ? 'none' : /^NSPM|SKN|SFE/i.test(sfv) ? 'ok' : /^SPM|SKS|BLK|SKB/i.test(sfv) ? 'bad' : 'warn';
+    const sfvLabel = !sfv ? '–' : (sfvMap[sfv.toUpperCase()] || sfv);
+    const sfvShort = !sfv ? '' : `Spamfilter-Urteil: ${sfv}`;
+
+    const catMap = { NSPM:'Kein Spam', SPAM:'Spam', PHSH:'Phishing', MALW:'Malware', BULK:'Bulk', HPHSH:'Phishing' };
+    const catCls = !cat ? 'none' : /NSPM/i.test(cat) ? 'ok' : /SPAM|PHSH|MALW/i.test(cat) ? 'bad' : 'warn';
+    const catLabel = cat ? (catMap[cat.toUpperCase()] || cat) : null;
+
+    const rows = [
+      scl !== null && ms('SCL', sclLabel, sclCls, sclShort, sclLong),
+      bcl !== null && ms('BCL', bclLabel, bclCls, bclShort, bclLong),
+      dest          && ms('Zustellung', destLabel, destCls, destShort, null),
+      sfv           && ms('SFV', sfvLabel, sfvCls, sfvShort, null),
+      catLabel      && ms('Kategorie', catLabel, catCls, `Exchange-Kategorie: ${catLabel}`, null),
+    ].filter(Boolean).join('');
+
+    detMs.innerHTML = `<div class="det-group-label">Microsoft Spamfilter</div>
+      <div class="det-ms-grid">${rows}</div>`;
+
+    // Wire up i-buttons (event delegation avoids inline onclick — CSP safe)
+    detMs.querySelectorAll('.det-ms-info').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tip = btn.nextElementSibling;
+        if (!tip) return;
+        const isOpen = !tip.classList.contains('hidden');
+        tip.textContent = btn.dataset.tip;
+        tip.classList.toggle('hidden', isOpen);
+      });
+    });
+  }
+
+  // ── Restore expander state from localStorage ──────────────────────────────
+  const savedOpen = localStorage.getItem(DETAIL_LS_KEY) === 'true';
+  const btn   = document.getElementById('btn-detail');
+  const panel = document.getElementById('detail-panel');
+  btn.setAttribute('aria-expanded', String(savedOpen));
+  panel.classList.toggle('hidden', !savedOpen);
+}
+
+function toggleDetailPanel() {
+  const btn   = document.getElementById('btn-detail');
+  const panel = document.getElementById('detail-panel');
+  const open  = btn.getAttribute('aria-expanded') !== 'true';
+  btn.setAttribute('aria-expanded', String(open));
+  panel.classList.toggle('hidden', !open);
+  localStorage.setItem(DETAIL_LS_KEY, String(open));
 }
 
 // ─── Hidden text toggle ────────────────────────────────────────────────────────
@@ -1746,6 +2075,23 @@ async function generateArtifact(mode) {
   const subject     = item?.subject             || '';
   const senderEmail = item?.from?.emailAddress  || '';
 
+  // Serve from cache — avoids a second Sonnet call for the same email
+  const cached = mode === 'action-plan' ? lastActionPlanHtml : lastAnschreibenHtml;
+  if (cached) {
+    const date     = new Date().toISOString().slice(0, 10);
+    const domain   = (senderEmail.match(/@([\w.-]+)/) || [])[1] || 'sender';
+    const filename = mode === 'action-plan'
+      ? `${domain}-Aktionsplan-${date}.html`
+      : `${domain}-Anschreiben-${date}.html`;
+    const blob = new Blob([cached], { type: 'text/html;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+    showToast(`${filename} wird heruntergeladen…`, false);
+    return;
+  }
+
   const origLabel = btn.textContent;
   btn.disabled    = true;
 
@@ -1788,6 +2134,7 @@ async function generateArtifact(mode) {
 
     const html = data.html || '';
     if (!html || !html.includes('<')) throw new Error('Generierung fehlgeschlagen — leere Antwort vom Modell. Bitte erneut versuchen.');
+    if (mode === 'action-plan') lastActionPlanHtml = html; else lastAnschreibenHtml = html;
     const blob     = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url      = URL.createObjectURL(blob);
     const date     = new Date().toISOString().slice(0, 10);
@@ -1803,6 +2150,18 @@ async function generateArtifact(mode) {
     URL.revokeObjectURL(url);
 
     showToast(`${filename} wird heruntergeladen…`, false);
+
+    saveReportToDb({
+      domain,
+      sender:     senderEmail,
+      subject,
+      emailDate:  date,
+      addinScore: currentScore,
+      aiScore:    lastClaudeResult?.score ?? null,
+      esp:        lastClaudeResult?.esp   ?? null,
+      type:       mode === 'action-plan' ? 'aktionsplan' : 'anschreiben',
+      html,
+    });
   } catch (err) {
     showToast(`⚠ ${err.message}`, true);
   } finally {
@@ -2214,6 +2573,15 @@ body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size:
 .auth-warn     { background: #fff7ed; color: #9a3412; border-color: #fdba74; }
 .auth-none     { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
 
+/* Microsoft spam indicators */
+.ms-spam-table td.ms-explain { color: #64748b; font-size: 12px; padding-left: 12px; }
+.ms-val { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid transparent; }
+.ms-ok         { background: #dcfce7; color: #166534; border-color: #86efac; }
+.ms-warn-light { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+.ms-warn       { background: #fff7ed; color: #9a3412; border-color: #fdba74; }
+.ms-bad        { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+.ms-neutral    { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+
 /* Findings */
 .finding { background: #fff; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; border-left: 4px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
 .finding.prio-hoch    { border-left-color: #dc2626; }
@@ -2369,9 +2737,36 @@ async function downloadDeliverabilityReport() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     showToast(s.toast, false);
+
+    // Auto-save to D1 (fire-and-forget; failure is silent)
+    saveReportToDb({
+      domain,
+      sender:     senderEmail,
+      subject,
+      emailDate:  new Date().toISOString().slice(0, 10),
+      addinScore: currentScore,
+      aiScore:    lastClaudeResult?.score ?? null,
+      esp:        lastClaudeResult?.esp   ?? null,
+      type:       'report',
+      html,
+    });
   } finally {
     btn.disabled    = false;
     btn.textContent = '📄 Report';
+  }
+}
+
+async function saveReportToDb({ domain, sender, subject, emailDate, addinScore, aiScore, esp, type, html }) {
+  try {
+    const res = await fetch(WORKER_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'save', saveToken: SAVE_TOKEN, domain, sender, subject, emailDate, addinScore, aiScore, esp, type, html }),
+    });
+    const data = await res.json();
+    if (data.ok) showToast('In Datenbank gespeichert ✓', false);
+  } catch {
+    // silent — download already succeeded
   }
 }
 
@@ -2435,6 +2830,8 @@ function buildDeliverabilityHtml({ subject, senderEmail, senderName, addinScore,
   ${rInfraSection(sendingIp, ptrHostname)}
 
   ${rAuthSection(headers)}
+
+  ${rMsSpamSection(headers)}
 
   ${rDnsSection(dnsResult)}
 
@@ -2597,16 +2994,132 @@ function rAuthSection(headers) {
               : val === 'softfail' ? 'auth-softfail'
               : val === 'fail'     ? 'auth-fail'
               :                     'auth-warn';
-    const badge = `<span class="rpt-auth-badge ${cls}">${label} ${val ? val.toUpperCase() : '—'}</span>`;
-    if (label === 'DKIM' && !dkimAligned && dkimMismatchDomain) {
-      return badge + `<span class="rpt-auth-badge auth-warn">DKIM-Align ${escR(dkimMismatchDomain)} ⚠</span>`;
+    let badgeCls   = cls;
+    let badgeLabel = `${label} ${val ? val.toUpperCase() : '—'}`;
+    if (label === 'DKIM' && val === 'pass' && !dkimAligned && dkimMismatchDomain) {
+      badgeCls   = 'auth-warn';
+      badgeLabel = `DKIM PASS ⚠ (${escR(dkimMismatchDomain)})`;
     }
-    return badge;
+    return `<span class="rpt-auth-badge ${badgeCls}">${badgeLabel}</span>`;
   }).join('');
 
   return `<section class="rpt-section">
     <h2>${rStr().auth}</h2>
     <div class="rpt-auth-row">${badgesHtml}</div>
+  </section>`;
+}
+
+function rMsSpamSection(headers) {
+  if (!headers) return '';
+
+  const hdr = name => {
+    const m = headers.match(new RegExp(`^${name}:\\s*(.+(?:\\r?\\n[ \\t].+)*)`, 'im'));
+    return m ? m[1].replace(/\r?\n[ \t]+/g, ' ').trim() : null;
+  };
+
+  // SCL
+  const sclRaw = hdr('X-MS-Exchange-Organization-SCL');
+  const scl    = sclRaw !== null ? parseInt(sclRaw, 10) : null;
+
+  // BCL
+  const antispam = hdr('X-Microsoft-Antispam') || '';
+  const bclM     = antispam.match(/BCL:(\d+)/i);
+  const bcl      = bclM ? parseInt(bclM[1], 10) : null;
+
+  // Mailbox delivery
+  const delivery = hdr('X-Microsoft-Antispam-Mailbox-Delivery') || '';
+  const destM    = delivery.match(/dest:([A-Z]+)/i);
+  const dest     = destM ? destM[1].toUpperCase() : null;
+
+  // Forefront report
+  const forefront = hdr('X-Forefront-Antispam-Report') || '';
+  const ff = k => { const m = forefront.match(new RegExp(`(?:^|;)\\s*${k}:([^;]+)`, 'i')); return m ? m[1].trim() : null; };
+  const sfv = ff('SFV');
+  const cat = ff('CAT');
+  const ipv = ff('IPV');
+
+  // Nothing to show
+  if (scl === null && bcl === null && !dest && !sfv && !cat) return '';
+
+  const pill = (label, value, cls, explain) =>
+    `<tr>
+      <th style="width:110px">${label}</th>
+      <td><span class="ms-val ms-${cls}">${escR(String(value))}</span></td>
+      <td class="ms-explain">${escR(explain)}</td>
+    </tr>`;
+
+  const sclCls = scl === null ? '' : scl <= 1 ? 'ok' : scl <= 4 ? 'warn' : 'bad';
+  const sclLabel = scl === null ? '–'
+    : scl === -1 ? 'Vertrauenswürdig (–1)'
+    : scl <= 1   ? `Kein Spam (${scl})`
+    : scl <= 4   ? `Gering verdächtig (${scl})`
+    : scl <= 6   ? `Spam → Junk (${scl})`
+    :              `Hohe Spam-Konfidenz (${scl})`;
+  const sclExplain = scl === null ? 'Kein SCL-Header gefunden'
+    : scl === -1 ? 'Interne/vertrauenswürdige Quelle – Spamfilter übersprungen'
+    : scl <= 1   ? 'Microsoft hält E-Mail für legitim'
+    : scl <= 4   ? 'Leicht erhöhter Verdacht – trotzdem Posteingang'
+    : scl <= 6   ? 'Microsoft hat E-Mail als Spam klassifiziert → Junk-Ordner'
+    :              'Hohe Spam-Konfidenz – kann direkt gelöscht oder abgelehnt werden';
+
+  const bclCls = bcl === null ? '' : bcl === 0 ? 'ok' : bcl <= 3 ? 'warn-light' : bcl <= 6 ? 'warn' : 'bad';
+  const bclLabel = bcl === null ? '–'
+    : bcl === 0  ? `Kein Bulk (${bcl})`
+    : bcl <= 3   ? `Geringes Bulk-Niveau (${bcl})`
+    : bcl <= 6   ? `Mittleres Bulk-Niveau (${bcl})`
+    :              `Hohes Bulk-Niveau (${bcl})`;
+  const bclExplain = bcl === null ? 'Kein BCL gefunden'
+    : bcl === 0  ? 'Keine Beschwerden bei Microsoft bekannt'
+    : bcl <= 3   ? 'Wenige Nutzer haben ähnliche Mails als Spam markiert'
+    : bcl <= 6   ? 'Erhöhte Beschwerderate – höheres Junk-Risiko'
+    :              'Hohe Beschwerderate – starker Reputationsnachteil';
+
+  const destCls = !dest ? '' : dest === 'I' ? 'ok' : dest === 'J' ? 'bad' : 'warn';
+  const destLabel = !dest ? '–'
+    : dest === 'I' ? 'Posteingang (I)'
+    : dest === 'J' ? 'Junk-Ordner (J)'
+    : dest === 'D' ? 'Gelöscht (D)'
+    : dest === 'S' ? 'Gesendet (S)'
+    : `Unbekannt (${dest})`;
+  const destExplain = !dest ? 'Kein Delivery-Header'
+    : dest === 'I' ? 'Exchange hat E-Mail in den Posteingang zugestellt'
+    : dest === 'J' ? 'Exchange hat E-Mail direkt in Junk verschoben'
+    : dest === 'D' ? 'Exchange hat E-Mail gelöscht'
+    : 'Unbekannter Zustellungspfad';
+
+  const sfvCls = !sfv ? '' : /^NSPM|SKN|SFE/i.test(sfv) ? 'ok' : /^SPM|SKS|BLK/i.test(sfv) ? 'bad' : 'warn';
+  const sfvMap = { NSPM:'Kein Spam (NSPM)', SPM:'Spam (SPM)', SKN:'Safe Sender (SKN)', SFE:'Erlaubt (SFE)', BLK:'Blockiert (BLK)', SKS:'Spam – geblockt (SKS)', SKB:'Blockierter Absender (SKB)' };
+  const sfvLabel = sfv ? (sfvMap[sfv.toUpperCase()] || sfv) : '–';
+  const sfvExplain = !sfv ? 'Kein SFV-Wert gefunden'
+    : /NSPM/i.test(sfv) ? 'Spamfilter hat E-Mail als legitim bewertet'
+    : /SPM/i.test(sfv)  ? 'Spamfilter hat E-Mail als Spam eingestuft'
+    : /SKN/i.test(sfv)  ? 'Absender steht auf der Safe-Sender-Liste'
+    : /SFE/i.test(sfv)  ? 'Spamfilterung übersprungen (Allowlist)'
+    : /SKS|BLK|SKB/i.test(sfv) ? 'Absender oder IP ist blockiert'
+    : `Spamfilter-Urteil: ${sfv}`;
+
+  const catCls = !cat ? '' : /NSPM/i.test(cat) ? 'ok' : /SPAM|PHSH|MALW/i.test(cat) ? 'bad' : 'warn';
+  const catMap = { NSPM:'Kein Spam', SPAM:'Spam', PHSH:'Phishing', MALW:'Malware', BULK:'Bulk-Mail', HPHSH:'Sicheres Phishing', GIMP:'Interner Absender' };
+  const catLabel = cat ? (catMap[cat.toUpperCase()] || cat) : null;
+
+  const ipvCls = !ipv ? '' : /^CAL/i.test(ipv) ? 'ok' : /^CDL|CBI/i.test(ipv) ? 'bad' : 'neutral';
+  const ipvMap = { NLI:'Unbekannt (NLI)', CAL:'Allowlist (CAL)', CDL:'Denyliste (CDL)', CBI:'Kompromittierte IP (CBI)' };
+  const ipvLabel = ipv ? (ipvMap[ipv.toUpperCase()] || ipv) : null;
+
+  const rows = [
+    scl !== null && pill('SCL', sclLabel, sclCls, sclExplain),
+    bcl !== null && pill('BCL', bclLabel, bclCls, bclExplain),
+    dest          && pill('Zustellung', destLabel, destCls, destExplain),
+    sfv           && pill('SFV', sfvLabel, sfvCls, sfvExplain),
+    catLabel      && pill('Kategorie', catLabel, catCls, catMap[cat?.toUpperCase()] ? `Exchange-Kategorie: ${catLabel}` : cat),
+    ipvLabel      && pill('IP-Status', ipvLabel, ipvCls, ipvMap[ipv?.toUpperCase()] ? `IP-Einstufung durch Microsoft: ${ipvLabel}` : ipv),
+  ].filter(Boolean).join('');
+
+  if (!rows) return '';
+
+  return `<section class="rpt-section">
+    <h2>Microsoft-Spamfilter</h2>
+    <table class="meta-table ms-spam-table">${rows}</table>
   </section>`;
 }
 

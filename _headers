@@ -7,7 +7,11 @@
 /Delivery-Reports/*.html
   Cache-Control: no-cache, must-revalidate
 
-# Statische Assets (CSS, JS, Bilder) können ruhig lange gecacht werden
+# taskpane.js gets updated frequently — always revalidate
+/taskpane.js
+  Cache-Control: no-cache, must-revalidate
+
+# Other JS/CSS assets are versioned by content hash and safe to cache long-term
 /*.js
   Cache-Control: public, max-age=31536000, immutable
 

@@ -11,17 +11,20 @@
  *   mode="action-plan"  — technical deliverability action plan HTML via claude-sonnet-4-6
  *   mode="anschreiben"  — personalised German outreach letter HTML via claude-haiku-4-5
  *   mode="dns"          — SPF / DMARC / DKIM DNS lookups via Cloudflare DoH (no AI)
+ *   mode="save"         — persist report/anschreiben/aktionsplan HTML to D1 (requires SAVE_TOKEN)
+ *   mode="list"         — return JSON list of saved reports from D1
+ *   mode="get"          — return raw HTML of a single saved report by id
  */
 
 const ALLOWED_ORIGIN        = 'https://outlook-spam-scorer.pages.dev';
 const MODEL_ANALYSIS        = 'claude-haiku-4-5';
 const MODEL_ADVICE          = 'claude-sonnet-4-5';
 const MODEL_ACTION_PLAN     = 'claude-sonnet-4-6';
-const MODEL_ANSCHREIBEN     = 'claude-haiku-4-5';
+const MODEL_ANSCHREIBEN     = 'claude-sonnet-4-5';
 const MAX_TOKENS            = 1024;
-const MAX_TOKENS_ADVICE     = 2048;
+const MAX_TOKENS_ADVICE     = 4000;
 const MAX_TOKENS_ACTION_PLAN = 7500;
-const MAX_TOKENS_ANSCHREIBEN = 2000;
+const MAX_TOKENS_ANSCHREIBEN = 3500;
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin':  ALLOWED_ORIGIN,
@@ -51,7 +54,12 @@ export default {
     if (payload.mode === 'advice')       return handleAdvice(payload, env);
     if (payload.mode === 'action-plan')  return handleActionPlan(payload, env);
     if (payload.mode === 'anschreiben')  return handleAnschreiben(payload, env);
+    if (payload.mode === 'explain')       return handleExplain(payload, env);
+    if (payload.mode === 'explain-batch') return handleExplainBatch(payload, env);
     if (payload.mode === 'dns')          return handleDnsLookup(payload);
+    if (payload.mode === 'save')         return handleSave(payload, env);
+    if (payload.mode === 'list')         return handleList(payload, env);
+    if (payload.mode === 'get')          return handleGet(payload, env);
     return handleAnalysis(payload, env);
   },
 };
@@ -145,11 +153,20 @@ async function handleAdvice(payload, env) {
   const spfIpM    = headers.match(/client-ip=([\d.a-f:]+)/i);
   let   sendingIp = spfIpM?.[1] ?? null;
   let   ptrHost   = null;
-  const rcvdM     = headers.match(/^Received:.*?from\s+([\w.\-[\]:]+)(?:\s+\(([\w.\-]+)\s+)?\[([\d.a-f:]+)\]/im);
+
+  // Standard RFC format: from hostname (hostname [IP])
+  const rcvdM = headers.match(/^Received:.*?from\s+([\w.\-[\]:]+)\s+\(([\w.\-]+)\s+\[([\d.a-f:]+)\]\)/im);
   if (rcvdM) {
     if (!sendingIp) sendingIp = rcvdM[3];
-    const candidate = rcvdM[2] || rcvdM[1] || null;
+    const candidate = rcvdM[2];
     if (candidate && candidate !== sendingIp) ptrHost = candidate;
+  }
+
+  // Fallback: from hostname (IP) — round parens only, no brackets (e.g. Brevo/Sendinblue)
+  if (!ptrHost && sendingIp) {
+    const esc  = sendingIp.replace(/\./g, '\\.');
+    const ptrM = headers.match(new RegExp(`from\\s+([\\w.\\-]+)\\s+\\(${esc}\\)`, 'i'));
+    if (ptrM?.[1] && ptrM[1] !== sendingIp) ptrHost = ptrM[1];
   }
 
   const userPrompt = buildAdvicePrompt(
@@ -339,6 +356,7 @@ Target audience: senior infrastructure engineers and deliverability specialists.
 
 async function handleAnschreiben(payload, env) {
   const {
+    headers      = '',
     subject      = '',
     senderEmail  = '',
     addinScore   = null,
@@ -352,6 +370,38 @@ async function handleAnschreiben(payload, env) {
   const aiScore    = claudeResult?.score   ?? '?';
   const adviceSummary = adviceResult?.summary
     ? `\n=== BERATUNGS-ZUSAMMENFASSUNG (bereits generiert) ===\n${adviceResult.summary}`
+    : '';
+
+  // Detect ESP for contextualised outreach
+  const feedbackId = (headers.match(/^Feedback-ID:\s*(.+)/im) || [])[1] || '';
+  const receivedHdr = (headers.match(/^Received:.*$/im) || [])[0] || '';
+  const espName    = /sendinblue|brevo/i.test(feedbackId + receivedHdr) ? 'Sendinblue/Brevo'
+                   : /mailchimp|mandrill/i.test(feedbackId + receivedHdr) ? 'Mailchimp/Mandrill'
+                   : /mailjet/i.test(feedbackId + receivedHdr) ? 'Mailjet'
+                   : /cleverreach/i.test(feedbackId + receivedHdr) ? 'CleverReach'
+                   : /emarsys/i.test(feedbackId + receivedHdr) ? 'Emarsys'
+                   : /hubspot/i.test(feedbackId + receivedHdr) ? 'HubSpot'
+                   : /klaviyo/i.test(feedbackId + receivedHdr) ? 'Klaviyo'
+                   : /activecampaign/i.test(feedbackId + receivedHdr) ? 'ActiveCampaign'
+                   : null;
+
+  // Extract misconfigurations that are specific to the detected ESP
+  const espMisconfigs = espName
+    ? (addinSignals || []).filter(s =>
+        /return-path|dkim|align|link-dicht|versteckt|auth|SPF|DMARC/i.test(s)
+      ).slice(0, 4)
+    : [];
+
+  const espContext = espName
+    ? `\n=== ESP / VERSANDPLATTFORM ===
+Erkannte Plattform: ${espName}
+Spezifische Konfigurationsprobleme bei dieser Plattform:
+${espMisconfigs.length ? espMisconfigs.map(s => `  - ${s}`).join('\n') : '  (keine spezifischen aus der Analyse extrahiert)'}
+
+WICHTIG: Zeige im Brief implizit, dass du das konkrete Setup des Kunden kennst.
+Formuliere so: "Ich habe gesehen, dass Sie [${espName}] einsetzen — und die Konfiguration weist einige typische Punkte auf, die ich häufig bei dieser Plattform antreffe."
+Keine tiefen technischen Details — der Empfänger soll Thomas Felber beauftragen, nicht es selbst lösen.
+`
     : '';
 
   const userPrompt = `Du bist ein professioneller E-Mail-Deliverability-Spezialist.
@@ -371,6 +421,7 @@ ${topSignals}
 === KI-ZUSAMMENFASSUNG ===
 ${aiSummary}
 ${adviceSummary}
+${espContext}
 ---
 
 AUFBAU DES BRIEFES:
@@ -453,6 +504,107 @@ Verwende sauberes eingebettetes CSS im <style>-Tag. Brief ist IMMER von Thomas F
   return jsonHtml(html);
 }
 
+// ── Signal explanation (single indicator → plain-German explanation) ──────────
+
+async function handleExplain(payload, env) {
+  const { signal = '' } = payload;
+  if (!signal.trim()) return json({ error: 'signal required' }, 400);
+
+  let apiRes;
+  try {
+    apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model:      MODEL_ADVICE,   // sonnet — needs domain expertise for accurate explanations
+        max_tokens: 300,
+        system: [
+          {
+            type: 'text',
+            text: `Du bist ein erfahrener E-Mail-Deliverability-Spezialist.
+Erkläre technische Signale aus E-Mail-Headern und Spam-Filtern auf Deutsch.
+Zielgruppe: Absender ohne tiefes technisches Vorwissen.
+Jede Erklärung besteht aus genau zwei Teilen:
+1. Was bedeutet dieses Signal konkret (1–2 Sätze, kein Jargon).
+2. Warum hat es Optimierungspotenzial — was verbessert sich konkret, wenn es behoben wird (1–2 Sätze).
+Kein JSON, kein Markdown, keine Aufzählung, keine Überschriften — nur Fließtext.`,
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
+        messages: [{ role: 'user', content: `Erkläre dieses Deliverability-Signal: "${signal}"` }],
+      }),
+    });
+  } catch (err) {
+    return json({ error: `Fetch failed: ${err.message}` }, 502);
+  }
+
+  if (!apiRes.ok) {
+    const errText = await apiRes.text();
+    return json({ error: `Claude API error ${apiRes.status}: ${errText}` }, 502);
+  }
+
+  const data        = await apiRes.json();
+  const explanation = (data.content?.[0]?.text ?? '').trim();
+  return json({ explanation });
+}
+
+// ── Batch signal explanation ──────────────────────────────────────────────────
+
+async function handleExplainBatch(payload, env) {
+  const signals = (payload.signals || []).slice(0, 30);
+  if (signals.length === 0) return json({ explanations: {} });
+
+  const numbered = signals.map((s, i) => `${i + 1}. ${s}`).join('\n');
+
+  let apiRes;
+  try {
+    apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model:      MODEL_ADVICE,
+        max_tokens: 2500,
+        system: [
+          {
+            type: 'text',
+            text: `Du bist ein erfahrener E-Mail-Deliverability-Spezialist.
+Erkläre jedes nummerierte Signal auf Deutsch in 2–3 Sätzen Fließtext (kein Jargon, keine Aufzählung).
+Für jedes Signal: (1) was es bedeutet, (2) warum es Optimierungspotenzial hat und was sich konkret verbessert wenn man es behebt.
+Antworte NUR mit einem JSON-Objekt: {"1": "Erklärung...", "2": "Erklärung...", ...}`,
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
+        messages: [{ role: 'user', content: `Erkläre diese Deliverability-Signale:\n\n${numbered}` }],
+      }),
+    });
+  } catch (err) {
+    return json({ explanations: {} });
+  }
+
+  if (!apiRes.ok) return json({ explanations: {} });
+
+  const data = await apiRes.json();
+  const raw  = (data.content?.[0]?.text ?? '{}').replace(/^```json?\s*/i, '').replace(/\s*```$/, '').trim();
+
+  let indices = {};
+  try { indices = JSON.parse(raw); } catch { return json({ explanations: {} }); }
+
+  const explanations = {};
+  signals.forEach((s, i) => {
+    const expl = indices[String(i + 1)];
+    if (expl) explanations[s] = expl;
+  });
+  return json({ explanations });
+}
+
 // ── DNS lookup (no AI, pure DoH) ─────────────────────────────────────────────
 
 const DKIM_SELECTORS = [
@@ -519,6 +671,84 @@ async function dkimLookup(selector, domain) {
   } catch { /* ignore */ }
 
   return { selector, found: false };
+}
+
+// ── D1 persistence ───────────────────────────────────────────────────────────
+
+async function handleSave(payload, env) {
+  if (!env.DB)                              return json({ error: 'D1 not configured' }, 503);
+  if (payload.saveToken !== env.SAVE_TOKEN) return json({ error: 'Unauthorized' }, 401);
+
+  const { domain, sender, subject, emailDate, addinScore, aiScore, esp, type = 'report', html, notes } = payload;
+
+  if (!domain || !html) return json({ error: 'domain and html required' }, 400);
+
+  // Idempotent save: same (sender, subject, type) overwrites prior row.
+  // User-requested behaviour — only the latest assessment per email is kept,
+  // no historical revisions. `IS` handles NULL-safe equality (SQLite-specific).
+  const existing = await env.DB.prepare(
+    `SELECT id FROM reports
+     WHERE sender IS ? AND subject IS ? AND type IS ?
+     ORDER BY id DESC LIMIT 1`
+  ).bind(sender || null, subject || null, type).first();
+
+  if (existing) {
+    await env.DB.prepare(
+      `UPDATE reports
+       SET domain      = ?,
+           email_date  = ?,
+           addin_score = ?,
+           ai_score    = ?,
+           esp         = ?,
+           html        = ?,
+           notes       = ?,
+           created_at  = CURRENT_TIMESTAMP
+       WHERE id = ?`
+    ).bind(
+      domain, emailDate || null,
+      addinScore ?? null, aiScore ?? null, esp || null,
+      html, notes || null,
+      existing.id
+    ).run();
+    return json({ ok: true, id: existing.id, updated: true });
+  }
+
+  const result = await env.DB.prepare(
+    `INSERT INTO reports (domain, sender, subject, email_date, addin_score, ai_score, esp, type, html, notes)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(
+    domain, sender || null, subject || null, emailDate || null,
+    addinScore ?? null, aiScore ?? null, esp || null,
+    type, html, notes || null
+  ).run();
+
+  return json({ ok: true, id: result.meta.last_row_id, updated: false });
+}
+
+async function handleList(payload, env) {
+  if (!env.DB) return json({ error: 'D1 not configured' }, 503);
+
+  const { results } = await env.DB.prepare(
+    `SELECT id, domain, sender, subject, email_date, addin_score, ai_score, esp, type, notes, created_at
+     FROM reports ORDER BY created_at DESC LIMIT 500`
+  ).all();
+
+  return json({ reports: results });
+}
+
+async function handleGet(payload, env) {
+  if (!env.DB) return json({ error: 'D1 not configured' }, 503);
+
+  const { id } = payload;
+  if (!id) return json({ error: 'id required' }, 400);
+
+  const row = await env.DB.prepare('SELECT html FROM reports WHERE id = ?').bind(id).first();
+  if (!row) return new Response('Not found', { status: 404, headers: CORS_HEADERS });
+
+  return new Response(row.html, {
+    status: 200,
+    headers: { ...CORS_HEADERS, 'Content-Type': 'text/html; charset=utf-8' },
+  });
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -668,15 +898,49 @@ function buildAdvicePrompt(headers, bodyText, subject, senderEmail, addinScore, 
     ? `\n=== SENDENDE IP ===\nIP       : ${sendingIp}\nHostname : ${ptrHost || '(nicht aufgelöst — kein PTR-Eintrag)'}\n`
     : '';
 
-  const ipNote = sendingIp
-    ? `WICHTIG zur IP: Die sendende IP ist ${sendingIp}${ptrHost ? ` (PTR: ${ptrHost})` : ' (kein PTR-Eintrag)'}. ` +
-      `Falls diese IP bereits eine dedizierte Versand-IP ist (erkennbar am Hostname oder typischen ESP-Mustern), ` +
-      `empfehle NICHT "eine dedizierte IP beschaffen" — das wäre redundant. ` +
-      `Fokussiere stattdessen auf IP-Reputationsverbesserung (Warmup-Strategie, Beschwerderate senken, Engagement verbessern).`
+  // Detect ESP from Feedback-ID or hostname patterns
+  const feedbackId   = (headers.match(/^Feedback-ID:\s*(.+)/im) || [])[1] || '';
+  const espName      = /sendinblue|brevo/i.test(feedbackId + ptrHost) ? 'Sendinblue/Brevo'
+                     : /mailchimp|mandrill/i.test(feedbackId + ptrHost) ? 'Mailchimp/Mandrill'
+                     : /mailjet/i.test(feedbackId + ptrHost) ? 'Mailjet'
+                     : /cleverreach/i.test(feedbackId + ptrHost) ? 'CleverReach'
+                     : null;
+
+  // Auth status for shared-IP guard
+  const authLine   = headers.match(/^Authentication-Results:(.+(?:\r?\n[ \t].+)*)/im)?.[1] || '';
+  const authOk     = /spf=pass/i.test(authLine) && /dkim=pass/i.test(authLine) && /dmarc=pass/i.test(authLine);
+  const bclM       = headers.match(/BCL:(\d+)/i);
+  const bclVal     = bclM ? parseInt(bclM[1], 10) : 0;
+
+  // Build a verified-facts / forbidden-recommendations block placed AFTER headers
+  // (recency effect: model reads this last and it overrides inferences from raw headers)
+  const verifiedFacts = [];
+  if (ptrHost)
+    verifiedFacts.push(`PTR/Reverse-DNS für ${sendingIp} ist bereits konfiguriert: "${ptrHost}" — PTR-Einrichtung NICHT empfehlen`);
+  if (espName)
+    verifiedFacts.push(`ESP erkannt: ${espName} — "dedizierte IP beschaffen" NICHT empfehlen wenn der Sender erst wächst; stattdessen Warmup-Strategie und Engagement empfehlen`);
+  if (authOk && bclVal < 4)
+    verifiedFacts.push(`SPF/DKIM/DMARC/compauth sind alle grün und BCL < 4 — Authentifizierungsgrundlagen sind vollständig korrekt konfiguriert; keine Basis-Auth-Empfehlungen die das ignorieren`);
+
+  // Build exclamation-mark interpretation guidance if the signal appears in the list
+  const exclSignal = (addinSignals || []).find(s => /ausrufezeichen/i.test(s));
+  const exclBlock = exclSignal
+    ? `\n=== AUSRUFEZEICHEN — INTERPRETATIONSHINWEISE ===
+Signal: "${exclSignal}"
+Kontext für die Empfehlung:
+- Density-Wert (pro 100 Wörter) ist das Primärsignal: B2B-E-Mails vertragen max. ~0.5/100, B2C-Newsletter bis ~1.5/100
+- 2+ Ausrufezeichen im Betreff: eigenständiges starkes Signal (Betreff ist das erste, was Filter und Empfänger bewerten)
+- Aufeinanderfolgende !! (doppelte Ausrufezeichen): aggressiv, zerstört Seriosität bei professionellen Empfängern
+- Empfehle spezifisch: Anzahl nennen, Kontext (B2B/B2C) explizit einschätzen, und den tatsächlichen Effekt erklären (nicht nur "vermeiden")
+`
+    : '';
+
+  const verifiedBlock = verifiedFacts.length
+    ? `\n=== VERIFIZIERTE FAKTEN — DIESE PUNKTE NICHT ERNEUT EMPFEHLEN ===\n${verifiedFacts.map(f => `✓ ${f}`).join('\n')}\n`
     : '';
 
   return `Analysiere diesen Spam-Bericht und erstelle priorisierte Empfehlungen für den ABSENDER.
-${ipNote ? '\n' + ipNote + '\n' : ''}
+
 === ANALYSE-ERGEBNIS ===
 Add-in Score : ${addinScore ?? '?'}/10
 Claude Score : ${aiScore}/10 — Verdict: ${aiVerdict}
@@ -696,5 +960,6 @@ ${aiSummary}
 ${headers.slice(0, 1500)}
 
 === BODY-TEXT (Auszug) ===
-${bodyText.slice(0, 800)}`;
+${bodyText.slice(0, 800)}
+${exclBlock}${verifiedBlock}`;
 }
