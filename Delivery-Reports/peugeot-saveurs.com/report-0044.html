@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spam Analysis Report #0044</title>
+  <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.5; background: #f1f5f9; color: #1e293b; }
+.page { max-width: 820px; margin: 0 auto; padding: 24px; }
+
+/* Header */
+.rpt-header { display: flex; justify-content: space-between; align-items: flex-start; background: linear-gradient(135deg, #1e3a5f 0%, #0f4c81 100%); color: white; border-radius: 12px 12px 0 0; padding: 24px 28px; }
+.rpt-header h1 { font-size: 20px; font-weight: 700; }
+.rpt-meta { margin-top: 4px; font-size: 11px; opacity: .7; }
+.rpt-header-badge { background: rgba(255,255,255,.15); border-radius: 20px; padding: 4px 14px; font-size: 11px; white-space: nowrap; margin-top: 4px; }
+
+/* Subject box */
+.rpt-subject-box { background: #fff; border: 1px solid #e2e8f0; border-top: none; padding: 16px 24px; margin-bottom: 16px; }
+.meta-table { width: 100%; border-collapse: collapse; }
+.meta-table th { text-align: left; font-weight: 600; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; width: 80px; padding: 3px 10px 3px 0; vertical-align: top; }
+.meta-table td { padding: 3px 0; font-size: 13px; word-break: break-word; }
+
+/* Metrics grid */
+.rpt-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.metric-card { background: #fff; border-radius: 10px; padding: 16px 20px; border-top: 4px solid var(--accent, #94a3b8); text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.metric-score { font-size: 38px; font-weight: 800; color: var(--accent, #1e293b); line-height: 1; }
+.metric-denom { font-size: 18px; font-weight: 400; color: #94a3b8; }
+.metric-label { font-size: 10px; text-transform: uppercase; color: #64748b; margin-top: 6px; letter-spacing: .05em; }
+.metric-verdict { font-size: 12px; font-weight: 600; margin-top: 4px; color: var(--accent, #1e293b); }
+
+/* Sections */
+.rpt-section { background: #fff; border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.rpt-section h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #1e3a5f; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 14px; }
+.rpt-section ul { padding-left: 20px; }
+.rpt-section li { margin-bottom: 4px; font-size: 13px; }
+.none { color: #94a3b8; font-style: italic; font-size: 13px; }
+.ai-summary, .advice-intro { background: #f8fafc; border-left: 3px solid #60a5fa; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 12px; color: #374151; font-size: 13px; }
+
+/* Auth badges */
+.rpt-auth-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.rpt-auth-badge { padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1px solid transparent; }
+.auth-pass     { background: #dcfce7; color: #166534; border-color: #86efac; }
+.auth-fail     { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+.auth-softfail { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+.auth-warn     { background: #fff7ed; color: #9a3412; border-color: #fdba74; }
+.auth-none     { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
+
+/* Findings */
+.finding { background: #fff; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; border-left: 4px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.finding.prio-hoch    { border-left-color: #dc2626; }
+.finding.prio-mittel  { border-left-color: #d97706; }
+.finding.prio-niedrig { border-left-color: #16a34a; }
+.finding-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.f-category { background: #eff6ff; color: #1d4ed8; border-radius: 20px; padding: 2px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.f-priority { border-radius: 20px; padding: 2px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.prio-hoch    .f-priority { background: #fee2e2; color: #991b1b; }
+.prio-mittel  .f-priority { background: #fef9c3; color: #854d0e; }
+.prio-niedrig .f-priority { background: #dcfce7; color: #166534; }
+.finding-title { font-weight: 700; font-size: 14px; margin-bottom: 10px; color: #0f172a; }
+.finding-ist-soll { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.finding-ist, .finding-soll { display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; padding: 4px 10px; font-size: 12px; }
+.finding-ist  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.finding-soll { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.f-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; opacity: .7; }
+.f-arrow { font-size: 16px; color: #94a3b8; }
+.finding-details { margin-bottom: 8px; }
+.det-ist  { font-size: 12px; color: #991b1b; margin-bottom: 3px; }
+.det-soll { font-size: 12px; color: #166534; margin-bottom: 3px; }
+.finding-action { font-size: 13px; color: #374151; line-height: 1.6; }
+.finding-callout { border-radius: 6px; padding: 10px 14px; margin-top: 12px; }
+.finding-callout strong { display: block; margin-bottom: 4px; font-size: 12px; }
+.finding-callout p { font-size: 12px; line-height: 1.5; margin: 0; }
+.co-ok   { background: #f0fdf4; border: 1px solid #86efac; color: #14532d; }
+.co-diag { background: #eff6ff; border: 1px solid #93c5fd; color: #1e3a8a; }
+.co-warn { background: #fff7ed; border: 1px solid #fdba74; color: #7c2d12; }
+
+/* Hidden-text section */
+.rpt-hidden-info { font-size: 12px; color: #64748b; margin-bottom: 12px; }
+.rpt-hidden-list { list-style: none; padding: 0; margin: 0; }
+.rpt-hidden-item { display: flex; gap: 10px; align-items: flex-start; background: #fef9c3; border-left: 3px solid #ca8a04; padding: 8px 12px; margin-bottom: 6px; border-radius: 0 6px 6px 0; }
+.rpt-hidden-num { color: #854d0e; font-weight: 700; font-size: 12px; flex-shrink: 0; min-width: 24px; }
+.rpt-hidden-code { font-family: 'Cascadia Code', 'Consolas', 'Menlo', monospace; font-size: 12px; color: #422006; word-break: break-word; white-space: pre-wrap; line-height: 1.5; }
+
+/* DNS table */
+.rpt-warn { color: #dc2626; font-size: 13px; }
+.rpt-dns-type { display: inline-block; font-size: 10px; font-weight: 700; background: #e0e7ff; color: #3730a3; border-radius: 3px; padding: 1px 5px; margin-right: 5px; vertical-align: middle; }
+.meta-table code { font-family: 'Cascadia Code','Consolas','Menlo',monospace; font-size: 12px; word-break: break-all; }
+
+/* Footer */
+.rpt-footer { text-align: center; color: #94a3b8; font-size: 11px; padding: 20px 0 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="rpt-header">
+    <div>
+      <h1>E-Mail Deliverability Report</h1>
+      <p class="rpt-meta">Report #0044 · Created: 5/8/2026, 10:36:08 PM</p>
+    </div>
+    <div class="rpt-header-badge">Spam Scorer v2.1.10</div>
+  </header>
+
+  <div class="rpt-subject-box">
+    <table class="meta-table">
+      <tr><th>Subject</th><td>Ihr Willkommensangebot läuft bald ab</td></tr>
+      <tr><th>Sender</th><td>Léa de Peugeot Saveurs &lt;lea@peugeot-saveurs.com&gt;</td></tr>
+      <tr><th>Date</th><td>Fri, 27 Mar 2026 14:05:56 +0000</td></tr>
+    </table>
+  </div>
+
+  <div class="rpt-metrics">
+    <div class="metric-card" style="--accent: #dc2626">
+      <div class="metric-score">6<span class="metric-denom">/10</span></div>
+      <div class="metric-label">Add-in Score</div>
+      <div class="metric-verdict">Suspicious</div>
+    </div>
+    <div class="metric-card" style="--accent: #16a34a">
+      <div class="metric-score">1<span class="metric-denom">/10</span></div>
+      <div class="metric-label">AI Score</div>
+      <div class="metric-verdict">ham · 92%</div>
+    </div>
+  </div>
+
+  <section class="rpt-section">
+    <h2>Infrastruktur</h2>
+    <table class="meta-table">
+      <tr><th>Sendende IP</th><td><code>170.203.18.92</code></td></tr>
+      <tr><th>PTR / Hostname</th><td class="rpt-warn">nicht aufgelöst</td></tr>
+    </table>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Authentication</h2>
+    <div class="rpt-auth-row"><span class="rpt-auth-badge auth-pass">SPF PASS</span><span class="rpt-auth-badge auth-pass">DKIM PASS</span><span class="rpt-auth-badge auth-pass">DMARC PASS</span><span class="rpt-auth-badge auth-pass">compauth PASS</span></div>
+  </section>
+
+  <section class="rpt-section">
+    <h2>DNS-Konfiguration</h2>
+    <table class="meta-table">
+      <tr><th>SPF</th><td><code>v=spf1 mx a:peugeot-saveurs.com a:IPB2C5.peugeot-saveurs.com ip4:185.113.50.143/32 ip4:185.113.50.144/32 ip4:185.113.50.<span style="color:#94a3b8">…</span></code></td></tr>
+      <tr><th>DMARC</th><td><code>v=DMARC1;p=reject;sp=reject;pct=100;rua=mailto:dmarc.reports@peugeot-saveurs.com;ruf=mailto:dmarc.reports@peugeot-saveur<span style="color:#94a3b8">…</span></code></td></tr>
+      <tr><th>DKIM <span style="font-weight:400;color:#64748b">mail</span></th><td><span class="rpt-dns-type">TXT</span> <code>k=rsa;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDeMVIzrCa3T14JsNY0IRv5/2V1/v2itlviLQBwXsa7shBD6TrBksws<span style="color:#94a3b8">…</span></code></td></tr><tr><th>DKIM <span style="font-weight:400;color:#64748b">selector1</span></th><td><span class="rpt-dns-type">TXT</span> <code>v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4qjaIZ1DsJSzwvoISccb96GXI/NNWGq4F93bjK<span style="color:#94a3b8">…</span></code></td></tr><tr><th>DKIM <span style="font-weight:400;color:#64748b">selector2</span></th><td><span class="rpt-dns-type">CNAME</span> <code>selector2-peugeotsaveurs-com01i._domainkey.azurepeugeotsaveurs.p-v1.dkim.mail.microsoft.</code></td></tr>
+    </table>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Add-in Spam Indicators</h2>
+    <ul><li>HELO-Domain abweichend (kl-203-18-92.kmta.shared.klaviyomail.com ≠ peugeot-saveurs.com) — trotz vollst. Auth</li><li>DKIM-Signatur-Domain abweichend (shared.klaviyomail.com ≠ peugeot-saveurs.com)</li><li>Mehrere DKIM-Signaturen aus verschiedenen Domains: shared.klaviyomail.com, kl.peugeot-saveurs.com</li><li>Generische Klick-Aufforderung</li><li>Künstliche Dringlichkeit</li><li>Hohe Link-Dichte (10 Links)</li><li>Zero-Width-Space-Obfuskation (150 unsichtbare Zeichen) — Spam-Filter-Umgehung</li></ul>
+  </section>
+
+  
+
+  <section class="rpt-section">
+    <h2>AI Analysis</h2>
+    <p class="ai-summary">Dies ist ein legitimes Marketing-E-Mail von Peugeot Saveurs mit vollständiger Authentifizierung (SPF, DKIM, DMARC) und professioneller Kampagnen-Infrastruktur. Das E-Mail enthält keine Phishing- oder Spam-Indikatoren und ist ein gewöhnliches Willkommens- und Verkaufsförderungs-Angebot.</p>
+    <ul><li>All authentication checks pass: SPF, DKIM, DMARC</li><li>Sender domain alignment confirmed (peugeot-saveurs.com)</li><li>Legitimate marketing email from Peugeot Saveurs</li><li>Uses Klaviyo email service (legitimate marketing platform)</li><li>Promotional content with discount code and clear unsubscribe option</li><li>No phishing indicators or suspicious patterns detected</li><li>Professional HTML formatting and branding</li><li>Valid tracking links from trusted Klaviyo domain</li><li>No encoding issues, merge tag problems, or URL shorteners</li><li>Clear business purpose (promotional/transactional)</li></ul>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Recommendations for the Sender</h2>
+    <p class="advice-intro">Die E-Mail weist vollständige Authentifizierung auf, wird jedoch durch manipulative Content-Praktiken (Zero-Width-Obfuskation, künstliche Dringlichkeit) und technische Inkonsistenzen (DKIM-Domain-Abweichung) geschwächt. Der Add-in-Score von 6/10 deutet auf Verbesserungspotenzial bei Content-Qualität und Absender-Reputation hin.</p>
+    <div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">Zero-Width-Space-Obfuskation entfernen</div>
+    
+    
+    <div class="finding-action">Entfernen Sie alle 150 unsichtbaren Zero-Width-Zeichen aus dem E-Mail-Template. Diese werden von modernen Spam-Filtern als Manipulationsversuch erkannt und verschlechtern massiv die Zustellbarkeit. Prüfen Sie Ihre Klaviyo-Templates und HTML-Quellcode auf solche versteckten Zeichen.</div>
+    
+  </div><div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">Link-Dichte reduzieren</div>
+    
+    
+    <div class="finding-action">Verringern Sie die Anzahl der Links von 10 auf maximal 3-5 primäre CTAs. Konsolidieren Sie mehrere gleichartige Links zu einem einzigen, prominenten Call-to-Action. Hohe Link-Dichte wird als aggressives Marketing gewertet.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Authentifizierung</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">DKIM-Domain-Alignment verbessern</div>
+    
+    
+    <div class="finding-action">Konfigurieren Sie Klaviyo so, dass ausschließlich mit 'kl.peugeot-saveurs.com' signiert wird, nicht mit 'shared.klaviyomail.com'. Die zweite Signatur mit der Shared-Domain reduziert das Vertrauen. Nutzen Sie eine Custom Sending Domain in Klaviyo für vollständiges Domain-Alignment.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">Dringlichkeitsformulierung authentischer gestalten</div>
+    
+    
+    <div class="finding-action">Ersetzen Sie die generische Dringlichkeit ('läuft bald ab') durch konkrete Informationen: 'Gültig bis [Datum]' oder 'Noch X Tage'. Vermeiden Sie manipulative Formulierungen, die als künstlicher Verkaufsdruck interpretiert werden.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Engagement</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">Willkommens-Sequenz personalisieren</div>
+    
+    
+    <div class="finding-action">Segmentieren Sie Ihre Willkommens-Serie nach Anmeldequelle oder Interessen. Versenden Sie solche Angebots-E-Mails nur an Empfänger, die erste Engagement-Signale (Öffnung, Klick) gezeigt haben, um Beschwerdequoten zu minimieren.</div>
+    
+  </div><div class="finding prio-niedrig">
+    <div class="finding-header">
+      <span class="f-category">Infrastruktur</span>
+      <span class="f-priority">niedrig</span>
+    </div>
+    <div class="finding-title">HELO-Domain-Diskrepanz dokumentieren</div>
+    
+    
+    <div class="finding-action">Die Abweichung zwischen HELO-Domain (kmta.shared.klaviyomail.com) und From-Domain ist bei Shared-Infrastruktur normal, aber dokumentieren Sie dies intern und prüfen Sie, ob Klaviyo eine Dedicated-IP-Option mit eigenem HELO anbietet.</div>
+    
+  </div><div class="finding prio-niedrig">
+    <div class="finding-header">
+      <span class="f-category">Listen-Hygiene</span>
+      <span class="f-priority">niedrig</span>
+    </div>
+    <div class="finding-title">Engagement-basierte Suppression implementieren</div>
+    
+    
+    <div class="finding-action">Erstellen Sie ein Suppression-Segment für Kontakte ohne Interaktion in den letzten 90 Tagen. Schließen Sie diese von Werbe-Kampagnen aus, um Spam-Beschwerden zu reduzieren und die Gesamt-Engagement-Rate zu verbessern.</div>
+    
+  </div>
+  </section>
+
+  <footer class="rpt-footer">
+    Generated by Spam Scorer v2.1.10 · 5/8/2026, 10:36:08 PM
+  </footer>
+
+</div>
+</body>
+</html>

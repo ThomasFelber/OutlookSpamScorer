@@ -1,0 +1,13 @@
+# Delivery report HTMLs are stored in D1 — no need to serve statically
+# Keep Delivery-Reports/index.html and Delivery-Reports/db.html (top-level only)
+Delivery-Reports/*/
+
+# Sample emails — internal only
+Samples/
+
+# Worker & build artefacts
+worker.js
+wrangler.toml
+bulk_import.py
+package.json
+.wrangler/

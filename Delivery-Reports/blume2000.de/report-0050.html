@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spam Analysis Report #0050</title>
+  <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.5; background: #f1f5f9; color: #1e293b; }
+.page { max-width: 820px; margin: 0 auto; padding: 24px; }
+
+/* Header */
+.rpt-header { display: flex; justify-content: space-between; align-items: flex-start; background: linear-gradient(135deg, #1e3a5f 0%, #0f4c81 100%); color: white; border-radius: 12px 12px 0 0; padding: 24px 28px; }
+.rpt-header h1 { font-size: 20px; font-weight: 700; }
+.rpt-meta { margin-top: 4px; font-size: 11px; opacity: .7; }
+.rpt-header-badge { background: rgba(255,255,255,.15); border-radius: 20px; padding: 4px 14px; font-size: 11px; white-space: nowrap; margin-top: 4px; }
+
+/* Subject box */
+.rpt-subject-box { background: #fff; border: 1px solid #e2e8f0; border-top: none; padding: 16px 24px; margin-bottom: 16px; }
+.meta-table { width: 100%; border-collapse: collapse; }
+.meta-table th { text-align: left; font-weight: 600; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; width: 80px; padding: 3px 10px 3px 0; vertical-align: top; }
+.meta-table td { padding: 3px 0; font-size: 13px; word-break: break-word; }
+
+/* Metrics grid */
+.rpt-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.metric-card { background: #fff; border-radius: 10px; padding: 16px 20px; border-top: 4px solid var(--accent, #94a3b8); text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.metric-score { font-size: 38px; font-weight: 800; color: var(--accent, #1e293b); line-height: 1; }
+.metric-denom { font-size: 18px; font-weight: 400; color: #94a3b8; }
+.metric-label { font-size: 10px; text-transform: uppercase; color: #64748b; margin-top: 6px; letter-spacing: .05em; }
+.metric-verdict { font-size: 12px; font-weight: 600; margin-top: 4px; color: var(--accent, #1e293b); }
+
+/* Sections */
+.rpt-section { background: #fff; border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.rpt-section h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #1e3a5f; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 14px; }
+.rpt-section ul { padding-left: 20px; }
+.rpt-section li { margin-bottom: 4px; font-size: 13px; }
+.none { color: #94a3b8; font-style: italic; font-size: 13px; }
+.ai-summary, .advice-intro { background: #f8fafc; border-left: 3px solid #60a5fa; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 12px; color: #374151; font-size: 13px; }
+
+/* Auth badges */
+.rpt-auth-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.rpt-auth-badge { padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1px solid transparent; }
+.auth-pass     { background: #dcfce7; color: #166534; border-color: #86efac; }
+.auth-fail     { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+.auth-softfail { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+.auth-warn     { background: #fff7ed; color: #9a3412; border-color: #fdba74; }
+.auth-none     { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
+
+/* Findings */
+.finding { background: #fff; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; border-left: 4px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.finding.prio-hoch    { border-left-color: #dc2626; }
+.finding.prio-mittel  { border-left-color: #d97706; }
+.finding.prio-niedrig { border-left-color: #16a34a; }
+.finding-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.f-category { background: #eff6ff; color: #1d4ed8; border-radius: 20px; padding: 2px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.f-priority { border-radius: 20px; padding: 2px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.prio-hoch    .f-priority { background: #fee2e2; color: #991b1b; }
+.prio-mittel  .f-priority { background: #fef9c3; color: #854d0e; }
+.prio-niedrig .f-priority { background: #dcfce7; color: #166534; }
+.finding-title { font-weight: 700; font-size: 14px; margin-bottom: 10px; color: #0f172a; }
+.finding-ist-soll { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.finding-ist, .finding-soll { display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; padding: 4px 10px; font-size: 12px; }
+.finding-ist  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.finding-soll { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.f-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; opacity: .7; }
+.f-arrow { font-size: 16px; color: #94a3b8; }
+.finding-details { margin-bottom: 8px; }
+.det-ist  { font-size: 12px; color: #991b1b; margin-bottom: 3px; }
+.det-soll { font-size: 12px; color: #166534; margin-bottom: 3px; }
+.finding-action { font-size: 13px; color: #374151; line-height: 1.6; }
+.finding-callout { border-radius: 6px; padding: 10px 14px; margin-top: 12px; }
+.finding-callout strong { display: block; margin-bottom: 4px; font-size: 12px; }
+.finding-callout p { font-size: 12px; line-height: 1.5; margin: 0; }
+.co-ok   { background: #f0fdf4; border: 1px solid #86efac; color: #14532d; }
+.co-diag { background: #eff6ff; border: 1px solid #93c5fd; color: #1e3a8a; }
+.co-warn { background: #fff7ed; border: 1px solid #fdba74; color: #7c2d12; }
+
+/* Hidden-text section */
+.rpt-hidden-info { font-size: 12px; color: #64748b; margin-bottom: 12px; }
+.rpt-hidden-list { list-style: none; padding: 0; margin: 0; }
+.rpt-hidden-item { display: flex; gap: 10px; align-items: flex-start; background: #fef9c3; border-left: 3px solid #ca8a04; padding: 8px 12px; margin-bottom: 6px; border-radius: 0 6px 6px 0; }
+.rpt-hidden-num { color: #854d0e; font-weight: 700; font-size: 12px; flex-shrink: 0; min-width: 24px; }
+.rpt-hidden-code { font-family: 'Cascadia Code', 'Consolas', 'Menlo', monospace; font-size: 12px; color: #422006; word-break: break-word; white-space: pre-wrap; line-height: 1.5; }
+
+/* DNS table */
+.rpt-warn { color: #dc2626; font-size: 13px; }
+.rpt-dns-type { display: inline-block; font-size: 10px; font-weight: 700; background: #e0e7ff; color: #3730a3; border-radius: 3px; padding: 1px 5px; margin-right: 5px; vertical-align: middle; }
+.meta-table code { font-family: 'Cascadia Code','Consolas','Menlo',monospace; font-size: 12px; word-break: break-all; }
+
+/* Footer */
+.rpt-footer { text-align: center; color: #94a3b8; font-size: 11px; padding: 20px 0 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="rpt-header">
+    <div>
+      <h1>E-Mail Deliverability Report</h1>
+      <p class="rpt-meta">Report #0050 · Created: 5/9/2026, 12:47:47 PM</p>
+    </div>
+    <div class="rpt-header-badge">Spam Scorer v2.1.10</div>
+  </header>
+
+  <div class="rpt-subject-box">
+    <table class="meta-table">
+      <tr><th>Subject</th><td>Dein Willkommensgeschenk🏵️</td></tr>
+      <tr><th>Sender</th><td>BLUME2000 &lt;newsletter@mailing.blume2000.de&gt;</td></tr>
+      <tr><th>Date</th><td>Sat, 9 May 2026 12:06:00 +0200</td></tr>
+    </table>
+  </div>
+
+  <div class="rpt-metrics">
+    <div class="metric-card" style="--accent: #16a34a">
+      <div class="metric-score">2<span class="metric-denom">/10</span></div>
+      <div class="metric-label">Add-in Score</div>
+      <div class="metric-verdict">Probably not spam</div>
+    </div>
+    <div class="metric-card" style="--accent: #16a34a">
+      <div class="metric-score">1<span class="metric-denom">/10</span></div>
+      <div class="metric-label">AI Score</div>
+      <div class="metric-verdict">ham · 92%</div>
+    </div>
+  </div>
+
+  <section class="rpt-section">
+    <h2>Infrastruktur</h2>
+    <table class="meta-table">
+      <tr><th>Sendende IP</th><td><code>91.211.241.26</code></td></tr>
+      <tr><th>PTR / Hostname</th><td class="rpt-warn">nicht aufgelöst</td></tr>
+    </table>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Authentication</h2>
+    <div class="rpt-auth-row"><span class="rpt-auth-badge auth-pass">SPF PASS</span><span class="rpt-auth-badge auth-pass">DKIM PASS</span><span class="rpt-auth-badge auth-pass">DMARC PASS</span><span class="rpt-auth-badge auth-pass">compauth PASS</span></div>
+  </section>
+
+  <section class="rpt-section">
+    <h2>DNS-Konfiguration</h2>
+    <table class="meta-table">
+      <tr><th>SPF</th><td><code>v=spf1 include:emarsys.net ~all</code></td></tr>
+      <tr><th>DMARC</th><td><code>v=DMARC1; p=reject; adkim=s; aspf=r; rf=afrf; pct=100;</code></td></tr>
+      <tr><th>DKIM <span style="font-weight:400;color:#64748b">key2</span></th><td><span class="rpt-dns-type">TXT</span> <code>v=DKIM1;k=rsa;p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCqFwlkVVM4irVCuSD/bs1ewUWLU/0c8qOdhw4/YXXZugQa<span style="color:#94a3b8">…</span></code></td></tr>
+    </table>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Add-in Spam Indicators</h2>
+    <ul><li>HELO-Domain abweichend (pmta41026.emsmtp.com ≠ mailing.blume2000.de) — trotz vollst. Auth</li><li>Mehrere DKIM-Signaturen aus verschiedenen Domains: mailing.blume2000.de, emarsys.net</li><li>Hohe Link-Dichte (30 Links)</li></ul>
+  </section>
+
+  
+
+  <section class="rpt-section">
+    <h2>AI Analysis</h2>
+    <p class="ai-summary">Dies ist eine legitime Welcome-E-Mail vom Blumenhändler BLUME2000 mit vollständiger Firmenkennzeichnung, gültigen Authentifizierungen (SPF, DKIM, DMARC) und klassischem Promotional-Angebot. Der HELO-Mismatch ist typisch für Email-Service-Provider und nicht besorgniserregend angesichts der starken Authentifizierungsergebnisse.</p>
+    <ul><li>SPF pass: sender IP 91.211.241.26 authorized for mailing.blume2000.de</li><li>DKIM pass: signatures verified for both mailing.blume2000.de and emarsys.net</li><li>DMARC pass: policy action=none</li><li>Compauth pass with reason=100</li><li>Legitimate company (BLUME2000 SE) with full legal details</li><li>Valid business address: Gutenbergring 53, D-22848 Norderstedt</li><li>Proper unsubscribe mechanism included</li><li>Contact details provided: service@blume2000.de, Tel. 040/226 363 27</li><li>Welcome email with promotional offer (15% discount code: 7D363AD6EAE9)</li><li>All links resolve to legitimate domain: link.mailing.blume2000.de</li><li>Links use standard email marketing parameter structure (Emarsys platform)</li><li>No URL shorteners, no suspicious redirects</li><li>No encoding issues or broken UTF-8</li><li>Personalized greeting (Hi Thomas) indicates opt-in subscriber</li><li>No SCL/BCL spam markers from Microsoft</li><li>HELO mismatch (pmta41026.emsmtp.com) is typical for ESPs and not suspicious given strong authentication</li></ul>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Recommendations for the Sender</h2>
+    <p class="advice-intro">Die E-Mail von BLUME2000 verfügt über korrekte Authentifizierung (SPF, DKIM, DMARC pass), wird jedoch durch technische Merkmale wie HELO-Mismatch und hohe Link-Dichte vom Add-in als spam-verdächtig eingestuft. Der niedrige Score (2/10) entsteht durch ESP-typische Infrastruktur-Signale, nicht durch tatsächliche Zustellbarkeitsprobleme.</p>
+    <div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Authentifizierung</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">DMARC-Policy von 'none' auf 'quarantine' verschärfen</div>
+    
+    
+    <div class="finding-action">Die aktuelle DMARC-Policy 'action=none' bietet keinen aktiven Schutz. Ändern Sie den DMARC-Record für mailing.blume2000.de schrittweise auf 'p=quarantine' (nach Monitoring-Phase) und langfristig auf 'p=reject', um Domain-Spoofing zu verhindern und das Vertrauen bei empfangenden Mailservern zu erhöhen.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Infrastruktur</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">HELO-Hostname mit Marken-Domain abstimmen</div>
+    
+    
+    <div class="finding-action">Konfigurieren Sie mit Ihrem ESP (Emarsys) einen HELO/EHLO-Hostnamen wie 'mta.mailing.blume2000.de' statt 'pmta41026.emsmtp.com'. Dies verbessert die Absender-Kohärenz und reduziert Spam-Filter-Triggers, selbst wenn die Authentifizierung korrekt ist.</div>
+    
+  </div><div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">Link-Dichte in Welcome-Mails reduzieren</div>
+    
+    
+    <div class="finding-action">Verringern Sie die Anzahl der Links von aktuell 30 auf maximal 10–15 primäre CTAs. Entfernen Sie redundante Navigation-Links und Social-Media-Icons aus Transaktions-/Welcome-Mails. Fokussieren Sie auf 2–3 Hauptaktionen (Gutschein einlösen, Shop besuchen, Profil vervollständigen).</div>
+    
+  </div><div class="finding prio-niedrig">
+    <div class="finding-header">
+      <span class="f-category">Infrastruktur</span>
+      <span class="f-priority">niedrig</span>
+    </div>
+    <div class="finding-title">Dedizierte Subdomain für Transaktions-Mails erwägen</div>
+    
+    
+    <div class="finding-action">Prüfen Sie die Trennung von Marketing-Mails (newsletter@mailing.blume2000.de) und kritischen Transaktions-Mails (z.B. welcome@mailing.blume2000.de) mit separaten IP-Pools, um die Reputation transaktionaler Kommunikation zu isolieren und zu schützen.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Engagement</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">Engagement-Tracking für neue Abonnenten implementieren</div>
+    
+    
+    <div class="finding-action">Implementieren Sie ein 30-Tage-Monitoring für Opt-in-Bestätigungen nach Welcome-Mails (Öffnungsrate, Klickrate auf Gutscheincode). Segmentieren Sie nicht-engagierte Empfänger nach 30 Tagen für Re-Engagement-Kampagnen oder Listenpflege, um Spam-Beschwerden zu minimieren.</div>
+    
+  </div><div class="finding prio-niedrig">
+    <div class="finding-header">
+      <span class="f-category">Authentifizierung</span>
+      <span class="f-priority">niedrig</span>
+    </div>
+    <div class="finding-title">BIMI-Record für visuelle Markenidentität einrichten</div>
+    
+    
+    <div class="finding-action">Nach Verschärfung der DMARC-Policy (p=quarantine/reject) implementieren Sie einen BIMI-Record (Brand Indicators for Message Identification), um das BLUME2000-Logo in unterstützten E-Mail-Clients anzuzeigen und die Markenwiedererkennung zu stärken.</div>
+    
+  </div><div class="finding prio-niedrig">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">niedrig</span>
+    </div>
+    <div class="finding-title">Emoji-Verwendung im Betreff A/B-testen</div>
+    
+    
+    <div class="finding-action">Testen Sie Betreffzeilen mit und ohne Emoji (🏵️) systematisch. Während Emojis die Öffnungsrate erhöhen können, bewerten manche Spam-Filter sie negativ. Messen Sie Zustellrate, Öffnungsrate und Spam-Complaints für beide Varianten über 2–4 Wochen.</div>
+    
+  </div>
+  </section>
+
+  <footer class="rpt-footer">
+    Generated by Spam Scorer v2.1.10 · 5/9/2026, 12:47:47 PM
+  </footer>
+
+</div>
+</body>
+</html>

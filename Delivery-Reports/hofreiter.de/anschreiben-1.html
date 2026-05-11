@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anschreiben – E-Mail-Zustellbarkeit · hofis.com</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 50px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            line-height: 1.6;
+            color: #333;
+        }
+        .recipient {
+            margin-bottom: 30px;
+            font-size: 14px;
+            color: #666;
+        }
+        .recipient a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        .recipient a:hover { text-decoration: underline; }
+        .date {
+            margin-bottom: 30px;
+            font-size: 14px;
+            color: #666;
+        }
+        .salutation {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        .highlight {
+            background-color: #fff8e1;
+            padding: 20px;
+            border-left: 4px solid #f59e0b;
+            margin: 20px 0;
+            font-size: 15px;
+        }
+        .rebrand-box {
+            background-color: #eff6ff;
+            padding: 18px 20px;
+            border-left: 4px solid #3b82f6;
+            margin: 20px 0;
+            font-size: 15px;
+        }
+        .options {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+        }
+        .option {
+            margin-bottom: 20px;
+        }
+        .option:last-child { margin-bottom: 0; }
+        .option-title {
+            font-weight: 600;
+            color: #0066cc;
+            margin-bottom: 8px;
+        }
+        .option-desc {
+            font-size: 15px;
+            color: #555;
+        }
+        .closing {
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        .signature {
+            margin-top: 30px;
+            font-size: 15px;
+        }
+        .contact {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .contact a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        .contact a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="recipient">
+            <a href="mailto:a.harnisch@hofreiter.de">a.harnisch@hofreiter.de</a>
+        </div>
+
+        <div class="date">
+            München, <span id="today"></span>
+        </div>
+
+        <div class="salutation">
+            Liebe Frau Harnisch,
+        </div>
+
+        <p>
+            ich habe eine Ihrer E-Mails analysiert — eine Bestätigungsmail über RapidMail, versendet unter der hofreiter.de-Domain — und möchte Ihnen eine ehrliche Rückmeldung geben, bevor hofis.com richtig durchstartet.
+        </p>
+
+        <div class="rebrand-box">
+            <strong>Zum richtigen Zeitpunkt:</strong> Ein Rebranding ist der beste Moment, um die technische Infrastruktur neu aufzusetzen — auf einem sauberen Fundament, das zum neuen Auftritt passt. Genau diesen Moment haben Sie gerade.
+        </div>
+
+        <p>
+            Das Problem: Die aktuelle Mail-Konfiguration schlägt bei DMARC fehl. Das bedeutet konkret, dass Ihre E-Mails — Bestätigungen, Gewinnspiel-Einladungen, Buchungsbestätigungen für den ErlebnisPark — von Outlook, Gmail und anderen als potenzielle Phishing-Mails eingestuft werden. Nicht als Spam, sondern als Identitätsbetrug.
+        </p>
+
+        <div class="highlight">
+            <strong>Was auf dem Spiel steht:</strong> Wer sich für den hofis-Newsletter anmeldet und eine Bestätigungsmail nie sieht (weil sie im Spam verschwunden ist), bestätigt nie — und ist damit als Kontakt verloren. Dasselbe gilt für Gewinnspiel-Teilnahmen, Buchungsbestätigungen und alle anderen transaktionalen Mails.
+        </div>
+
+        <p>
+            Die gute Nachricht: Das ist kein fundamentales Problem, sondern eine Konfigurationsfrage. RapidMail ist ein solider Dienst — er ist nur noch nicht korrekt mit Ihrer Domain verbunden. Konkret fehlen drei DNS-Einträge, damit DKIM-Alignment und ein korrekter Return-Path funktionieren. Danach besteht DMARC, und Ihre Mails landen im Posteingang.
+        </p>
+
+        <p>
+            Mit dem Wechsel auf hofis.com haben Sie die Chance, das von Anfang an richtig einzurichten — statt die alten Probleme in die neue Marke zu übertragen.
+        </p>
+
+        <p style="margin-top: 25px;">
+            <strong>Wie ich helfen kann:</strong>
+        </p>
+
+        <div class="options">
+            <div class="option">
+                <div class="option-title">(A) Komplettlösung – € 600,–</div>
+                <div class="option-desc">
+                    Ich analysiere Ihre gesamte E-Mail-Infrastruktur für hofreiter.de und hofis.com, identifiziere alle offenen Punkte und begleite Sie bei der Umsetzung — inklusive Abstimmung mit RapidMail. Am Ende sind Ihre Mails technisch einwandfrei und die neue Domain auf einem sauberen Stand. Zahlung bei Abschluss.
+                </div>
+            </div>
+
+            <div class="option">
+                <div class="option-title">(B) Analyse-Report – € 200,–</div>
+                <div class="option-desc">
+                    Ich erstelle einen vollständigen technischen Bericht mit allen identifizierten Problemen, priorisierten Handlungsschritten und konkreten DNS-Einträgen. Den Report können Sie selbst oder mit Ihrem IT-Dienstleister umsetzen. Einmalige Zahlung bei Übergabe.
+                </div>
+            </div>
+
+            <div class="option">
+                <div class="option-title">(C) Kurzes Gespräch – unverbindlich</div>
+                <div class="option-desc">
+                    Wir sprechen 20–30 Minuten: Sie schildern, wie der aktuelle Stand mit hofis.com ist, ich erkläre was ich gefunden habe — und wir schauen gemeinsam, ob und wie ich sinnvoll helfen kann. Ohne Verpflichtung.
+                </div>
+            </div>
+        </div>
+
+        <p>
+            Gerade zum Start einer neuen Marke ist es wichtig, dass der erste Eindruck stimmt — auch im Posteingang.
+        </p>
+
+        <div class="closing">
+            Für Rückfragen stehe ich gerne zur Verfügung.
+        </div>
+
+        <div class="signature">
+            Viele Grüße,<br>
+            <strong>Thomas Felber</strong>
+        </div>
+
+        <div class="contact">
+            E-Mail: <a href="mailto:felber@live.de">felber@live.de</a>
+        </div>
+    </div>
+
+    <script>
+        const d = new Date();
+        document.getElementById('today').textContent = d.toLocaleDateString('de-DE', {
+            day: 'numeric', month: 'long', year: 'numeric'
+        });
+    </script>
+</body>
+</html>

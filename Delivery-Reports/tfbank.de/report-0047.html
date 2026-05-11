@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spam Analysis Report #0047</title>
+  <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.5; background: #f1f5f9; color: #1e293b; }
+.page { max-width: 820px; margin: 0 auto; padding: 24px; }
+
+/* Header */
+.rpt-header { display: flex; justify-content: space-between; align-items: flex-start; background: linear-gradient(135deg, #1e3a5f 0%, #0f4c81 100%); color: white; border-radius: 12px 12px 0 0; padding: 24px 28px; }
+.rpt-header h1 { font-size: 20px; font-weight: 700; }
+.rpt-meta { margin-top: 4px; font-size: 11px; opacity: .7; }
+.rpt-header-badge { background: rgba(255,255,255,.15); border-radius: 20px; padding: 4px 14px; font-size: 11px; white-space: nowrap; margin-top: 4px; }
+
+/* Subject box */
+.rpt-subject-box { background: #fff; border: 1px solid #e2e8f0; border-top: none; padding: 16px 24px; margin-bottom: 16px; }
+.meta-table { width: 100%; border-collapse: collapse; }
+.meta-table th { text-align: left; font-weight: 600; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; width: 80px; padding: 3px 10px 3px 0; vertical-align: top; }
+.meta-table td { padding: 3px 0; font-size: 13px; word-break: break-word; }
+
+/* Metrics grid */
+.rpt-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.metric-card { background: #fff; border-radius: 10px; padding: 16px 20px; border-top: 4px solid var(--accent, #94a3b8); text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.metric-score { font-size: 38px; font-weight: 800; color: var(--accent, #1e293b); line-height: 1; }
+.metric-denom { font-size: 18px; font-weight: 400; color: #94a3b8; }
+.metric-label { font-size: 10px; text-transform: uppercase; color: #64748b; margin-top: 6px; letter-spacing: .05em; }
+.metric-verdict { font-size: 12px; font-weight: 600; margin-top: 4px; color: var(--accent, #1e293b); }
+
+/* Sections */
+.rpt-section { background: #fff; border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.rpt-section h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #1e3a5f; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 14px; }
+.rpt-section ul { padding-left: 20px; }
+.rpt-section li { margin-bottom: 4px; font-size: 13px; }
+.none { color: #94a3b8; font-style: italic; font-size: 13px; }
+.ai-summary, .advice-intro { background: #f8fafc; border-left: 3px solid #60a5fa; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 12px; color: #374151; font-size: 13px; }
+
+/* Auth badges */
+.rpt-auth-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.rpt-auth-badge { padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1px solid transparent; }
+.auth-pass     { background: #dcfce7; color: #166534; border-color: #86efac; }
+.auth-fail     { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+.auth-softfail { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+.auth-warn     { background: #fff7ed; color: #9a3412; border-color: #fdba74; }
+.auth-none     { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
+
+/* Findings */
+.finding { background: #fff; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; border-left: 4px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.finding.prio-hoch    { border-left-color: #dc2626; }
+.finding.prio-mittel  { border-left-color: #d97706; }
+.finding.prio-niedrig { border-left-color: #16a34a; }
+.finding-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.f-category { background: #eff6ff; color: #1d4ed8; border-radius: 20px; padding: 2px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.f-priority { border-radius: 20px; padding: 2px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.prio-hoch    .f-priority { background: #fee2e2; color: #991b1b; }
+.prio-mittel  .f-priority { background: #fef9c3; color: #854d0e; }
+.prio-niedrig .f-priority { background: #dcfce7; color: #166534; }
+.finding-title { font-weight: 700; font-size: 14px; margin-bottom: 10px; color: #0f172a; }
+.finding-ist-soll { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.finding-ist, .finding-soll { display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; padding: 4px 10px; font-size: 12px; }
+.finding-ist  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.finding-soll { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.f-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; opacity: .7; }
+.f-arrow { font-size: 16px; color: #94a3b8; }
+.finding-details { margin-bottom: 8px; }
+.det-ist  { font-size: 12px; color: #991b1b; margin-bottom: 3px; }
+.det-soll { font-size: 12px; color: #166534; margin-bottom: 3px; }
+.finding-action { font-size: 13px; color: #374151; line-height: 1.6; }
+.finding-callout { border-radius: 6px; padding: 10px 14px; margin-top: 12px; }
+.finding-callout strong { display: block; margin-bottom: 4px; font-size: 12px; }
+.finding-callout p { font-size: 12px; line-height: 1.5; margin: 0; }
+.co-ok   { background: #f0fdf4; border: 1px solid #86efac; color: #14532d; }
+.co-diag { background: #eff6ff; border: 1px solid #93c5fd; color: #1e3a8a; }
+.co-warn { background: #fff7ed; border: 1px solid #fdba74; color: #7c2d12; }
+
+/* Hidden-text section */
+.rpt-hidden-info { font-size: 12px; color: #64748b; margin-bottom: 12px; }
+.rpt-hidden-list { list-style: none; padding: 0; margin: 0; }
+.rpt-hidden-item { display: flex; gap: 10px; align-items: flex-start; background: #fef9c3; border-left: 3px solid #ca8a04; padding: 8px 12px; margin-bottom: 6px; border-radius: 0 6px 6px 0; }
+.rpt-hidden-num { color: #854d0e; font-weight: 700; font-size: 12px; flex-shrink: 0; min-width: 24px; }
+.rpt-hidden-code { font-family: 'Cascadia Code', 'Consolas', 'Menlo', monospace; font-size: 12px; color: #422006; word-break: break-word; white-space: pre-wrap; line-height: 1.5; }
+
+/* DNS table */
+.rpt-warn { color: #dc2626; font-size: 13px; }
+.rpt-dns-type { display: inline-block; font-size: 10px; font-weight: 700; background: #e0e7ff; color: #3730a3; border-radius: 3px; padding: 1px 5px; margin-right: 5px; vertical-align: middle; }
+.meta-table code { font-family: 'Cascadia Code','Consolas','Menlo',monospace; font-size: 12px; word-break: break-all; }
+
+/* Footer */
+.rpt-footer { text-align: center; color: #94a3b8; font-size: 11px; padding: 20px 0 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="rpt-header">
+    <div>
+      <h1>E-Mail Deliverability Report</h1>
+      <p class="rpt-meta">Report #0047 · Created: 5/8/2026, 10:45:43 PM</p>
+    </div>
+    <div class="rpt-header-badge">Spam Scorer v2.1.10</div>
+  </header>
+
+  <div class="rpt-subject-box">
+    <table class="meta-table">
+      <tr><th>Subject</th><td>1 % Cashback sichern bis zum 17.05.</td></tr>
+      <tr><th>Sender</th><td>TF Bank &lt;info@tfbank.de&gt;</td></tr>
+      <tr><th>Date</th><td>Fri, 8 May 2026 15:04:55 +0200</td></tr>
+    </table>
+  </div>
+
+  <div class="rpt-metrics">
+    <div class="metric-card" style="--accent: #d97706">
+      <div class="metric-score">3<span class="metric-denom">/10</span></div>
+      <div class="metric-label">Add-in Score</div>
+      <div class="metric-verdict">Slightly suspicious</div>
+    </div>
+    <div class="metric-card" style="--accent: #16a34a">
+      <div class="metric-score">2<span class="metric-denom">/10</span></div>
+      <div class="metric-label">AI Score</div>
+      <div class="metric-verdict">ham · 82%</div>
+    </div>
+  </div>
+
+  <section class="rpt-section">
+    <h2>Infrastruktur</h2>
+    <table class="meta-table">
+      <tr><th>Sendende IP</th><td><code>81.201.223.57</code></td></tr>
+      <tr><th>PTR / Hostname</th><td class="rpt-warn">nicht aufgelöst</td></tr>
+    </table>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Authentication</h2>
+    <div class="rpt-auth-row"><span class="rpt-auth-badge auth-pass">SPF PASS</span><span class="rpt-auth-badge auth-pass">DKIM PASS</span><span class="rpt-auth-badge auth-pass">DMARC PASS</span><span class="rpt-auth-badge auth-pass">compauth PASS</span></div>
+  </section>
+
+  <section class="rpt-section">
+    <h2>DNS-Konfiguration</h2>
+    <table class="meta-table">
+      <tr><th>SPF</th><td><code>v=spf1 ip4:195.160.171.121 include:spf.dixa.io include:spf.mailjet.com include:carmamail.com include:_spf.sndr.no includ<span style="color:#94a3b8">…</span></code></td></tr>
+      <tr><th>DMARC</th><td><code>v=DMARC1; p=quarantine; ruf=mailto:abuse@tfbank.de</code></td></tr>
+      <tr><th>DKIM <span style="font-weight:400;color:#64748b">dkim2048</span></th><td><span class="rpt-dns-type">TXT</span> <code>v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzWGGBpzaOp4gCZ9o1f8PU8LOAlis2eTWQPWNLL<span style="color:#94a3b8">…</span></code></td></tr><tr><th>DKIM <span style="font-weight:400;color:#64748b">selector1</span></th><td><span class="rpt-dns-type">TXT</span> <code>v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnV3cgQ+POp6LjzwAT0G1+P1AIwNsokhPnXS8UL<span style="color:#94a3b8">…</span></code></td></tr><tr><th>DKIM <span style="font-weight:400;color:#64748b">selector2</span></th><td><span class="rpt-dns-type">CNAME</span> <code>selector2-tfbank-de._domainkey.tfbank.onmicrosoft.com.</code></td></tr><tr><th>DKIM <span style="font-weight:400;color:#64748b">mailjet</span></th><td><span class="rpt-dns-type">TXT</span> <code>k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDhS5FfjUPoxQ7WXhoLhGMXTHFqXmwzauBQ3rA3wqYinGOW/ylEge9<span style="color:#94a3b8">…</span></code></td></tr>
+    </table>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Add-in Spam Indicators</h2>
+    <ul><li>Return-Path-Domain abweichend (customer-2372-a106.carmamail.com)</li><li>HELO-Domain abweichend (secos-m101-i57.carmamail.com ≠ tfbank.de) — trotz vollst. Auth</li><li>Finanzangebot-Spam (Kredit/Darlehen)</li><li>Hohe Link-Dichte (11 Links)</li></ul>
+  </section>
+
+  
+
+  <section class="rpt-section">
+    <h2>AI Analysis</h2>
+    <p class="ai-summary">Diese E-Mail ist ein legitimes Marketingmail der TF Bank mit vollständig authentifizierten Headern (DKIM, DMARC, SPF alle bestanden), korrektem Absender und typischen Bank-Compliance-Informationen. Die Verwendung von Carmamail als ESP und das HELO-Mismatch sind normale Indikatoren für Massen-E-Mail-Versand durch autorisierte Dienstleister.</p>
+    <ul><li>DKIM signature verified for tfbank.de</li><li>DMARC pass with action=none</li><li>SPF pass for sending IP 81.201.223.57</li><li>CompAuth pass with reason=100</li><li>Reply-To and From headers both align to tfbank.de</li><li>Return-Path uses carmamail.com (legitimate ESP for TF Bank)</li><li>HELO mismatch (carmamail.com vs tfbank.de) is typical for ESP-mediated mail</li><li>All links redirect through click.tfbank.de (legitimate tracking domain)</li><li>Promotional content consistent with legitimate bank marketing</li><li>German bank compliance details present (PAngV, regulatory information)</li><li>No URL shorteners, no suspicious encoding, no CAN-SPAM violations</li><li>No Microsoft spam verdicts triggered</li><li>Content matches typical TF Bank (Avarda) promotional emails</li></ul>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Recommendations for the Sender</h2>
+    <p class="advice-intro">Die E-Mail ist technisch korrekt authentifiziert (SPF/DKIM/DMARC bestanden), wird jedoch durch strukturelle Merkmale als potenzieller Spam eingestuft: hohe Link-Dichte, abweichende Return-Path-Domain und Finanzangebot-Charakteristika lösen Filtermechanismen aus. Verbesserungen sollten auf Content-Optimierung, Engagement-Signale und ESP-Konfiguration fokussieren.</p>
+    <div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">Link-Dichte drastisch reduzieren</div>
+    
+    
+    <div class="finding-action">Reduzieren Sie die 11 Links auf maximal 3–4 zentrale Call-to-Actions. Nutzen Sie einen primären CTA-Button für die Hauptaktion und beschränken Sie Footer-Links auf das gesetzlich Notwendige (Impressum, Abmeldung). Hohe Link-Dichte ist ein Hauptindikator für Spam-Filter.</div>
+    
+  </div><div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Infrastruktur</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">Return-Path auf Haupt-Domain alignieren</div>
+    
+    
+    <div class="finding-action">Konfigurieren Sie mit Carmamail einen Custom Return-Path auf einer tfbank.de-Subdomain (z.B. bounce.tfbank.de statt customer-2372-A106.carmamail.com). Dies verbessert Domain-Alignment und reduziert Mismatch-Warnungen, auch wenn DMARC bereits besteht.</div>
+    
+  </div><div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">Finanzangebot-Sprache entschärfen</div>
+    
+    
+    <div class="finding-action">Vermeiden Sie Spam-Trigger-Kombinationen wie '1% Cashback sichern' + Kreditlimit-Erwähnungen + PAngV im gleichen Mail. Splitten Sie Produktinformationen und regulatorische Details in separate Mailings oder platzieren Sie Finanzdetails hinter dem Hauptlink statt im E-Mail-Body.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Engagement</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">List-Hygiene und Segmentierung verschärfen</div>
+    
+    
+    <div class="finding-action">Senden Sie Cashback-Angebote nur an aktive Kartennutzer der letzten 60 Tage. Entfernen Sie Empfänger ohne Öffnung in den letzten 6 Monaten. Schlechtes Engagement (niedrige Open-Rate) verschlechtert die Absender-Reputation massiv.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Infrastruktur</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">Dedicated Sending-Domain für Promotions</div>
+    
+    
+    <div class="finding-action">Erwägen Sie mit Carmamail eine dedizierte Subdomain für Marketing-Mails (z.B. mail.tfbank.de mit eigenem DKIM-Selector), um transaktionale Mails (Kontoauszüge, TAN) von Promotion-Reputation zu trennen.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">Betreffzeile optimieren</div>
+    
+    
+    <div class="finding-action">Ersetzen Sie '1 % Cashback sichern bis zum 17.05.' durch weniger verkaufsorientierte Formulierung wie 'Ihre Cashback-Aktion läuft bald ab'. Zeitdruck + Prozentangabe + Imperativ ('sichern') triggern Spam-Filter.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Engagement</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">Preference-Center implementieren</div>
+    
+    
+    <div class="finding-action">Bieten Sie Empfängern eine Frequenz-Steuerung für Marketing-Mails an (z.B. wöchentlich/monatlich/nur Highlights). Dies reduziert Spam-Beschwerden und verbessert Engagement-Metriken.</div>
+    
+  </div><div class="finding prio-niedrig">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">niedrig</span>
+    </div>
+    <div class="finding-title">Text-Bild-Verhältnis optimieren</div>
+    
+    
+    <div class="finding-action">Falls das Mail bildlastig ist: Stellen Sie sicher, dass mindestens 60% des Inhalts reiner Text ist. Reine Bild-Mails ohne ausreichend Text werden häufiger gefiltert.</div>
+    
+  </div><div class="finding prio-niedrig">
+    <div class="finding-header">
+      <span class="f-category">Authentifizierung</span>
+      <span class="f-priority">niedrig</span>
+    </div>
+    <div class="finding-title">DMARC-Policy auf 'quarantine' verschärfen</div>
+    
+    
+    <div class="finding-action">Erhöhen Sie nach 3-monatiger Monitoring-Phase Ihre DMARC-Policy von 'none' auf 'quarantine' (p=quarantine). Dies signalisiert Mailbox-Providern höheres Vertrauen in Ihre Domain-Sicherheit und kann Reputation langfristig verbessern.</div>
+    
+  </div>
+  </section>
+
+  <footer class="rpt-footer">
+    Generated by Spam Scorer v2.1.10 · 5/8/2026, 10:45:43 PM
+  </footer>
+
+</div>
+</body>
+</html>

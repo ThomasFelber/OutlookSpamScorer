@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spam Analysis Report #0048</title>
+  <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.5; background: #f1f5f9; color: #1e293b; }
+.page { max-width: 820px; margin: 0 auto; padding: 24px; }
+
+/* Header */
+.rpt-header { display: flex; justify-content: space-between; align-items: flex-start; background: linear-gradient(135deg, #1e3a5f 0%, #0f4c81 100%); color: white; border-radius: 12px 12px 0 0; padding: 24px 28px; }
+.rpt-header h1 { font-size: 20px; font-weight: 700; }
+.rpt-meta { margin-top: 4px; font-size: 11px; opacity: .7; }
+.rpt-header-badge { background: rgba(255,255,255,.15); border-radius: 20px; padding: 4px 14px; font-size: 11px; white-space: nowrap; margin-top: 4px; }
+
+/* Subject box */
+.rpt-subject-box { background: #fff; border: 1px solid #e2e8f0; border-top: none; padding: 16px 24px; margin-bottom: 16px; }
+.meta-table { width: 100%; border-collapse: collapse; }
+.meta-table th { text-align: left; font-weight: 600; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; width: 80px; padding: 3px 10px 3px 0; vertical-align: top; }
+.meta-table td { padding: 3px 0; font-size: 13px; word-break: break-word; }
+
+/* Metrics grid */
+.rpt-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.metric-card { background: #fff; border-radius: 10px; padding: 16px 20px; border-top: 4px solid var(--accent, #94a3b8); text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.metric-score { font-size: 38px; font-weight: 800; color: var(--accent, #1e293b); line-height: 1; }
+.metric-denom { font-size: 18px; font-weight: 400; color: #94a3b8; }
+.metric-label { font-size: 10px; text-transform: uppercase; color: #64748b; margin-top: 6px; letter-spacing: .05em; }
+.metric-verdict { font-size: 12px; font-weight: 600; margin-top: 4px; color: var(--accent, #1e293b); }
+
+/* Sections */
+.rpt-section { background: #fff; border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.rpt-section h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #1e3a5f; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 14px; }
+.rpt-section ul { padding-left: 20px; }
+.rpt-section li { margin-bottom: 4px; font-size: 13px; }
+.none { color: #94a3b8; font-style: italic; font-size: 13px; }
+.ai-summary, .advice-intro { background: #f8fafc; border-left: 3px solid #60a5fa; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 12px; color: #374151; font-size: 13px; }
+
+/* Auth badges */
+.rpt-auth-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.rpt-auth-badge { padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1px solid transparent; }
+.auth-pass     { background: #dcfce7; color: #166534; border-color: #86efac; }
+.auth-fail     { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+.auth-softfail { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+.auth-warn     { background: #fff7ed; color: #9a3412; border-color: #fdba74; }
+.auth-none     { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
+
+/* Findings */
+.finding { background: #fff; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; border-left: 4px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.finding.prio-hoch    { border-left-color: #dc2626; }
+.finding.prio-mittel  { border-left-color: #d97706; }
+.finding.prio-niedrig { border-left-color: #16a34a; }
+.finding-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.f-category { background: #eff6ff; color: #1d4ed8; border-radius: 20px; padding: 2px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.f-priority { border-radius: 20px; padding: 2px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.prio-hoch    .f-priority { background: #fee2e2; color: #991b1b; }
+.prio-mittel  .f-priority { background: #fef9c3; color: #854d0e; }
+.prio-niedrig .f-priority { background: #dcfce7; color: #166534; }
+.finding-title { font-weight: 700; font-size: 14px; margin-bottom: 10px; color: #0f172a; }
+.finding-ist-soll { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.finding-ist, .finding-soll { display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; padding: 4px 10px; font-size: 12px; }
+.finding-ist  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.finding-soll { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.f-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; opacity: .7; }
+.f-arrow { font-size: 16px; color: #94a3b8; }
+.finding-details { margin-bottom: 8px; }
+.det-ist  { font-size: 12px; color: #991b1b; margin-bottom: 3px; }
+.det-soll { font-size: 12px; color: #166534; margin-bottom: 3px; }
+.finding-action { font-size: 13px; color: #374151; line-height: 1.6; }
+.finding-callout { border-radius: 6px; padding: 10px 14px; margin-top: 12px; }
+.finding-callout strong { display: block; margin-bottom: 4px; font-size: 12px; }
+.finding-callout p { font-size: 12px; line-height: 1.5; margin: 0; }
+.co-ok   { background: #f0fdf4; border: 1px solid #86efac; color: #14532d; }
+.co-diag { background: #eff6ff; border: 1px solid #93c5fd; color: #1e3a8a; }
+.co-warn { background: #fff7ed; border: 1px solid #fdba74; color: #7c2d12; }
+
+/* Hidden-text section */
+.rpt-hidden-info { font-size: 12px; color: #64748b; margin-bottom: 12px; }
+.rpt-hidden-list { list-style: none; padding: 0; margin: 0; }
+.rpt-hidden-item { display: flex; gap: 10px; align-items: flex-start; background: #fef9c3; border-left: 3px solid #ca8a04; padding: 8px 12px; margin-bottom: 6px; border-radius: 0 6px 6px 0; }
+.rpt-hidden-num { color: #854d0e; font-weight: 700; font-size: 12px; flex-shrink: 0; min-width: 24px; }
+.rpt-hidden-code { font-family: 'Cascadia Code', 'Consolas', 'Menlo', monospace; font-size: 12px; color: #422006; word-break: break-word; white-space: pre-wrap; line-height: 1.5; }
+
+/* DNS table */
+.rpt-warn { color: #dc2626; font-size: 13px; }
+.rpt-dns-type { display: inline-block; font-size: 10px; font-weight: 700; background: #e0e7ff; color: #3730a3; border-radius: 3px; padding: 1px 5px; margin-right: 5px; vertical-align: middle; }
+.meta-table code { font-family: 'Cascadia Code','Consolas','Menlo',monospace; font-size: 12px; word-break: break-all; }
+
+/* Footer */
+.rpt-footer { text-align: center; color: #94a3b8; font-size: 11px; padding: 20px 0 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="rpt-header">
+    <div>
+      <h1>E-Mail Deliverability Report</h1>
+      <p class="rpt-meta">Report #0048 · Created: 5/8/2026, 10:55:12 PM</p>
+    </div>
+    <div class="rpt-header-badge">Spam Scorer v2.1.10</div>
+  </header>
+
+  <div class="rpt-subject-box">
+    <table class="meta-table">
+      <tr><th>Subject</th><td>Letzte Chance: Erhalten Sie 10% Rabatt auf Ihre Asbest-Analyse</td></tr>
+      <tr><th>Sender</th><td>Lars von IVARIO &lt;noreply=ivario.com@c.havemy.email&gt;</td></tr>
+      <tr><th>Date</th><td>Tue, 28 Apr 2026 15:28:53 +0200</td></tr>
+    </table>
+  </div>
+
+  <div class="rpt-metrics">
+    <div class="metric-card" style="--accent: #dc2626">
+      <div class="metric-score">7<span class="metric-denom">/10</span></div>
+      <div class="metric-label">Add-in Score</div>
+      <div class="metric-verdict">Probably spam</div>
+    </div>
+    <div class="metric-card" style="--accent: #16a34a">
+      <div class="metric-score">2<span class="metric-denom">/10</span></div>
+      <div class="metric-label">AI Score</div>
+      <div class="metric-verdict">ham · 78%</div>
+    </div>
+  </div>
+
+  <section class="rpt-section">
+    <h2>Infrastruktur</h2>
+    <table class="meta-table">
+      <tr><th>Sendende IP</th><td><code>194.42.96.18</code></td></tr>
+      <tr><th>PTR / Hostname</th><td class="rpt-warn">nicht aufgelöst</td></tr>
+    </table>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Authentication</h2>
+    <div class="rpt-auth-row"><span class="rpt-auth-badge auth-pass">SPF PASS</span><span class="rpt-auth-badge auth-pass">DKIM PASS</span><span class="rpt-auth-badge auth-pass">DMARC PASS</span><span class="rpt-auth-badge auth-pass">compauth PASS</span></div>
+  </section>
+
+  <section class="rpt-section">
+    <h2>DNS-Konfiguration</h2>
+    <table class="meta-table">
+      <tr><th>SPF</th><td class="rpt-warn">kein Eintrag gefunden</td></tr>
+      <tr><th>DMARC</th><td><code>v=DMARC1; p=quarantine; sp=quarantine; pct=100; aspf=r; adkim=s;</code></td></tr>
+      <tr><th>DKIM <span style="font-weight:400;color:#64748b">mail</span></th><td><span class="rpt-dns-type">TXT</span> <code>v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChAJ81XPjt2J32Pe4zJ3OlybuYDT5fiG7PQWIEqeUtrr<span style="color:#94a3b8">…</span></code></td></tr>
+    </table>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Add-in Spam Indicators</h2>
+    <ul><li>Reply-To-Domain abweichend (ivario.com ≠ c.havemy.email)</li><li>Return-Path-Domain abweichend (bounce-eu2.crsend.com)</li><li>HELO-Domain abweichend (mx009.eu-mx.crsend.com ≠ c.havemy.email) — trotz vollst. Auth</li><li>DKIM-Signatur-Domain abweichend (crsend.com ≠ c.havemy.email)</li><li>Mehrere DKIM-Signaturen aus verschiedenen Domains: crsend.com, c.havemy.email</li><li>4 Ausrufezeichen</li><li>Hohe Link-Dichte (17 Links)</li><li>Zero-Width-Space-Obfuskation (43 unsichtbare Zeichen) — Spam-Filter-Umgehung</li></ul>
+  </section>
+
+  
+
+  <section class="rpt-section">
+    <h2>AI Analysis</h2>
+    <p class="ai-summary">Dies ist ein legitimes Marketing-E-Mail eines etablierten deutschen Unternehmens (IVARIO) für Asbestanalysen. Trotz Domain-Alignment-Problemen (typisch bei ESP-Nutzung) bestehen alle Authentifizierungsprüfungen, es sind korrekte Geschäftsdaten vorhanden und die CAN-SPAM-Compliance ist erfüllt.</p>
+    <ul><li>Legitimate business email from IVARIO (asbestos testing service)</li><li>All authentication checks passed: SPF, DKIM, DMARC</li><li>CleverReach (professional ESP) infrastructure used legitimately</li><li>Proper CAN-SPAM compliance: unsubscribe link, company contact details, German impressum info</li><li>Domain alignment issues (Return-Path/DKIM mismatch) typical of legitimate ESP usage with custom domains</li><li>HELO mismatch expected when third-party ESP sends on behalf of client</li><li>Real company details provided: IVARIO Dienstleistungen GmbH, Hamburg address, support email</li><li>Professional promotional content with clear offer (10% discount code SAFETY10, deadline 08.05.2026)</li><li>No malicious indicators: no URL shorteners, no broken encoding, no suspicious patterns</li></ul>
+  </section>
+
+  <section class="rpt-section">
+    <h2>Recommendations for the Sender</h2>
+    <p class="advice-intro">Die E-Mail ist legitim, aber technische ESP-Konfiguration und aggressive Content-Taktiken führen zu schlechter Reputation. Zero-Width-Obfuskation (43 unsichtbare Zeichen) wird als Spam-Filter-Umgehung erkannt. Hohe Link-Dichte, mehrere Ausrufezeichen und Domain-Alignment-Probleme trotz korrekter Authentifizierung beeinträchtigen die Zustellbarkeit erheblich.</p>
+    <div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">Zero-Width-Space-Obfuskation sofort entfernen</div>
+    
+    
+    <div class="finding-action">Entfernen Sie alle 43 unsichtbaren Zero-Width-Zeichen aus dem E-Mail-Template. Diese werden von modernen Spam-Filtern als bewusste Manipulationstechnik erkannt und führen zu automatischer Spam-Klassifizierung. Prüfen Sie Ihr CleverReach-Template auf versteckte Unicode-Zeichen (U+200B, U+FEFF).</div>
+    
+  </div><div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">Link-Dichte drastisch reduzieren</div>
+    
+    
+    <div class="finding-action">Reduzieren Sie die 17 Links auf maximal 5-7 relevante CTAs. Konsolidieren Sie mehrere Links zum gleichen Ziel (z.B. 'Jetzt shoppen', 'Zum Sale', 'Jetzt Rabatt sichern' sollten ein einziger prominenter CTA sein). Entfernen Sie redundante Social-Media-Icons im Footer.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">Dringlichkeits-Rhetorik moderieren</div>
+    
+    
+    <div class="finding-action">Ersetzen Sie 'Letzte Chance!' und die 4 Ausrufezeichen durch sachlichere Formulierungen wie 'Befristetes Angebot bis 08.05.2026'. Aggressive Urgency-Marker werden als Spam-Taktik gewertet und senken die Reputation.</div>
+    
+  </div><div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Authentifizierung</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">DKIM-Alignment mit ivario.com herstellen</div>
+    
+    
+    <div class="finding-action">Konfigurieren Sie CleverReach so, dass die primäre DKIM-Signatur von 'ivario.com' statt 'crsend.com' stammt. Fügen Sie in Ihrer ivario.com DNS-Zone einen DKIM-Record für CleverReach hinzu (Selector z.B. 'cr._domainkey.ivario.com'). Dies verbessert Domain-Alignment und Absender-Reputation erheblich.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Authentifizierung</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">Custom Return-Path unter ivario.com einrichten</div>
+    
+    
+    <div class="finding-action">Nutzen Sie CleverReach Custom Bounce Domain Feature: Erstellen Sie einen Subdomain-CNAME 'bounce.ivario.com' der auf CleverReach-Infrastruktur zeigt. Dadurch wird Return-Path von 'bounce-eu2.crsend.com' zu 'bounce.ivario.com', was Domain-Alignment verbessert und Vertrauen erhöht.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Infrastruktur</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">Reply-To auf offizielle ivario.com-Adresse setzen</div>
+    
+    
+    <div class="finding-action">Ändern Sie Reply-To von 'noreply@ivario.com' auf eine überwachte Adresse wie 'marketing@ivario.com' oder 'kundenservice@ivario.com'. NoReply-Adressen signalisieren mangelnde Dialogbereitschaft und werden von Engagement-basierten Filtern negativ bewertet.</div>
+    
+  </div><div class="finding prio-hoch">
+    <div class="finding-header">
+      <span class="f-category">Engagement</span>
+      <span class="f-priority">hoch</span>
+    </div>
+    <div class="finding-title">List-Segmentierung nach Engagement implementieren</div>
+    
+    
+    <div class="finding-action">Segmentieren Sie Ihre Liste in CleverReach nach Öffnungs-/Klickverhalten der letzten 90 Tage. Versenden Sie Rabatt-Kampagnen nur an aktive Segmente. Inaktive Empfänger (&gt;180 Tage keine Interaktion) in Re-Engagement-Flow verschieben oder supprimieren, um Spam-Complaint-Rate zu senken.</div>
+    
+  </div><div class="finding prio-mittel">
+    <div class="finding-header">
+      <span class="f-category">Listen-Hygiene</span>
+      <span class="f-priority">mittel</span>
+    </div>
+    <div class="finding-title">Bounce-Management intensivieren</div>
+    
+    
+    <div class="finding-action">Aktivieren Sie in CleverReach automatische Hard-Bounce-Entfernung nach 1. Versuch und Soft-Bounce-Suppression nach 3 Versuchen. Prüfen Sie monatlich Complaint-Rate (&lt;0,1% Ziel) und entfernen Sie Domains mit strukturell hohen Complaint-Raten.</div>
+    
+  </div><div class="finding prio-niedrig">
+    <div class="finding-header">
+      <span class="f-category">Inhalt</span>
+      <span class="f-priority">niedrig</span>
+    </div>
+    <div class="finding-title">Text-zu-Bild-Verhältnis optimieren</div>
+    
+    
+    <div class="finding-action">Stellen Sie sicher, dass mindestens 60% des E-Mail-Contents als Text (nicht Bild) vorliegt. Fügen Sie mehr Text-Content zwischen Produktangeboten ein, z.B. Kundenbewertungen oder kurze Gesundheits-Tipps zu Asbest-Sanierung. Reine Bild-basierte E-Mails werden strenger gefiltert.</div>
+    
+  </div><div class="finding prio-niedrig">
+    <div class="finding-header">
+      <span class="f-category">Engagement</span>
+      <span class="f-priority">niedrig</span>
+    </div>
+    <div class="finding-title">Preference Center prominent platzieren</div>
+    
+    
+    <div class="finding-action">Fügen Sie neben dem Abmelde-Link einen 'E-Mail-Einstellungen verwalten'-Link ein, der zu einem Preference Center führt (Frequenz, Themenbereiche). Dies reduziert Spam-Beschwerden, da Empfänger Optionen haben bevor sie auf 'Spam melden' klicken.</div>
+    
+  </div>
+  </section>
+
+  <footer class="rpt-footer">
+    Generated by Spam Scorer v2.1.10 · 5/8/2026, 10:55:12 PM
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deliverability Action Plan — kaiser-immobilien.de</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: #1a1a1a; background: #f4f6f9; line-height: 1.6; }
+  .page { max-width: 1100px; margin: 0 auto; background: #fff; padding: 0 0 40px 0; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  header { background: linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%); color: #fff; padding: 32px 40px 24px; }
+  header h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.3px; }
+  header .meta { margin-top: 10px; font-size: 12px; opacity: 0.85; display: flex; flex-wrap: wrap; gap: 18px; }
+  header .meta span { display: flex; align-items: center; gap: 5px; }
+  header .score-row { display: flex; gap: 16px; margin-top: 14px; flex-wrap: wrap; }
+  .score-badge { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 600; }
+  .score-badge.low { background: rgba(220,53,69,0.3); border-color: rgba(220,53,69,0.6); }
+  .score-badge.ok { background: rgba(40,167,69,0.3); border-color: rgba(40,167,69,0.6); }
+  .content { padding: 0 40px; }
+  h2 { font-size: 16px; font-weight: 700; color: #1a3a5c; margin: 32px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #2d6a9f; text-transform: uppercase; letter-spacing: 0.5px; }
+  h3 { font-size: 14px; font-weight: 700; color: #2d6a9f; margin: 18px 0 6px; }
+  p { margin-bottom: 10px; }
+  ul { margin: 8px 0 10px 18px; }
+  ul li { margin-bottom: 5px; }
+  .callout { border-left: 4px solid #2d6a9f; background: #eef4fb; padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 10px 0; font-size: 13px; }
+  .callout.warn { border-color: #e67e22; background: #fef6ec; }
+  .callout.danger { border-color: #dc3545; background: #fdf0f1; }
+  .callout.ok { border-color: #28a745; background: #edfaf0; }
+  .callout.info { border-color: #6c757d; background: #f8f9fa; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0; }
+  th { background: #1a3a5c; color: #fff; padding: 9px 12px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e0e6ed; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7f9fb; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+  .badge.hoch { background: #dc3545; color: #fff; }
+  .badge.mittel { background: #e67e22; color: #fff; }
+  .badge.niedrig { background: #28a745; color: #fff; }
+  .badge.pass { background: #28a745; color: #fff; }
+  .badge.fail { background: #dc3545; color: #fff; }
+  .badge.warn2 { background: #e67e22; color: #fff; }
+  .badge.info { background: #6c757d; color: #fff; }
+  .badge.komplex-high { background: #6f42c1; color: #fff; }
+  .badge.komplex-mid { background: #fd7e14; color: #fff; }
+  .badge.komplex-low { background: #20c997; color: #fff; }
+  code { font-family: 'Courier New', monospace; font-size: 12px; background: #f0f3f7; padding: 1px 5px; border-radius: 3px; color: #c0392b; }
+  pre { font-family: 'Courier New', monospace; font-size: 12px; background: #1e2a38; color: #a8d8ea; padding: 14px 16px; border-radius: 6px; overflow-x: auto; margin: 10px 0; line-height: 1.5; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 10px 0; }
+  .card { border: 1px solid #dce3ec; border-radius: 8px; padding: 14px 16px; }
+  .card h4 { font-size: 13px; font-weight: 700; color: #1a3a5c; margin-bottom: 8px; }
+  .impact-high { color: #dc3545; font-weight: 700; }
+  .impact-mid { color: #e67e22; font-weight: 700; }
+  .impact-low { color: #28a745; font-weight: 700; }
+  footer { margin-top: 40px; border-top: 1px solid #dce3ec; padding: 16px 40px; font-size: 11px; color: #888; }
+  @media (max-width: 700px) {
+    .content, header { padding-left: 16px; padding-right: 16px; }
+    .two-col { grid-template-columns: 1fr; }
+    table { font-size: 11px; }
+    th, td { padding: 6px 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <h1>E-Mail Deliverability Action Plan — Technischer Infrastrukturbericht</h1>
+  <div class="meta">
+    <span>📧 <strong>Absender:</strong> verwaltung@kaiser-immobilien.de</span>
+    <span>📌 <strong>Betreff:</strong> Einladung für unsere Kundenapp</span>
+    <span>📅 <strong>Analysedatum:</strong> 07. Mai 2026</span>
+    <span>🖥 <strong>Versandinfrastruktur:</strong> Microsoft 365 / Exchange Online Protection</span>
+  </div>
+  <div class="score-row">
+    <div class="score-badge low">Add-in Score: 2 / 10</div>
+    <div class="score-badge ok">AI Score: 1 / 10 — Verdikt: Ham</div>
+    <div class="score-badge ok">SPF: PASS</div>
+    <div class="score-badge ok">DKIM: PASS (Alignment: SCHWACH)</div>
+    <div class="score-badge ok">DMARC: PASS (p=reject)</div>
+    <div class="score-badge ok">CompAuth: PASS (reason=100)</div>
+  </div>
+</header>
+
+<div class="content">
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2>1. Executive Summary</h2>
+<p>Die analysierte E-Mail der Kaiser Immobilien GmbH ist eine legitime transaktionale Kundenkommunikation, die alle wesentlichen Authentifizierungsprüfungen (SPF, DKIM, DMARC, ARC, CompAuth) erfolgreich besteht. Der auffällig niedrige Add-in-Score von 2/10 ist ausschließlich auf heuristische Diskrepanzen bei der DKIM-Signaturdomäne (<code>kaiserimmo.onmicrosoft.com</code> statt <code>kaiser-immobilien.de</code>) und dem HELO-Hostnamen (<code>PA4PR04CU001.outbound.protection.outlook.com</code>) zurückzuführen — beides typische Artefakte einer nicht vollständig konfigurierten Microsoft-365-Mandantendomäne.</p>
+<p>Der AI-Classifier stuft die Nachricht korrekt als Ham (1/10 Spam-Wahrscheinlichkeit) ein, was die technische Rechtmäßigkeit bestätigt. Dennoch bestehen drei praxisrelevante Optimierungslücken: fehlendes DKIM-Alignment auf Unternehmensebene, Content-Qualitätsmängel (Tippfehler, fehlerhafte Anrede, abgeschnittener Text, Klartextpasswort in E-Mail) sowie langfristig fehlende Reputation durch Custom-SMTP-HELO-Konfiguration. Diese Maßnahmen sind essenziell, um zukünftige Filterprobleme bei strengeren Empfänger-Policies sowie Reputationsverluste zu verhindern.</p>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2>2. Critical Findings</h2>
+
+<div class="callout danger">
+  <strong>🔴 KRITISCH — Klartextpasswort im E-Mail-Body:</strong> Das initiale App-Passwort (<code>dfc5b5a3</code>) wird unverschlüsselt im E-Mail-Body übertragen. Dies verstößt gegen grundlegende Sicherheitsprinzipien (OWASP, BSI IT-Grundschutz) und kann zur Kontoübernahme führen. Sofortige Umstellung auf Einmallinks (Magic Links) oder erzwungenes Passwort-Reset bei Erstanmeldung erforderlich.
+</div>
+
+<div class="callout warn">
+  <strong>🟠 HOCH — DKIM-Domain-Misalignment:</strong> Die DKIM-Signatur verwendet <code>kaiserimmo.onmicrosoft.com</code> (Microsoft-Standard-Tenant-Domain) anstelle von <code>kaiser-immobilien.de</code>. Obwohl DMARC durch SPF-Alignment besteht, bewerten viele Spam-Filter (inkl. des eingesetzten Add-ins) dies als Vertrauensindikator negativ. Lösung: Custom DKIM in Microsoft 365 für <code>kaiser-immobilien.de</code> aktivieren.
+</div>
+
+<div class="callout warn">
+  <strong>🟠 HOCH — Fehlerhafte Anrede & Tippfehler im Content:</strong> <code>Sehr geehrte (r) Thomas Felber</code> deutet auf einen nicht aufgelösten Merge-Tag hin. <code>effzientere</code> statt <code>effizientere</code> ist ein typischer Qualitätsmangel, den ML-basierte Filter als Spam-Signal werten.
+</div>
+
+<div class="callout warn">
+  <strong>🟠 MITTEL — HELO-Hostname nicht unternehmenseigen:</strong> Der HELO-Name <code>PA4PR04CU001.outbound.protection.outlook.com</code> enthält keinen Hinweis auf <code>kaiser-immobilien.de</code>. Bei heuristischen Filtern reduziert dies den Domain-Reputationswert.
+</div>
+
+<div class="callout info">
+  <strong>🔵 NIEDRIG — Abgeschnittener E-Mail-Body:</strong> Der analysierte Body endet mit <code>Kaiser Immobilien GmbH &amp;</code> — dies deutet auf ein Rendering- oder Truncation-Problem in der Versandlösung hin, das bei bestimmten Clients zu unvollständiger Darstellung führen kann.
+</div>
+
+<div class="callout info">
+  <strong>🔵 NIEDRIG — Kein dedizierter CTA-Button:</strong> App-Store-Links werden als Textlinks eingebunden, kein prominenter HTML-Button vorhanden. Dies reduziert Engagement-Metriken, welche wiederum indirekte Reputationsauswirkungen haben.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2>3. Authentication Analysis</h2>
+
+<div class="two-col">
+  <div class="card">
+    <h4>SPF — Sender Policy Framework</h4>
+    <p><span class="badge pass">PASS</span></p>
+    <ul>
+      <li><strong>Sender-IP:</strong> <code>40.107.162.123</code> (Microsoft EOP Outbound Pool)</li>
+      <li><strong>Envelope-From (MAIL FROM):</strong> <code>kaiser-immobilien.de</code></li>
+      <li><strong>Ergebnis:</strong> IP ist in SPF-Record von <code>kaiser-immobilien.de</code> als permitted designiert</li>
+      <li><strong>Lookup-Chain:</strong> Enthält vermutlich <code>include:spf.protection.outlook.com</code> — Standard M365-Konfiguration</li>
+      <li><strong>Risiko:</strong> Keines. SPF ist korrekt und vollständig konfiguriert.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>DKIM — DomainKeys Identified Mail</h4>
+    <p><span class="badge warn2">PASS (Alignment: SCHWACH)</span></p>
+    <ul>
+      <li><strong>Signing Domain:</strong> <code>kaiserimmo.onmicrosoft.com</code></li>
+      <li><strong>Header-From Domain:</strong> <code>kaiser-immobilien.de</code></li>
+      <li><strong>DKIM Strict Alignment:</strong> FAIL (unterschiedliche Domains)</li>
+      <li><strong>DKIM Relaxed Alignment:</strong> FAIL (keine Subdomain-Beziehung)</li>
+      <li><strong>DMARC-Alignment via DKIM:</strong> FAIL — DMARC besteht nur durch SPF-Alignment</li>
+      <li><strong>Risiko:</strong> Falls SPF je bricht (z.B. Forwarding), fällt DMARC komplett durch. Kein Redundanzschutz.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>DMARC</h4>
+    <p><span class="badge pass">PASS</span></p>
+    <ul>
+      <li><strong>Policy:</strong> <code>p=reject; sp=reject; pct=100</code></li>
+      <li><strong>Alignment-Quelle:</strong> SPF (nicht DKIM)</li>
+      <li><strong>Action:</strong> <code>none</code> (da pass)</li>
+      <li><strong>Bewertung:</strong> Korrekt konfiguriert mit maximaler Policy. Positiv: reject-Policy signalisiert Empfängern hohe Selbstkontrolle über die Domain.</li>
+      <li><strong>Empfehlung:</strong> DMARC-RUA/RUF-Reporting-Adressen prüfen und auswerten.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>ARC — Authenticated Received Chain</h4>
+    <p><span class="badge pass">PASS (i=2)</span></p>
+    <ul>
+      <li><strong>ARC-Seal:</strong> <code>cv=pass</code>, signiert von <code>microsoft.com</code></li>
+      <li><strong>ARC-Instanz:</strong> i=2 — E-Mail durchlief zwei ARC-fähige Hops</li>
+      <li><strong>Bedeutung:</strong> Bei Weiterleitungen bleibt die ursprüngliche Authentifizierungs-Chain erhalten. Kein Problem erkannt.</li>
+      <li><strong>ODA/LTDI:</strong> <code>oda=1, ltdi=1</code> — Microsoft interne Vertrauenssignale positiv</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>CompAuth — Composite Authentication</h4>
+    <p><span class="badge pass">PASS (reason=100)</span></p>
+    <ul>
+      <li><strong>Reason Code 100:</strong> Explizite SPF + DKIM-Pass-Kombination; höchster Composite-Auth-Score bei Microsoft EOP</li>
+      <li><strong>Implikation:</strong> Unter Microsoft 365-Empfangs-Infrastruktur keine Junk-Filterprobleme zu erwarten, solange Score=100 gilt</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>Return-Path vs. Envelope Sender</h4>
+    <p><span class="badge pass">KONSISTENT</span></p>
+    <ul>
+      <li><strong>MAIL FROM:</strong> <code>kaiser-immobilien.de</code></li>
+      <li><strong>Header-From:</strong> <code>verwaltung@kaiser-immobilien.de</code></li>
+      <li><strong>Alignment:</strong> Vollständig konsistent — kein Spoofing-Signal</li>
+      <li><strong>Bounce-Handling:</strong> Sichergestellt, da Return-Path und Envelope-From auf kontrollierter Domain liegen</li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout warn">
+  <strong>Kernerkenntnis Authentication:</strong> Das System basiert auf einem "Single Point of Failure" — DMARC besteht ausschließlich über SPF. Jeder Weiterleitungsfall (z.B. Gmail → Hotmail Forwarding, Mailinglisten) zerstört SPF und führt zu DMARC-FAIL. DKIM-Alignment auf <code>kaiser-immobilien.de</code> ist die kritische Redundanzmaßnahme.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2>4. Header Analysis</h2>
+
+<h3>4.1 Received-Chain Analyse</h3>
+<pre>
+[Hop 1] Eingang bei Microsoft EOP (Frontend Transport)
+  FROM: PA4PR04CU001.outbound.protection.outlook.com [40.107.162.123]
+  TO:   AM4PEPF00027A65.eurprd04.prod.outlook.com
+  TLS:  TLS1_3 / TLS_AES_256_GCM_SHA384  ✓
+
+[Hop 2] Interne M365-Routing-Strecke
+  FROM: AM4PEPF00027A65.eurprd04.prod.outlook.com
+  TO:   AM0P309CA0022.EURP309.PROD.OUTLOOK.COM
+  TLS:  TLS1_3 / TLS_AES_256_GCM_SHA384  ✓
+
+[Hop 3] Interne M365-Routing-Strecke
+  FROM: AM0P309CA0022.EURP309.PROD.OUTLOOK.COM
+  TO:   DB4P195MB2694.EURP195.PROD.OUTLOOK.COM
+  TLS:  TLS1_2 / TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384  ✓
+
+[Hop 4] Finale Zustellung
+  FROM: DB4P195MB2694.EURP195.PROD.OUTLOOK.COM
+  TO:   VI0P195MB2841.EURP195.PROD.OUTLOOK.COM (Empfänger-Mailbox)
+  Protokoll: HTTPS (interne M365-Zustellung via REST/MAPI)
+</pre>
+
+<table>
+  <thead><tr><th>Parameter</th><th>Wert</th><th>Bewertung</th></tr></thead>
+  <tbody>
+    <tr><td>HELO-Hostname</td><td><code>PA4PR04CU001.outbound.protection.outlook.com</code></td><td><span class="badge warn2">WARNUNG</span> Kein Bezug zu <code>kaiser-immobilien.de</code></td></tr>
+    <tr><td>Sending IP</td><td><code>40.107.162.123</code></td><td><span class="badge pass">OK</span> Microsoft EOP Shared Pool — hohe Grundreputation</td></tr>
+    <tr><td>PTR-Record der Sending IP</td><td><code>mail-eopbgr130123.outbound.protection.outlook.com</code> (typ.)</td><td><span class="badge info">NEUTRAL</span> Kein FCrDNS-Problem; Microsoft-Pool</td></tr>
+    <tr><td>TLS-Version Eingangshop</td><td>TLS 1.3</td><td><span class="badge pass">OPTIMAL</span></td></tr>
+    <tr><td>TLS-Version interne Hops</td><td>TLS 1.2 / TLS 1.3</td><td><span class="badge pass">OK</span></td></tr>
+    <tr><td>Zustellzeit Gesamtstrecke</td><td>~1 Sekunde (14:58:11 → 14:58:12 UTC)</td><td><span class="badge pass">NORMAL</span></td></tr>
+    <tr><td>ARC-Instanzen</td><td>i=2</td><td><span class="badge pass">KORREKT</span></td></tr>
+    <tr><td>X-MS-Exchange SCL</td><td>Nicht sichtbar (intern gefiltert) — CompAuth=100 impliziert SCL ≤ 0</td><td><span class="badge pass">GUT</span></td></tr>
+    <tr><td>X-MS-Exchange BCL</td><td>N/A (Bulk-Klassifizierung nicht ausgelöst)</td><td><span class="badge pass">GUT</span></td></tr>
+    <tr><td>Destination:Junk Flag</td><td>Nicht gesetzt (kein dest:J erkennbar)</td><td><span class="badge pass">GUT</span></td></tr>
+    <tr><td>X-Forefront-Antispam-Report</td><td>Nicht im Excerpt — SFV:NSPM (Not Spam) erwartet</td><td><span class="badge info">PRÜFEN</span></td></tr>
+    <tr><td>Message-ID Domain</td><td>Nicht im Excerpt sichtbar — sollte <code>kaiser-immobilien.de</code> enthalten</td><td><span class="badge info">PRÜFEN</span></td></tr>
+  </tbody>
+</table>
+
+<h3>4.2 HELO/PTR-Diskrepanz — Detail</h3>
+<div class="callout warn">
+  <strong>Technischer Sachverhalt:</strong> Microsoft 365 verwendet für alle Mandanten den gemeinsamen Outbound-Pool. Der HELO-Name ist systemseitig auf <code>*.outbound.protection.outlook.com</code> gesetzt und kann im Standard-M365-Plan nicht mandantenseitig überschrieben werden. Eine Custom-HELO-Konfiguration ist nur über dedizierte Connectors mit eigenem Smart Host oder über Microsoft 365 Direct Send mit eigenem SMTP-Relay möglich. Alternativen: SendGrid, Postmark, Brevo als vorgelagertes SMTP-Relay mit eigenem HELO.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<h2>5. HTML & Content Technical Analysis</h2>
+
+<h3>5.1 MIME-Struktur & Encoding</h3>
+<table>
+  <thead><tr><th>Parameter</th><th>Befund</th><th>Empfehlung</th></tr></thead>
+  <tbody>
+    <tr><td>Content-Type</td><td>Nicht vollständig analysierbar (Truncation) — <code>text/html</code> erwartet</td><td>Multipart/Alternative (text/plain + text/html) implementieren</td></tr>
+    <tr><td>Encoding</td><td>Keine Encoding-Artefakte oder Merge-Tag-Reste erkennbar (außer Anrede)</td><td>Template-Engine auf korrekte Conditional-Gender-Logik prüfen</td></tr>
+    <tr><td>Zeichensatz</td><td>Kein Charset-Problem identifiziert (UTF-8 erwartet)</td><td><code>charset=UTF-8</code> explizit im Content-Type-Header setzen</td></tr>
+    <tr><td>Text/Plain-Fallback</td><td>Nicht verifizierbar — häufig bei M365-Direktversand fehlend</td><td>Immer <code>text/plain</code> als Fallback einbinden (Spam-Filter-Score positiv)</td></tr>
+    <tr><td>MIME-Boundary</td><td>Nicht analysierbar (Truncation)</td><td>Sicherstellen, dass Boundary korrekt terminiert wird</td></tr>
+    <tr><td>Body-Truncation</td><td>Body endet abrupt mit <code>Kaiser Immobilien GmbH &amp;</code></td><td>HTML-Entity <code>&amp;</code> korrekt schließen; Body-Abschneidung in der Versandlösung debuggen</td></tr>
+  </tbody>
+</table>
+
+<h3>5.2 URL-Analyse</h3>
+<table>
+  <thead><tr><th>URL/Link</th><th>Typ</th><th>Bewertung</th><th>Maßnahme</th></tr></thead>
+  <tbody>
+    <tr><td>App Store (Apple)</td><td>Externer Link</td><td><span class="badge pass">OK</span> Legitime Apple-Domain</td><td>HTTPS-Link verwenden; als prominenter Button einbinden</td></tr>
+    <tr><td>Play Store (Google)</td><td>Externer Link</td><td><span class="badge pass">OK</span> Legitime Google-Domain</td><td>HTTPS-Link verwenden; als prominenter Button einbinden</td></tr>
+    <tr><td><code>https://www.kaiser-immobilien.de/Onlineportal.htm</code></td><td>Firmen-Website</td><td><span class="badge pass">OK</span> Eigene Domain</td><td>URL-Tracking-Parameter für Klick-Analytics hinzufügen</td></tr>
+    <tr><td>URL-Shortener</td><td>—</td><td><span class="badge pass">KEINE GEFUNDEN</span></td><td>Weiterhin vermeiden</td></tr>
+    <tr><td>Redirect-Ketten</td><td>—</td><td><span class="badge pass">NICHT ERKANNT</span></td><td>Tracking-Links nur mit eigenem Subdomain-Tracker verwenden</td></tr>
+    <tr><td>QR-Code</td><td>Eingebettetes Bild oder Link</td><td><span class="badge info">PRÜFEN</span> QR-Ziel muss HTTPS sein</td><td>QR-Ziel verifizieren
