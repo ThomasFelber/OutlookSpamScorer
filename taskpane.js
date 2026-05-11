@@ -329,7 +329,7 @@ class SpamAnalyzer {
       // Sender domain uses a TLD that is heavily abused for throwaway spam/phishing domains.
       // Note: .la, .pw, .cc etc. are technically valid ccTLDs but almost never used by legitimate
       // bulk senders — phishers register them precisely because they're cheap and obscure.
-      const suspSenderTld = /\.(tk|cf|ga|ml|gq|xyz|top|click|download|stream|loan|win|racing|buzz|la|pw|cc|ws|nu)$/i;
+      const suspSenderTld = /\.(tk|cf|ga|ml|gq|xyz|top|click|download|stream|loan|win|racing|buzz|la|pw|cc|ws|nu|store|shop|online|space|link|site|website|fit|live)$/i;
       if (suspSenderTld.test(fromDomain)) {
         score += 1.5;
         reasons.push(`Verdächtige Absender-Domain-TLD (.${fromDomain.split('.').pop()})`);
@@ -428,11 +428,45 @@ class SpamAnalyzer {
       }
     }
 
+    // ── Random-Token-Subdomain / Random-Localpart ──────────────────────────────
+    // Aussprechbare Teile haben Vokal-Anteil ≥ 0.15; Throwaway-Subdomains wie
+    // "qcnkqmsos" oder Local-Parts wie "newsletters.wkdwx" fallen darunter.
+    const fromHostParts2  = (fromDomain || '').split('.');
+    const subdomainParts2 = fromHostParts2.slice(0, -2);
+    const isGibberish = s => {
+      if (!s || s.length < 6) return false;
+      const vowels = (s.match(/[aeiouäöü]/gi) || []).length;
+      return (vowels / s.length) < 0.15
+          || /^[bcdfghjklmnpqrstvwxz]{5,}$/i.test(s);
+    };
+    const gibberishSubdomain = subdomainParts2.some(isGibberish);
+    const fromLocalLast = (fromLocalPart || '').split('.').pop() || '';
+    const gibberishLocal     = isGibberish(fromLocalLast);
+    if (gibberishSubdomain) {
+      score += 1.5;
+      reasons.push(`Random-Token-Subdomain in "${fromDomain}" — Throwaway-Mass-Mail-Pattern`);
+    }
+    if (gibberishLocal && !gibberishSubdomain) {
+      score += 0.8;
+      reasons.push(`Vokal-arme Random-Local-Part "${fromLocalPart}" — Bot-generierte Versand-Adresse`);
+    }
+
+    // ── Affiliate-/Lead-Gen-Marketing-Domain ───────────────────────────────────
+    // Domain-Namen mit "leads-marketing", "affiliate", "lead-gen", "email-
+    // marketing" sind nahezu ausschließlich Drittanbieter-Bulk-Marketing-
+    // Netzwerke. Auth ist korrekt, Versand ist immer ungebeten.
+    const leadGenRe = /(?:^|[-_.])(?:leads?[-_]?(?:marketing|generation|gen|hub|network|finder|broker)|email[-_]?marketing|affiliate[-_]?(?:network|hub)?|cpa[-_]?network|lead[-_]?gen|cold[-_]?(?:email|mail)|direct[-_]?(?:mailing|response)|mass[-_]?mail(?:ing)?)\.[a-z]{2,}$/i;
+    if (fromDomain && (leadGenRe.test(fromDomain) || leadGenRe.test(this._extractRootDomain(fromDomain) || ''))) {
+      score += 2.0;
+      reasons.push(`Affiliate-/Lead-Gen-Marketing-Domain "${fromDomain}" — Drittanbieter-Massenversand-Netzwerk`);
+    }
+
     // Expose auth state and BCL to _analyzeBody via instance state (avoids parameter threading)
     this._lastAuthFullyPasses = authFullyPasses;
     this._lastBclVal          = bclVal;
     this._lastFromHeader      = fromHeader;
     this._lastFromDomain      = fromDomain;
+    this._lastDisplayName     = fromDisplayName;
 
     return score;
   }
@@ -466,6 +500,7 @@ class SpamAnalyzer {
       { re: /\bcrypto|bitcoin|kryptowährun|invest.{0,30}(rendite|gewinne?|robot)|hohe\s*rendite|trading.{0,20}(auto|bot|signal)|warum\s+alle.{0,20}invest|fibonacci|forex\s+signal/i, w: 1.5, label: 'Crypto/Investment-Spam' },
       { re: /ihre\s*(daten|informationen)\s*(wurden\s*)?bestätigen|verify\s*your\s*info/i, w: 1.5, label: 'Datenmissbrauch-Phishing' },
       { re: /lions?\s*(mane|spray)|körper\s*reset|nahrungsergänzung|supplement\b|fettverbrenner|schlank(heits)?|kräuter.{0,25}(spray|tropfen|kapsel)|testosteron.{0,20}boost|abnehm|\bdetox\b|keto\s*(diät|plan|programm|rezept|\b)|\d+\s*kg\s*(verloren?|abgenommen)|gewicht\s*(verloren?|verlier|abgenomm)|bauchfett|taille\s*(reduzier|weg|schmaler)/i, w: 1.5, label: 'Supplement/Gewichtsabnahme-Spam' },
+      { re: /\b(?:vita[-\s]?glp|gluco[-\s]?pro|sugar[-\s]?defender|ozempic[-_]?(?:alternative|natural|generic)|GLP[-\s]?1\s+(?:natural|alternative|generic)|abnehmspritze\s+(?:ohne\s+rezept|alternative|generic))\b/i, w: 1.5, label: 'GLP-1-/Ozempic-Klon-Spam (Supplement)' },
       { re: /wechat|微信|telegram\s*(channel|contact|group|id)|whatsapp\s*(contact|number|group)|line\s*id\s*:/i, w: 1.5, label: 'Messenger-Kontakt-Solicitation (WeChat/Telegram/WhatsApp)' },
       { re: /bundeszentralamt|finanzamt\b|bundeszoll|steuerpr[üu]fung.*krypto|amtliche?\s+(mahnung|aufforderung|mitteilung).*steuer/i, w: 2.5, label: 'Behörden-Impersonation (Finanzamt/BZSt)' },
       { re: /\b(UPS|DHL|FedEx|Hermes|DPD|GLS|Yodel|Evri)\b.{0,40}(paket|lieferung|sendung|delivery|tracking|notification|nicht\s*zugestellt)/i, w: 1.5, label: 'Kurierdienst-Erwähnung (auf Domain-Mismatch prüfen)' },
@@ -626,10 +661,32 @@ class SpamAnalyzer {
           const inBody    = !inSubject && re.test(plainText.slice(0, 800));
           if (inSubject || inBody) {
             const matchedBrand = (subject.match(re) || plainText.match(re) || [''])[0];
-            const w            = inSubject ? 2.5 : 1.5;
+            const w            = inSubject ? 2.5 : 1.7;
             score += w;
             reasons.push(`Marken-Impersonation: "${matchedBrand}" ${inSubject ? 'im Betreff' : 'im E-Mail-Text'}, Absender-Domain "${fromRootForBrand}"`);
             break; // one impersonation signal is enough
+          }
+        }
+      }
+
+      // ── Display-Name-Brand-Impersonation ──────────────────────────────────────
+      // Anzeigename nennt eine bekannte Marke (z. B. „Max von smava"), aber
+      // Sender-Domain gehört nicht zur Marke. Ergänzt den obigen Subject/Body-
+      // Check um die From-Display-Name-Achse.
+      const displayName = this._lastDisplayName || '';
+      if (displayName) {
+        const dispLower = displayName.toLowerCase();
+        const domainWord = (fromRootForBrand || '').split('.')[0] || '';
+        if (domainWord && !dispLower.includes(domainWord)) {
+          for (const { re, roots } of brandMap) {
+            if (re.test(dispLower)
+                && !roots.includes(fromRootForBrand)
+                && !roots.some(r => fromRootForBrand && fromRootForBrand.endsWith('.' + r))) {
+              const matched = (dispLower.match(re) || [''])[0];
+              score += 2.0;
+              reasons.push(`Marken-Impersonation im Absender-Anzeigename: "${matched}" — Sender-Domain "${fromRootForBrand}" gehört nicht zur Marke`);
+              break;
+            }
           }
         }
       }
@@ -644,6 +701,55 @@ class SpamAnalyzer {
         score += Math.min(1, capsRatio * 2);
         reasons.push(`${Math.round(capsRatio * 100)}% Wörter in Großbuchstaben`);
       }
+    }
+
+    // ── Aktenzeichen / EU-Richtlinien-Referenz auf Nicht-Behörden-Domain ──────
+    // "Az: BZSt-...", "Akt.-Z.", "Geschäftszeichen" oder konkrete EU-Richtlinien-
+    // Nummern (DAC8, EU 2023/2226) deuten auf Behörden-/Authority-Kontext. Auf
+    // nicht-amtlicher Domain ist das ein klares Phishing-Muster.
+    const akzFormat   = /\b(?:Az\.?\s*:|Akt\.?\s*-?Z\.?\s*:|Aktenzeichen|Gesch[äa]ftszeichen)\s*[A-Z][A-Z0-9\-/]+/i;
+    const euDirective = /\bDAC\s*[\-]?\s*\d+\b|EU[-\s]?(?:Verordnung|Directive|Richtlinie)\s+\d{4}\/\d{2,4}|EU[\s/]?\d{4}\/\d{4}|MiCA[-\s]?Regulation/i;
+    const officialAuthorityDomain = /(?:^|\.)(?:bund\.de|bundesamt[-.\w]+|bzst\.de|bzst\.bund\.de|bmf\.bund\.de|bafin\.de|deutsche-rentenversicherung\.de|elster\.de|bayern\.de|hessen\.de|nrw\.de|berlin\.de|brandenburg\.de|saarland\.de|schleswig-holstein\.de)$|\.(gov|gov\.uk|europa\.eu)$/i;
+    const fromDomLow  = (this._lastFromDomain || '').toLowerCase();
+    const isAuthorityDomain = officialAuthorityDomain.test(fromDomLow);
+    if ((akzFormat.test(subject || '') || akzFormat.test(plainText) || euDirective.test(plainText)) && !isAuthorityDomain) {
+      score += 2.0;
+      reasons.push(`Aktenzeichen-/EU-Richtlinien-Format auf nicht-amtlicher Domain "${this._lastFromDomain}" — Behörden-Phishing-Indikator`);
+    }
+
+    // ── AWS-SES-Tracking + Behörden-Pretext ───────────────────────────────────
+    // awstrack.me ist legitime AWS-SES-Tracking-Infrastruktur. In Kombination
+    // mit Behörden-Pretext (BZSt, Finanzamt etc.) ist sie gemietete SES-
+    // Infrastruktur für Phishing-Kampagnen.
+    const awsTrackUrl       = /awstrack\.me|us-(?:east|west)-\d\.awstrack/i;
+    const authorityPretext  = /Bundeszentralamt|Finanzamt|BMF|BZSt|Bundesregierung|Bundesministerium|Beh[öo]rde\s+f[üu]r|Steueridentifikationsnummer/i;
+    if (awsTrackUrl.test(bodyHtml || '') && authorityPretext.test(fullText)) {
+      score += 1.5;
+      reasons.push('AWS-SES-Tracking-URL kombiniert mit Behörden-Pretext — gemietete Phishing-Infrastruktur');
+    }
+
+    // ── CJK / Cyrillic content in non-asian email ──────────────────────────────
+    // Substanzielle Mengen ostasiatischer (CJK) oder kyrillischer Zeichen im
+    // Body deuten auf Sprach-Misalignment — typisch für ostasiatische/russische
+    // Spam-Kampagnen, die deutsche/englische Subject-Pretexts verwenden.
+    const cjkChars      = (plainText.match(/[一-鿿぀-ゟ゠-ヿ]/g) || []).length;
+    const cyrillicChars = (plainText.match(/[Ѐ-ӿ]/g) || []).length;
+    if (cjkChars >= 8) {
+      score += 1.5;
+      reasons.push(`${cjkChars} CJK-Zeichen im Body — Fremdsprache passt nicht zum Empfänger-Kontext`);
+    } else if (cyrillicChars >= 8) {
+      score += 1.2;
+      reasons.push(`${cyrillicChars} kyrillische Zeichen im Body — Fremdsprache passt nicht zum Empfänger-Kontext`);
+    }
+
+    // ── Calendar-Invitation-Pretext ohne ICS-Payload ──────────────────────────
+    // "Notification: You're invited to share this calendar" als Subject, aber
+    // keine echte ICS-Payload im Mail-Body. Klassisches Spam-Pretext-Muster.
+    const calendarSubject = /(?:share\s+this\s+calendar|invited\s+to\s+share|calendar\s+invitation|kalender(?:einladung|freigabe)|einladung\s+zum\s+(?:kalender|termin))/i;
+    const hasIcsPayload   = /Content-Type:\s*text\/calendar|BEGIN:VCALENDAR|\.ics(?:\s|"|;)/i.test((bodyHtml || ''));
+    if (calendarSubject.test(subject || '') && !hasIcsPayload) {
+      score += 1.5;
+      reasons.push('Kalender-Einladungs-Pretext im Subject ohne ICS-Payload — Curiosity-Spam-Pretext');
     }
 
     // Exclamation mark analysis — density + subject + consecutive (not raw count)
@@ -1350,7 +1456,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.5';
+const VERSION            = '2.2.6';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
