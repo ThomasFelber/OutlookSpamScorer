@@ -57,6 +57,7 @@ export default {
     if (payload.mode === 'explain')       return handleExplain(payload, env);
     if (payload.mode === 'explain-batch') return handleExplainBatch(payload, env);
     if (payload.mode === 'dns')          return handleDnsLookup(payload);
+    if (payload.mode === 'compliance')   return handleCompliance(payload, env);
     if (payload.mode === 'save')         return handleSave(payload, env);
     if (payload.mode === 'list')         return handleList(payload, env);
     if (payload.mode === 'get')          return handleGet(payload, env);
@@ -671,6 +672,632 @@ async function dkimLookup(selector, domain) {
   } catch { /* ignore */ }
 
   return { selector, found: false };
+}
+
+// ── Compliance assessment ────────────────────────────────────────────────────
+//
+// Heuristic check of a sender domain's legal pages (Impressum, Datenschutz,
+// optionally AGB + Widerruf for B2C). Fetches the homepage to discover footer
+// links, falls back to canonical paths. Applies regex-based pattern checks for
+// each statutory disclosure. Builds an HTML report; the numeric score is stored
+// only as data-* attributes (not shown in the add-in UI).
+//
+// Disclaimer is prominent in the report: this is NOT a legal opinion.
+
+const COMPLIANCE_UA = 'Mozilla/5.0 (compatible; ComplianceBot/1.0; +https://outlook-spam-scorer.pages.dev)';
+
+async function handleCompliance(payload, env) {
+  const audience = payload.audience === 'b2c' ? 'b2c' : 'b2b';
+  let   domain   = (payload.domain || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+  if (!domain) return json({ error: 'domain required' }, 400);
+
+  // Strip mail-sub-domains like info.example.com → example.com when they look
+  // like sending sub-domains. We try the full domain first, then the root.
+  const candidates = [];
+  candidates.push(domain);
+  const parts = domain.split('.');
+  if (parts.length > 2) candidates.push(parts.slice(-2).join('.'));
+
+  // Resolve homepage (https first, then http, with and without www).
+  let homepageHtml = null;
+  let homepageUrl  = null;
+  for (const d of candidates) {
+    for (const variant of [`https://${d}`, `https://www.${d}`, `http://${d}`, `http://www.${d}`]) {
+      const html = await safeFetch(variant);
+      if (html) { homepageHtml = html; homepageUrl = variant; break; }
+    }
+    if (homepageHtml) { domain = d; break; }
+  }
+
+  if (!homepageHtml) {
+    return json({
+      error:     'homepage_unreachable',
+      domain,
+      audience,
+      html:      buildComplianceHtmlUnreachable(domain, audience),
+    });
+  }
+
+  const baseUrl = homepageUrl.replace(/\/+$/, '');
+
+  // Discover legal-doc URLs from homepage anchors.
+  const footerLinks = extractFooterLinks(homepageHtml, baseUrl);
+
+  // Canonical fallback paths per doc type (DE + EN variants).
+  const canonical = {
+    impressum:    ['/impressum', '/imprint', '/de/impressum', '/legal-notice', '/legal/impressum', '/impressum/'],
+    datenschutz:  ['/datenschutz', '/datenschutzerklaerung', '/datenschutzerklärung', '/privacy', '/privacy-policy', '/de/datenschutz', '/legal/datenschutz'],
+    agb:          ['/agb', '/terms', '/terms-of-service', '/terms-and-conditions', '/de/agb', '/legal/agb'],
+    widerruf:     ['/widerruf', '/widerrufsrecht', '/widerrufsbelehrung', '/cancellation', '/right-of-withdrawal'],
+  };
+
+  // Fetch documents (B2B: 2 docs, B2C: 4 docs).
+  const docTypes = audience === 'b2c'
+    ? ['impressum', 'datenschutz', 'agb', 'widerruf']
+    : ['impressum', 'datenschutz'];
+
+  const docs = {};
+  for (const type of docTypes) {
+    docs[type] = await findDocument(type, baseUrl, footerLinks[type], canonical[type]);
+  }
+
+  // Per-category checks.
+  const results = {};
+  results.impressum    = checkImpressum(docs.impressum);
+  results.datenschutz  = checkDatenschutz(docs.datenschutz);
+  if (audience === 'b2c') {
+    results.agb        = checkAgb(docs.agb);
+    results.widerruf   = checkWiderruf(docs.widerruf);
+  }
+  results.cookies      = checkCookies(homepageHtml);
+  results.ssl          = checkSsl(homepageUrl);
+
+  // Weighted overall score (0-100).
+  const weights = audience === 'b2c'
+    ? { impressum: 22, datenschutz: 28, agb: 16, widerruf: 18, cookies: 10, ssl: 6 }
+    : { impressum: 30, datenschutz: 40, cookies: 18, ssl: 12 };
+  let total = 0;
+  for (const [k, w] of Object.entries(weights)) {
+    total += (results[k].score / results[k].max) * w;
+  }
+  const overall = Math.round(total);
+
+  const html = buildComplianceHtml({
+    domain, audience, baseUrl,
+    results, overall, weights,
+    docs,
+  });
+
+  return jsonHtml(html);
+}
+
+// ── Fetch helpers ────────────────────────────────────────────────────────────
+
+async function safeFetch(url, timeoutMs = 8000) {
+  try {
+    const ctrl = new AbortController();
+    const t    = setTimeout(() => ctrl.abort(), timeoutMs);
+    const res  = await fetch(url, {
+      signal:   ctrl.signal,
+      redirect: 'follow',
+      headers: {
+        'User-Agent':      COMPLIANCE_UA,
+        'Accept':          'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'de-DE,de;q=0.9,en;q=0.7',
+      },
+    });
+    clearTimeout(t);
+    if (!res.ok) return null;
+    const ct = res.headers.get('content-type') || '';
+    if (!/text\/html|xhtml|application\/xml/i.test(ct)) return null;
+    const text = await res.text();
+    return text.length > 600_000 ? text.slice(0, 600_000) : text;
+  } catch {
+    return null;
+  }
+}
+
+function extractFooterLinks(html, baseUrl) {
+  const patterns = {
+    impressum:   /(?:^|\s|>)(?:impressum|imprint|legal[\s-]?notice|mentions[\s-]?l[ée]gales)(?:\s|<|$)/i,
+    datenschutz: /(?:^|\s|>)(?:datenschutz(?:erkl[äa]rung)?|privacy(?:[\s-]?policy)?|politique[\s-]?de[\s-]?confidentialit)(?:\s|<|$)/i,
+    agb:         /(?:^|\s|>)(?:agb|allgemeine[\s-]gesch[äa]ftsbedingungen|terms(?:[\s-]of[\s-](?:use|service))?|conditions[\s-]g[ée]n[ée]rales)(?:\s|<|$)/i,
+    widerruf:    /(?:^|\s|>)(?:widerruf(?:srecht|sbelehrung)?|right[\s-]of[\s-]withdrawal|cancellation[\s-]policy)(?:\s|<|$)/i,
+  };
+  const hrefPatterns = {
+    impressum:   /\b(impressum|imprint|legal[-_]?notice)\b/i,
+    datenschutz: /\b(datenschutz|privacy)\b/i,
+    agb:         /\b(agb|terms)\b/i,
+    widerruf:    /\b(widerruf|cancellation|withdrawal)\b/i,
+  };
+
+  const found = {};
+  const anchorRe = /<a\b[^>]*\bhref\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  let m;
+  while ((m = anchorRe.exec(html)) !== null) {
+    const href = m[1].trim();
+    const txt  = m[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    for (const type of Object.keys(patterns)) {
+      if (found[type]) continue;
+      if (patterns[type].test(txt) || hrefPatterns[type].test(href)) {
+        found[type] = resolveUrl(href, baseUrl);
+      }
+    }
+  }
+  return found;
+}
+
+function resolveUrl(href, baseUrl) {
+  href = href.split('#')[0].trim();
+  if (!href) return null;
+  if (/^https?:\/\//i.test(href)) return href;
+  if (href.startsWith('//')) return 'https:' + href;
+  if (href.startsWith('/'))  return baseUrl.replace(/\/$/, '') + href;
+  return baseUrl.replace(/\/$/, '') + '/' + href;
+}
+
+async function findDocument(type, baseUrl, footerUrl, canonicalPaths) {
+  // 1. Try the URL we found via footer link first.
+  if (footerUrl) {
+    const html = await safeFetch(footerUrl);
+    if (html && html.length > 500) {
+      return { url: footerUrl, source: 'footer', text: htmlToText(html), html };
+    }
+  }
+  // 2. Try canonical paths.
+  for (const path of canonicalPaths) {
+    const url  = baseUrl + path;
+    const html = await safeFetch(url);
+    if (html && html.length > 500) {
+      return { url, source: 'canonical', text: htmlToText(html), html };
+    }
+  }
+  return null;
+}
+
+function htmlToText(html) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|h\d|li|tr)>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;|&#160;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;|&#34;/gi, '"')
+    .replace(/&#39;|&#x27;/gi, "'")
+    .replace(/&auml;/gi, 'ä').replace(/&ouml;/gi, 'ö').replace(/&uuml;/gi, 'ü')
+    .replace(/&Auml;/gi, 'Ä').replace(/&Ouml;/gi, 'Ö').replace(/&Uuml;/gi, 'Ü')
+    .replace(/&szlig;/gi, 'ß')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n[ \t]+/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+// ── Heuristic compliance checks ──────────────────────────────────────────────
+// Each returns { score, max, status: 'ok'|'partial'|'missing'|'fail', checks: [...], url, source }
+// `checks` items: { label, weight, found: bool, evidence?: string, note?: string }
+
+function mkResult(checks, doc, statusMissing = 'missing') {
+  const max   = checks.reduce((s, c) => s + c.weight, 0);
+  const score = checks.reduce((s, c) => s + (c.found ? c.weight : 0), 0);
+  const ratio = max > 0 ? score / max : 0;
+  const status = !doc            ? statusMissing
+              :  ratio >= 0.85   ? 'ok'
+              :  ratio >= 0.5    ? 'partial'
+              :                    'weak';
+  return { score, max, status, checks, url: doc?.url || null, source: doc?.source || null };
+}
+
+function checkImpressum(doc) {
+  const text = doc?.text || '';
+  const checks = [
+    { label: 'Anbieter-Anschrift (Straße + PLZ + Ort)', weight: 2,
+      found: /\b[A-ZÄÖÜ][a-zäöüß-]+(?:str(?:aße|\.)|gasse|allee|weg|platz|ring|damm)\s*\d+/i.test(text)
+          && /\b\d{5}\s+[A-ZÄÖÜ][\wäöüß-]+/i.test(text),
+      desc: 'Pflichtangabe nach § 5 Abs. 1 Nr. 1 TMG: vollständige ladungsfähige Anschrift mit Straße, Hausnummer, PLZ und Ort. Ein Postfach genügt nicht. Bei Verstoß drohen Abmahnungen nach UWG (Streitwerte typischerweise 5.000–15.000 €) sowie Bußgelder bis 50.000 € nach § 16 TMG. Lösung: vollständige Anschrift einfügen, an der die Gesellschaft tatsächlich erreichbar ist.' },
+    { label: 'E-Mail-Kontakt', weight: 1.5,
+      found: /[\w.+-]+@[\w-]+\.[a-z]{2,}/i.test(text),
+      desc: 'Pflichtangabe nach § 5 Abs. 1 Nr. 2 TMG für schnelle elektronische Kontaktaufnahme. Mindestens eine funktionierende E-Mail-Adresse als Klartext oder mailto-Link. EuGH (Rs. C-298/07) verlangt zusätzlich einen zweiten unmittelbaren Kommunikationsweg (Telefon oder gleichwertig). Lösung: erreichbare E-Mail-Adresse + Telefon oder Online-Formular ergänzen.' },
+    { label: 'Telefon', weight: 1,
+      found: /(?:Tel(?:efon)?|Phone|Fon)\.?\s*[:.]?\s*[+\d][\d\s\-/()]{6,}/i.test(text)
+          || /\+49[\s\d\-/()]{6,}/.test(text),
+      desc: 'Nicht strikt im TMG vorgeschrieben, aber nach EuGH (Rs. C-298/07, „Bundesverband der Verbraucherzentralen") als zweiter unmittelbarer Kommunikationsweg neben E-Mail erforderlich. Im B2C darf eine Kunden-Hotline nicht teurer als ein normales Telefongespräch sein (§ 312a Abs. 5 BGB). Alternativ: Live-Chat oder Rückrufformular.' },
+    { label: 'Handelsregister + Registernummer', weight: 1.5,
+      found: /(?:Handelsregister|Amtsgericht).{0,80}\bHR[AB]\s*\d+/is.test(text)
+          || /\bHR[AB]\s*\d{2,}/i.test(text),
+      desc: 'Pflichtangabe nach § 5 Abs. 1 Nr. 4 TMG für alle im Handelsregister eingetragenen Unternehmen (GmbH, UG, AG, KG, OHG): zuständiges Registergericht + Registernummer, z. B. „Amtsgericht München, HRB 12345". Reguläre Abmahnungsfalle bei Online-Händlern. Einzelunternehmer und nicht eingetragene GbR sind von dieser Pflicht ausgenommen.' },
+    { label: 'USt-IdNr. (§ 27a UStG) oder Wirtschafts-IdNr.', weight: 1.5,
+      found: /\bDE\s?\d{9}\b/i.test(text) || /Umsatzsteuer[-\s]?(?:Ident|IdNr|ID)/i.test(text),
+      desc: 'Pflichtangabe nach § 5 Abs. 1 Nr. 6 TMG, soweit vorhanden. Wer eine USt-IdNr. nach § 27a UStG zugeteilt bekommen hat (üblich bei innergemeinschaftlichem Handel), muss sie nennen. Keine Pflicht zur Beantragung — aber Verschweigen einer vorhandenen Nr. wird regelmäßig abgemahnt. Format: „DE" + 9 Ziffern.' },
+    { label: 'Vertretungsberechtigte/r (Geschäftsführer, Vorstand, Inhaber)', weight: 1.5,
+      found: /(?:Gesch[äa]ftsf[üu]hrer(?:in)?|Vorstand|Inhaber(?:in)?|vertretungsberechtigt)/i.test(text),
+      desc: 'Pflichtangabe nach § 5 Abs. 1 Nr. 1 TMG. Bei juristischen Personen (GmbH, AG, eG, Verein) müssen alle vertretungsberechtigten Personen mit vollem Vor- und Nachnamen genannt werden. GmbH: alle Geschäftsführer. AG: Vorstand + Aufsichtsratsvorsitzender. Einzelfirma: Inhaber/-in.' },
+    { label: 'Verantwortlich i. S. d. § 18 MStV (für journalistisch-redaktionelle Inhalte)', weight: 1,
+      found: /(?:Verantwortlich(?:e[rs]?)?\s+(?:i\.\s*S\.\s*d\.\s*)?(?:§\s*18\s*MStV|MStV|RStV|Pressegesetz))/i.test(text)
+          || /Verantwortlich.{0,30}(?:für\s+den\s+Inhalt|Inhalte)/i.test(text),
+      desc: 'Zusätzliche Pflicht nach § 18 Abs. 2 MStV (Medienstaatsvertrag) bei journalistisch-redaktionellen Inhalten (Blog, News-Bereich, Magazinartikel mit Meinungsäußerung). Anzugeben: Verantwortliche/r mit Vor-/Nachname und ladungsfähiger Anschrift im EU-Raum. Bei reinen Produkt- oder Unternehmens-Sites ohne redaktionellen Anteil entfällt die Pflicht.' },
+  ];
+  return mkResult(checks, doc);
+}
+
+function checkDatenschutz(doc) {
+  const text = doc?.text || '';
+  const lower = text.toLowerCase();
+  const checks = [
+    { label: 'Verantwortlicher (Name + Kontakt)', weight: 1.5,
+      found: /Verantwortlich(?:e[rs]?|en?)\s+(?:Stelle|i\.\s*S\.\s*d\.|für|im\s+Sinne)/i.test(text),
+      desc: 'Pflichtangabe nach Art. 13 Abs. 1 lit. a DSGVO. Name, Anschrift und Kontaktdaten des Verantwortlichen müssen direkt zu Beginn der Datenschutzerklärung stehen, eindeutig zugeordnet (nicht nur Verweis ins Impressum). Bußgeldrisiko nach Art. 83 Abs. 5 DSGVO: bis 20 Mio. € oder 4 % des weltweiten Jahresumsatzes.' },
+    { label: 'Datenschutzbeauftragte/r oder begründete Abweichung', weight: 1,
+      found: /Datenschutzbeauftragt[er]?/i.test(text),
+      desc: 'Bestellungspflicht nach Art. 37 DSGVO i. V. m. § 38 BDSG: in der Regel ab 20 mit automatisierter Datenverarbeitung beschäftigten Personen oder bei umfangreicher Verarbeitung besonderer Datenkategorien (Gesundheit, biometrische Daten etc.). Kontaktdaten des/der DSB sind nach Art. 13 Abs. 1 lit. b DSGVO mitzuteilen. Bei Nichterforderlichkeit: kurzer Hinweis empfehlenswert.' },
+    { label: 'Rechtsgrundlagen (Art. 6 DSGVO)', weight: 1.5,
+      found: /Art(?:ikel)?\.?\s*6\s+(?:Abs\.?\s*\d+\s+)?(?:lit\.?\s*[a-f]\s+)?DSGVO/i.test(text)
+          || /Rechtsgrundlage/i.test(text),
+      desc: 'Pflichtangabe nach Art. 13 Abs. 1 lit. c DSGVO. Pro Verarbeitungszweck ist die spezifische Rechtsgrundlage zu nennen — Einwilligung (Art. 6 Abs. 1 lit. a), Vertragserfüllung (lit. b), rechtliche Verpflichtung (lit. c), lebenswichtige Interessen (lit. d), öffentliche Aufgabe (lit. e), berechtigtes Interesse (lit. f). Eine pauschale Nennung „auf Basis Art. 6 DSGVO" reicht nicht.' },
+    { label: 'Betroffenenrechte (Auskunft, Berichtigung, Löschung)', weight: 1.5,
+      found: lower.includes('auskunft') && lower.includes('berichtigung') && /(?:l[öo]schung|recht\s+auf\s+vergessen)/i.test(text),
+      desc: 'Pflichtinformation nach Art. 13 Abs. 2 lit. b DSGVO über die Rechte aus Art. 15–22 DSGVO. Vollständige Aufzählung mit kurzer Erläuterung: Auskunft (Art. 15), Berichtigung (Art. 16), Löschung / „Recht auf Vergessen" (Art. 17), Einschränkung (Art. 18), Datenübertragbarkeit (Art. 20), Widerspruch (Art. 21), Widerruf einer Einwilligung (Art. 7 Abs. 3).' },
+    { label: 'Datenübertragbarkeit / Widerspruch', weight: 1,
+      found: /Daten[üu]bertragbarkeit/i.test(text) && /Widerspruch/i.test(text),
+      desc: 'Art. 20 DSGVO (Daten in strukturiertem, maschinenlesbarem Format) und Art. 21 DSGVO (Widerspruch gegen Verarbeitung auf Basis berechtigten Interesses oder Direktmarketing) sind ausdrücklich zu benennen. Der Widerspruchshinweis im Direktmarketing-Kontext ist optisch hervorzuheben (Art. 21 Abs. 4 DSGVO).' },
+    { label: 'Beschwerderecht bei Aufsichtsbehörde', weight: 1,
+      found: /Aufsichtsbeh[öo]rde/i.test(text) && /Beschwerde/i.test(text),
+      desc: 'Pflichtangabe nach Art. 13 Abs. 2 lit. d DSGVO: Hinweis auf das Beschwerderecht bei einer Aufsichtsbehörde. In Deutschland: zuständige Landesdatenschutzbeauftragte (am Sitz des Verantwortlichen) oder BfDI bei Bundesbehörden und TK-Anbietern. Empfehlung: konkrete Behörde mit Anschrift nennen.' },
+    { label: 'Speicherdauer / Löschkonzept', weight: 1,
+      found: /Speicherdauer|Aufbewahrungsfrist|gespeichert(?:e?\s+wir)?d?/i.test(text)
+          && /(?:gel[öo]scht|Lo+sch)/i.test(text),
+      desc: 'Pflichtangabe nach Art. 13 Abs. 2 lit. a DSGVO: konkrete Speicherdauer oder mindestens die Kriterien für deren Festlegung. Übliche Bezüge: § 257 HGB (6 Jahre für Handelsbriefe), § 147 AO (10 Jahre für Buchungsbelege), § 14b UStG (10 Jahre für Rechnungen). Pauschale Formulierung „solange erforderlich" genügt nicht.' },
+    { label: 'Cookies / Tracking-Tools', weight: 1,
+      found: /Cookies?/i.test(text),
+      desc: 'Pflichtangabe der eingesetzten Cookies und Tracking-Tools mit Zweck, Anbieter, Speicherdauer (Empfehlung: Übersichtstabelle pro Tool). Rechtsgrundlage über § 25 TTDSG (nachweisbare Einwilligung für nicht-essentielle Cookies) bzw. Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse) — letzteres nur für unbedingt erforderliche technische Cookies.' },
+    { label: 'Drittlandsübermittlung (Art. 44 ff. DSGVO)', weight: 1,
+      found: /Drittland|Drittstaat|außerhalb\s+der\s+EU|USA|Standardvertragsklausel|adequacy/i.test(text),
+      desc: 'Pflichtangabe nach Art. 13 Abs. 1 lit. f DSGVO bei Übermittlungen in Drittländer (USA, UK seit Brexit, Indien etc.). Erforderlich: Empfänger nennen, Garantien benennen (Standardvertragsklauseln nach Art. 46 Abs. 2 lit. c, Angemessenheitsbeschluss z. B. EU-US Data Privacy Framework seit Juli 2023), Hinweis auf Erhalt einer Kopie der Garantien. Praktisch betroffen: Google, Meta, AWS, Microsoft, jedes US-SaaS.' },
+    { label: 'Empfänger / Auftragsverarbeiter', weight: 0.5,
+      found: /Auftragsverarbeit|Empf[äa]nger|Drittanbieter|Dienstleister/i.test(text),
+      desc: 'Empfehlung nach Art. 13 Abs. 1 lit. e + Art. 28 DSGVO: Eingesetzte Auftragsverarbeiter (Hosting, Newsletter-Versand, Analytics, CDN, Payment-Provider, CRM) sollten zumindest als Kategorien, idealerweise namentlich benannt werden. Ein AV-Vertrag nach Art. 28 muss in jedem Fall vorliegen.' },
+  ];
+  return mkResult(checks, doc);
+}
+
+function checkAgb(doc) {
+  const text = doc?.text || '';
+  const checks = [
+    { label: 'Vertragsschluss / Angebot + Annahme', weight: 1.5,
+      found: /(?:Vertragsschluss|Vertragsabschluss|Zustandekommen\s+des\s+Vertrag|Angebot\s+und\s+Annahme)/i.test(text),
+      desc: 'Pflichtinformation nach § 312i Abs. 1 BGB: Im Fernabsatz muss der Verbraucher VOR Abgabe der Bestellung über alle wesentlichen Vertragsbedingungen, den Ablauf des Bestellprozesses, die Korrekturmöglichkeit, die Sprache(n) und die Speicherbarkeit informiert werden. Zusätzlich verlangt § 312j Abs. 3 BGB die „Button-Lösung" mit eindeutiger Beschriftung („Zahlungspflichtig bestellen" o. ä.) — fehlt sie, kommt KEIN wirksamer Vertrag zustande.' },
+    { label: 'Preise (Endpreise inkl. MwSt.)', weight: 1.5,
+      found: /(?:inkl\.\s*MwSt|inklusive\s+(?:der\s+)?(?:gesetzlichen\s+)?(?:Mehrwert|Umsatz)steuer|Endpreis|Bruttopreis)/i.test(text),
+      desc: 'Pflichtangabe nach § 1 Abs. 1 PAngV (Preisangabenverordnung): Im B2C sind Endpreise inkl. Mehrwertsteuer und aller sonstigen Preisbestandteile klar erkennbar auszuweisen. Verstoß: wettbewerbsrechtliche Abmahnung nach § 3a UWG (Streitwerte 3.000–10.000 €) und Bußgeld nach § 9 PAngV bis 25.000 €. Bei rein B2B-AGB nicht zwingend, aber empfehlenswert.' },
+    { label: 'Zahlungsmodalitäten', weight: 1,
+      found: /(?:Zahlung(?:smodalit|sbedingung|sart|sweise)|Zahlungsmittel)/i.test(text),
+      desc: 'Pflichtinformation nach Art. 246a § 1 Abs. 1 Nr. 7 EGBGB: akzeptierte Zahlungsmittel, Liefer- und Leistungsbeschränkungen. § 270a BGB verbietet zusätzliche Entgelte für SEPA-Lastschrift, SEPA-Überweisung sowie gängige Kreditkartenzahlungen (Visa, Mastercard, Maestro). Erlaubte Aufpreise nur für tatsächlich teurere Bezahlmethoden (z. B. American Express, PayPal — letzteres umstritten).' },
+    { label: 'Lieferung / Versandkosten', weight: 1.5,
+      found: /(?:Lieferung|Versand(?:kosten|bedingung)|Lieferzeit)/i.test(text),
+      desc: 'Pflichtinformation nach Art. 246a § 1 Abs. 1 Nr. 4 EGBGB + § 1 Abs. 2 PAngV: Konkrete Lieferzeit (kein „in der Regel sofort") und Versandkosten klar und separat ausgewiesen — Versandkosten dürfen nicht im Endpreis versteckt sein. Bei Ware aus dem Ausland: Hinweis auf Einfuhrabgaben.' },
+    { label: 'Mängelhaftung / Gewährleistung', weight: 1.5,
+      found: /(?:M[äa]ngelhaftung|Gew[äa]hrleistung|Sachmangel)/i.test(text),
+      desc: 'Hinweis auf gesetzliche Mängelhaftung nach §§ 434 ff. BGB ist Pflicht. Im B2C: Verjährungsfrist mindestens 2 Jahre ab Übergabe (§ 438 Abs. 1 Nr. 3 BGB) — kürzere AGB-Klauseln sind nach § 309 Nr. 8b BGB unwirksam und gleichzeitig wettbewerbswidrig. Im B2B kann die Verjährung auf 1 Jahr verkürzt werden. Ausschluss der Mängelhaftung im B2C ist NIE wirksam.' },
+    { label: 'Streitschlichtung (OS-Plattform / VSBG)', weight: 1,
+      found: /(?:Streitschlichtung|Verbraucherschlichtung|Online[-\s]?Streitbeilegung|ec\.europa\.eu\/consumers\/odr|VSBG)/i.test(text),
+      desc: 'Pflichthinweis nach Art. 14 Abs. 1 ODR-VO: Online-Händler müssen auf die EU-Plattform unter https://ec.europa.eu/consumers/odr verlinken (klickbarer Link). § 36 VSBG verlangt zusätzlich den Hinweis, ob das Unternehmen an Verbraucher-Streitbeilegung teilnimmt — auch ein klares „nein" ist zulässig, muss aber explizit erklärt werden. Häufigster Abmahngrund nach DSGVO-Verstößen.' },
+    { label: 'Vertragstext / Speicherung', weight: 1,
+      found: /(?:Vertragstext|Vertragssprache|Speicherung\s+des\s+Vertrag)/i.test(text),
+      desc: 'Pflichtinformation nach § 312i Abs. 1 Nr. 4 BGB: Der Verbraucher muss den Vertragstext speichern und reproduzieren können. Praktisch: Bestellbestätigung als PDF per E-Mail, Login-Bereich mit Auftragsarchiv, oder Hinweis auf Speicherung der AGB. Bei längeren AGB ist Verlinkung statt Inline-Anzeige zulässig.' },
+    { label: 'Salvatorische Klausel / anwendbares Recht', weight: 1,
+      found: /(?:salvatorisch|anwendbares\s+Recht|Gerichtsstand|deutsches?\s+Recht)/i.test(text),
+      desc: 'Bei B2C-Verträgen mit EU-Verbrauchern: Art. 6 Rom-I-VO bestimmt, dass zwingend das Verbraucherschutzrecht des Wohnsitzstaates anwendbar bleibt. Pauschale Rechtswahlklauseln „Es gilt deutsches Recht" sind nach BGH I ZR 88/16 (für österr./schweiz. Verbraucher) intransparent + wettbewerbswidrig. Im B2B ist die Rechtswahl weitestgehend frei.' },
+  ];
+  return mkResult(checks, doc);
+}
+
+function checkWiderruf(doc) {
+  const text = doc?.text || '';
+  const checks = [
+    { label: '14-Tage-Frist', weight: 2,
+      found: /14\s*Tag(?:e|en)/i.test(text) || /vierzehn\s+Tag/i.test(text),
+      desc: 'Pflichtinformation nach § 355 Abs. 2 BGB + Art. 246a § 1 Abs. 2 Nr. 1 EGBGB: Widerrufsfrist beträgt 14 Tage. Bei nicht oder fehlerhaft erteilter Belehrung verlängert sich die Frist nach § 356 Abs. 3 BGB auf 12 Monate + 14 Tage. Erhebliches wirtschaftliches Risiko bei Verstoß — Verbraucher kann monatelang Ware zurückgeben.' },
+    { label: 'Muster-Widerrufsformular', weight: 2,
+      found: /Muster[-\s]?Widerrufs(?:formular|erkl)/i.test(text)
+          || /(?:An:|Hiermit\s+widerrufe\s+ich)/i.test(text),
+      desc: 'Pflicht nach Art. 246a § 1 Abs. 2 Nr. 1 EGBGB i. V. m. Anlage 2 zum EGBGB: Das amtliche Muster-Widerrufsformular muss zur Verfügung gestellt werden — wortgleich, vollständig, mit den eigenen Kontaktdaten ausgefüllt. Eigene Formularvarianten sind zusätzlich, nicht ersetzend zulässig. Klassische Abmahnfalle.' },
+    { label: 'Rücksendekosten-Regelung', weight: 1.5,
+      found: /(?:R[üu]cksendekosten|Kosten\s+der\s+R[üu]cksendung|trag(?:en|t)\s+(?:Sie|der\s+Verbraucher)\s+die\s+Kosten)/i.test(text),
+      desc: 'Pflichtinformation nach Art. 246a § 1 Abs. 2 Nr. 2 EGBGB: Verbraucher trägt die Rücksendekosten NUR dann, wenn er vorher klar darauf hingewiesen wurde. Fehlt der Hinweis, gehen die Kosten zu Lasten des Unternehmers — auch bei sperrigen Gütern (Möbel, große Geräte). Bei sperriger Ware zusätzlich Schätzung der Kosten erforderlich, soweit nicht per Standardpost versendbar.' },
+    { label: 'Widerrufsanschrift (Adresse / E-Mail / Fax)', weight: 1.5,
+      found: /(?:An\s+wen|Widerruf.{0,30}richten|Anschrift\s+des\s+Unternehmer)/i.test(text)
+          || /An:\s*[^,]{3,80}(?:\d{5}|@)/i.test(text),
+      desc: 'Pflichtangabe nach Art. 246a § 1 Abs. 2 Nr. 1 EGBGB: Anschrift, Telefonnummer und E-Mail-Adresse, an die der Widerruf gerichtet werden kann. Alle drei Kanäle soweit vorhanden anzugeben — reine Postanschrift oder nur E-Mail genügt seit BGH-Rechtsprechung (I ZR 7/16) nicht. Faxnummer optional, sofern vorhanden.' },
+    { label: 'Folgen des Widerrufs (Rückzahlung / Wertersatz)', weight: 1.5,
+      found: /(?:Folgen\s+des\s+Widerruf|R[üu]ckzahlung|Werters(?:atz|atz))/i.test(text),
+      desc: 'Pflichtinformation nach § 357 BGB i. V. m. Anlage 1 zum EGBGB: 14-Tage-Rückzahlungsfrist ab Widerrufserklärung — Rückzahlung über dasselbe Zahlungsmittel; Wertersatz nur bei wertmindernder Behandlung über das zur Prüfung der Beschaffenheit Erforderliche hinaus. Achtung: Bei fehlender oder fehlerhafter Belehrung entfällt der Wertersatzanspruch komplett (§ 357 Abs. 7 Nr. 2 BGB).' },
+    { label: 'Fristbeginn (Erhalt der Ware / Vertragsschluss)', weight: 1.5,
+      found: /(?:Frist\s+(?:beginnt|läuft)|ab\s+(?:dem\s+)?(?:Tag|Erhalt))/i.test(text),
+      desc: 'Pflichtinformation nach § 356 Abs. 2 BGB: Bei Warenkäufen beginnt die Frist mit Erhalt der Ware (bei Teillieferungen mit der letzten Teillieferung; bei Sukzessivlieferungen mit Erhalt der ersten Ware). Bei Dienstleistungen: Vertragsschluss. Falsche Angabe = unwirksame Belehrung → Frist verlängert sich automatisch auf 12 Monate + 14 Tage.' },
+  ];
+  return mkResult(checks, doc);
+}
+
+function checkCookies(homepageHtml) {
+  // Heuristic only — HTML-static check, no JS execution. We mark this clearly
+  // in the report as indikatorisch.
+  const cmpSignals = [
+    { label: 'Cookiebot',     re: /cookiebot\.com|consent\.cookiebot/i },
+    { label: 'Usercentrics',  re: /usercentrics\.eu|consent\.usercentrics/i },
+    { label: 'OneTrust',      re: /cookielaw\.org|onetrust/i },
+    { label: 'Borlabs',       re: /borlabs[-_]?cookie/i },
+    { label: 'Klaro',         re: /klaro[-_]?config|kiprotect/i },
+    { label: 'Termly',        re: /termly\.io/i },
+    { label: 'CookieYes',     re: /cookieyes/i },
+    { label: 'Iubenda',       re: /iubenda/i },
+    { label: 'Complianz',     re: /complianz/i },
+  ];
+  const detected = cmpSignals.find(s => s.re.test(homepageHtml));
+  const hasCookieMention   = /cookie/i.test(homepageHtml);
+  const hasConsentLanguage = /(?:einverstanden|zustimm|akzeptier|consent|accept|reject|ablehn)/i.test(homepageHtml);
+
+  const checks = [
+    { label: detected ? `Consent-Management-Plattform erkannt (${detected.label})` : 'Consent-Management-Plattform (CMP)',
+      weight: 2, found: !!detected,
+      note: detected ? null : 'kein bekanntes CMP-Skript im HTML — möglich, dass eigene Lösung verwendet wird',
+      desc: 'TTDSG § 25 Abs. 1 (in Kraft seit 1.12.2021): Speicherung oder Auslesen von Informationen im Endgerät (Cookies, LocalStorage, Fingerprinting) ist nur mit nachweisbarer Einwilligung zulässig. Ausnahme: unbedingt erforderliche technische Cookies (Warenkorb, Login-Session, Spracheinstellung — § 25 Abs. 2 TTDSG). Eine zertifizierte CMP (Cookiebot, Usercentrics, OneTrust, Borlabs, Klaro u. a.) ist der Standardweg zur Compliance + revisionssicherer Nachweis der Einwilligung.' },
+    { label: 'Cookie-Banner-Hinweis im HTML', weight: 1, found: hasCookieMention,
+      desc: 'Cookie-Banner muss erscheinen BEVOR nicht-essentielle Cookies gesetzt werden (Pre-Consent-Tracking ist nach BGH I ZR 7/16 „Planet49" und EuGH C-673/17 unzulässig). Reine Information „Wir verwenden Cookies" ohne Aktionsmöglichkeit reicht nicht — der Nutzer muss aktiv einwilligen können.' },
+    { label: 'Consent-Sprache (akzeptieren / ablehnen)', weight: 1, found: hasConsentLanguage,
+      note: 'Heuristisch über HTML — echte Opt-in/Reject-Gleichwertigkeit erfordert Live-Test im Browser',
+      desc: 'EDSA-Leitlinien 03/2022 + DSK-Beschluss vom März 2022: „Akzeptieren" und „Ablehnen" müssen auf der gleichen Ebene mit gleicher visueller Hervorhebung verfügbar sein. „Dark Patterns" wie farblich hervorgehobener Akzeptieren-Button bei verstecktem „Nur erforderliche" oder mehrfacher Klicktiefe zum Ablehnen sind nach OLG Köln (6 U 80/22) wettbewerbswidrig und bußgeldbewehrt (CNIL-Bußgeld Google 150 Mio. €, Facebook 60 Mio. € für ähnliches Muster).' },
+  ];
+  return mkResult(checks, { url: '(Homepage)', source: 'homepage', text: homepageHtml });
+}
+
+function checkSsl(homepageUrl) {
+  const isHttps = /^https:/i.test(homepageUrl);
+  const checks = [
+    { label: 'Homepage über HTTPS erreichbar', weight: 1, found: isHttps,
+      note: isHttps ? null : 'Pflicht nach DSGVO Art. 32 (Datenintegrität bei Übertragung)',
+      desc: 'DSGVO Art. 32 verlangt geeignete technische und organisatorische Maßnahmen zur Sicherheit der Verarbeitung. TLS-Verschlüsselung gilt als anerkannter Stand der Technik bei der Übertragung personenbezogener Daten (Kontaktformular, Newsletter, Login, Bestellprozess). Bei Verstoß: Bußgeldrisiko nach Art. 83 Abs. 4 DSGVO bis 10 Mio. € oder 2 % des weltweiten Jahresumsatzes. Let\'s Encrypt bietet kostenfreie Zertifikate mit automatischer Erneuerung.' },
+  ];
+  return mkResult(checks, { url: homepageUrl, source: 'homepage', text: '' });
+}
+
+// ── Report HTML builder ──────────────────────────────────────────────────────
+
+function buildComplianceHtml({ domain, audience, baseUrl, results, overall, weights, docs }) {
+  const date     = new Date().toISOString().slice(0, 10);
+  const title    = audience === 'b2c' ? 'B2C-Compliance-Report' : 'B2B-Compliance-Report';
+  const statusBadge = s =>
+    s === 'ok'      ? '<span class="status status-ok">erfüllt</span>'
+   : s === 'partial' ? '<span class="status status-partial">Lücken</span>'
+   : s === 'weak'    ? '<span class="status status-weak">unzureichend</span>'
+   :                   '<span class="status status-missing">nicht gefunden</span>';
+
+  const categoryLabels = {
+    impressum:   'Impressum (§ 5 TMG / § 18 MStV)',
+    datenschutz: 'Datenschutzerklärung (DSGVO Art. 13/14)',
+    agb:         'Allgemeine Geschäftsbedingungen',
+    widerruf:    'Widerrufsbelehrung (§ 312g BGB)',
+    cookies:     'Cookies & Tracking (TTDSG § 25 – indikatorisch)',
+    ssl:         'Transportverschlüsselung (HTTPS)',
+  };
+
+  const summaryRows = Object.entries(results).map(([key, r]) => `
+    <tr>
+      <td class="cat">${escR(categoryLabels[key])}</td>
+      <td class="status-cell">${statusBadge(r.status)}</td>
+      <td class="ratio">${r.score.toFixed(1)} / ${r.max} Pflichtangaben</td>
+      <td class="weight">Gewicht: ${weights[key]}%</td>
+    </tr>`).join('');
+
+  const docSections = Object.entries(results).filter(([k]) => !['cookies', 'ssl'].includes(k)).map(([key, r]) => `
+    <section class="doc-section" id="sec-${key}">
+      <h2>${escR(categoryLabels[key])} ${statusBadge(r.status)}</h2>
+      ${r.url
+        ? `<p class="src">Geprüfte URL: <a href="${escR(r.url)}" target="_blank" rel="noopener">${escR(r.url)}</a>
+             <span class="src-mode">(${r.source === 'footer' ? 'über Footer-Link' : 'kanonischer Pfad'})</span></p>`
+        : `<p class="src src-missing">Keine Seite gefunden — weder über Footer-Links noch unter kanonischen Pfaden erreichbar.</p>`}
+      <table class="checks">
+        <thead><tr><th></th><th>Prüfpunkt</th><th>Gewicht</th><th>Nachweis</th></tr></thead>
+        <tbody>
+          ${r.checks.map(c => renderCheckRow(c, 4)).join('')}
+        </tbody>
+      </table>
+    </section>`).join('');
+
+  const cookiesSection = `
+    <section class="doc-section" id="sec-cookies">
+      <h2>${escR(categoryLabels.cookies)} ${statusBadge(results.cookies.status)}</h2>
+      <p class="indikator">⚙ Diese Kategorie ist <strong>indikatorisch</strong>. Eine belastbare Cookie-Prüfung (Opt-in / Reject-Gleichwertigkeit, Pre-Consent-Tracking) erfordert einen Live-Test im Browser mit gestopptem JavaScript-Renderer; HTML-Statik zeigt nur, ob ein CMP eingebunden ist.</p>
+      <table class="checks">
+        <thead><tr><th></th><th>Prüfpunkt</th><th>Gewicht</th><th>Hinweis</th></tr></thead>
+        <tbody>
+          ${results.cookies.checks.map(c => renderCheckRow(c, 4)).join('')}
+        </tbody>
+      </table>
+    </section>`;
+
+  const sslSection = `
+    <section class="doc-section" id="sec-ssl">
+      <h2>${escR(categoryLabels.ssl)} ${statusBadge(results.ssl.status)}</h2>
+      <table class="checks">
+        <tbody>
+          ${results.ssl.checks.map(c => renderCheckRow(c, 2)).join('')}
+        </tbody>
+      </table>
+    </section>`;
+
+  const recs = buildRecommendations(results, audience);
+  const recsBlock = recs.length ? `
+    <section class="recs">
+      <h2>Empfehlungen</h2>
+      <ol>${recs.map(r => `<li>${escR(r)}</li>`).join('')}</ol>
+    </section>` : '';
+
+  // Hidden score data — not rendered, only readable via data attributes.
+  const scoreData = Object.entries(results).map(([k, r]) =>
+    `data-score-${k}="${(r.score / r.max * 100).toFixed(1)}"`).join(' ');
+
+  return `<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>${escR(title)} — ${escR(domain)} (${date})</title>
+<style>
+${COMPLIANCE_CSS}
+</style>
+</head>
+<body data-audience="${audience}" data-domain="${escR(domain)}" data-overall-score="${overall}" ${scoreData}>
+<header class="report-head">
+  <div class="head-row">
+    <div><h1>${escR(title)}</h1>
+    <p class="meta">Domain: <strong>${escR(domain)}</strong> · Homepage: <a href="${escR(baseUrl)}" target="_blank" rel="noopener">${escR(baseUrl)}</a> · Geprüft: ${date}</p></div>
+    <div class="logo-block">Thomas Felber<br><a href="mailto:felber@live.de" class="logo-sub">felber@live.de</a><br><span class="logo-tag">Compliance-Assessment</span></div>
+  </div>
+  <div class="disclaimer">
+    <strong>⚠ Wichtiger Hinweis:</strong> Dieser Report wurde <em>automatisiert</em> auf Basis öffentlich abrufbarer Inhalte erstellt. Er ist eine <strong>technische Indikation</strong>, ersetzt <strong>keine Rechtsberatung</strong> und keine anwaltliche Einzelfallprüfung. Eine fehlende Übereinstimmung bedeutet nicht zwangsläufig einen Rechtsverstoß; eine erkannte Übereinstimmung kein vollständiger Rechtskonformitätsnachweis.
+  </div>
+</header>
+
+<section class="summary">
+  <h2>Übersicht</h2>
+  <table class="overview">
+    <thead><tr><th>Kategorie</th><th>Status</th><th>Pflichtangaben</th><th></th></tr></thead>
+    <tbody>${summaryRows}</tbody>
+  </table>
+</section>
+
+${docSections}
+${cookiesSection}
+${sslSection}
+${recsBlock}
+
+<footer class="report-foot">
+  <p>Erstellt durch automatisiertes Compliance-Assessment · ${date} · Methodik: HTML-Parsing &amp; Regex-Heuristik (kein Headless-Browser, keine Rechtsberatung).</p>
+</footer>
+</body>
+</html>`;
+}
+
+// Render a single check row + an inline detail row (only when the check failed
+// AND we have a `desc` for it). The detail row spans all but the icon column
+// to align the legal explanation visually under the check label.
+function renderCheckRow(c, totalCols) {
+  const ssCols = totalCols - 1; // spanned columns under the icon
+  const main = `
+    <tr class="${c.found ? 'check-found' : 'check-missing'}">
+      <td class="icon">${c.found ? '✓' : '✗'}</td>
+      <td>${escR(c.label)}${c.note ? `<div class="check-note">${escR(c.note)}</div>` : ''}</td>
+      ${totalCols >= 3 ? `<td class="w">${c.weight ?? ''}</td>` : ''}
+      ${totalCols >= 4 ? `<td class="ev">${c.found ? 'gefunden' : '—'}</td>` : ''}
+    </tr>`;
+  if (c.found || !c.desc) return main;
+  return main + `
+    <tr class="check-detail-row">
+      <td></td>
+      <td colspan="${ssCols}" class="check-detail">
+        <span class="check-detail-tag">Detail</span>
+        ${escR(c.desc)}
+      </td>
+    </tr>`;
+}
+
+function buildRecommendations(results, audience) {
+  const recs = [];
+  for (const [key, r] of Object.entries(results)) {
+    if (!r) continue;
+    if (r.status === 'missing') {
+      const label = key === 'impressum'   ? 'Impressum'
+                  : key === 'datenschutz' ? 'Datenschutzerklärung'
+                  : key === 'agb'         ? 'AGB'
+                  : key === 'widerruf'    ? 'Widerrufsbelehrung'
+                  : key;
+      recs.push(`${label}: keine Seite auffindbar — Pflichtdokument anlegen und im Footer prominent verlinken (Direktzugriff per Klick ohne weitere Navigation gefordert nach § 5 TMG bzw. DSGVO Art. 13).`);
+      continue;
+    }
+    const missing = (r.checks || []).filter(c => !c.found);
+    if (missing.length === 0) continue;
+    const top = missing.slice(0, 3).map(c => c.label).join('; ');
+    if (key === 'impressum')   recs.push(`Impressum ergänzen: ${top}.`);
+    if (key === 'datenschutz') recs.push(`Datenschutzerklärung ergänzen: ${top}.`);
+    if (key === 'agb')         recs.push(`AGB ergänzen: ${top}.`);
+    if (key === 'widerruf')    recs.push(`Widerrufsbelehrung ergänzen: ${top}.`);
+    if (key === 'cookies' && audience !== 'b2b-only')
+      recs.push(`Cookie-Compliance: ${top}. Empfehlung: ein zertifiziertes CMP (Cookiebot, Usercentrics, Borlabs) mit gleichwertigem Reject-Button einsetzen.`);
+    if (key === 'ssl' && r.status !== 'ok')
+      recs.push('HTTPS aktivieren (Let\'s Encrypt-Zertifikat ist kostenfrei) — Datenübertragung muss nach DSGVO Art. 32 verschlüsselt erfolgen.');
+  }
+  return recs;
+}
+
+function buildComplianceHtmlUnreachable(domain, audience) {
+  const date = new Date().toISOString().slice(0, 10);
+  return `<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><title>Compliance-Report — ${escR(domain)}</title>
+<style>${COMPLIANCE_CSS}</style></head>
+<body data-audience="${audience}" data-domain="${escR(domain)}" data-overall-score="0" data-status="unreachable">
+<header class="report-head"><h1>Compliance-Assessment fehlgeschlagen</h1>
+<p class="meta">Domain: <strong>${escR(domain)}</strong> · ${date}</p></header>
+<section class="summary">
+<p class="src-missing">Die Homepage unter <code>https://${escR(domain)}</code> war nicht erreichbar (auch <code>www.${escR(domain)}</code> und HTTP-Varianten geprüft).</p>
+<p>Mögliche Ursachen: Domain existiert nicht, Server nicht erreichbar, Bot-Block (Cloudflare/Akamai), JavaScript-Pflicht für Initial-Response. Ein automatisierter Compliance-Check ist auf erreichbares HTML angewiesen.</p>
+</section></body></html>`;
+}
+
+const COMPLIANCE_CSS = `
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 1100px; margin: 0 auto; padding: 32px 24px; color: #1a1a1a; line-height: 1.55; }
+h1 { font-size: 26px; margin: 0 0 6px; }
+h2 { font-size: 18px; margin: 32px 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e5e7eb; display: flex; align-items: center; gap: 12px; }
+.report-head { padding-bottom: 18px; border-bottom: 2px solid #1a1a1a; margin-bottom: 8px; }
+.head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+.logo-block { text-align: right; font-weight: 600; font-size: 13px; color: #444; }
+.logo-sub { font-weight: 400; font-size: 11px; color: #888; text-decoration: none; }
+.logo-sub:hover { text-decoration: underline; }
+.logo-tag { font-weight: 400; font-size: 11px; color: #888; }
+.meta { color: #666; font-size: 13px; margin: 0; }
+.disclaimer { background: #fff7ed; border-left: 4px solid #ea580c; padding: 12px 16px; margin-top: 18px; font-size: 13px; border-radius: 4px; }
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+table.overview th, table.overview td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+table.overview th { background: #f9fafb; font-weight: 600; }
+table.checks th, table.checks td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+table.checks th { background: #f9fafb; font-weight: 600; font-size: 12px; color: #555; }
+table.checks .icon { width: 28px; font-weight: 700; font-size: 16px; }
+table.checks .w { width: 60px; color: #888; }
+table.checks .ev { width: 30%; color: #555; }
+.check-found .icon { color: #16a34a; }
+.check-missing .icon { color: #dc2626; }
+.check-missing td { color: #555; }
+.check-note { font-size: 11px; color: #888; margin-top: 4px; }
+.check-detail-row td { border-bottom: 1px solid #f3f4f6; background: #fef2f2; padding: 0; }
+.check-detail { padding: 10px 14px 12px !important; font-size: 12px; line-height: 1.55; color: #555; }
+.check-detail-tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: #b91c1c; background: #fee2e2; padding: 2px 7px; border-radius: 3px; margin-right: 8px; vertical-align: middle; }
+.status { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+.status-ok      { background: #dcfce7; color: #15803d; }
+.status-partial { background: #fef3c7; color: #92400e; }
+.status-weak    { background: #fee2e2; color: #b91c1c; }
+.status-missing { background: #f3f4f6; color: #525252; }
+.doc-section { margin-top: 24px; }
+.src { font-size: 12px; color: #555; margin: 4px 0 12px; }
+.src a { color: #1e40af; text-decoration: none; }
+.src a:hover { text-decoration: underline; }
+.src-mode { color: #888; }
+.src-missing { color: #b91c1c; }
+.indikator { background: #f3f4f6; padding: 10px 14px; border-radius: 4px; font-size: 12px; color: #444; margin: 8px 0 12px; }
+.recs { margin-top: 32px; padding: 16px 20px; background: #f0f9ff; border-left: 4px solid #0284c7; border-radius: 4px; }
+.recs h2 { border: none; margin-top: 0; padding: 0; }
+.recs ol { margin: 8px 0 0 18px; padding: 0; }
+.recs li { margin-bottom: 8px; font-size: 13px; }
+.report-foot { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #888; }
+.cat { font-weight: 500; }
+.ratio, .weight { color: #666; font-size: 12px; }
+`;
+
+function escR(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
 
 // ── D1 persistence ───────────────────────────────────────────────────────────

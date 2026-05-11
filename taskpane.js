@@ -320,6 +320,16 @@ class SpamAnalyzer {
       reasons.push(`Spam-Keyword im Absender-Nutzernamen: "${fromLocalPart}"`);
     }
 
+    // Manufactured business identity on a free-mail provider: real Content Managers,
+    // Marketing Specialists, Outreach Agents etc. have company email — not gmail/yahoo.
+    // Pattern: "<firstname>.<role-keyword>@<freemail>" — e.g. "adamr.contentmanager@gmail.com"
+    const freeMailDomain = /^(?:gmail|googlemail|yahoo|outlook|hotmail|live|gmx|aol|icloud|protonmail|proton|tutanota|tuta|mail|zoho|fastmail|yandex)\.[a-z.]+$/i;
+    const rolePart       = /(?:content|marketing|outreach|partnership|seo|business|sales|pr|growth|digital|communications?|publishing|editor(?:ial)?)[\s_.-]?(?:manager|specialist|consultant|director|lead|coordinator|officer|agent|representative|exec|head)/i;
+    if (freeMailDomain.test(fromDomain || '') && rolePart.test(fromLocalPart)) {
+      score += 1.5;
+      reasons.push(`Fabrizierte Business-Identität auf Free-Mail-Provider: "${fromLocalPart}@${fromDomain}"`);
+    }
+
     // Spam keywords in the From display name (e.g. "Detox Nachrichten" <alert@andressacupuncture.com>).
     // Spammers set an enticing display name that has nothing to do with the sender domain.
     // Only fires when the display name exists and is distinct from the domain name.
@@ -339,6 +349,8 @@ class SpamAnalyzer {
     // Expose auth state and BCL to _analyzeBody via instance state (avoids parameter threading)
     this._lastAuthFullyPasses = authFullyPasses;
     this._lastBclVal          = bclVal;
+    this._lastFromHeader      = fromHeader;
+    this._lastFromDomain      = fromDomain;
 
     return score;
   }
@@ -365,7 +377,7 @@ class SpamAnalyzer {
       { re: /\d[\d.,]*\s*€\s*(zum|bei)\s+(niedrig|günstig|tief)zins|kreditangebot|sofortkredit|kredit\s+ohne\s+(schufa|bonitätsprüfung)|umschuldung|privat(kredit|darlehen)|effektiver\s+jahreszins|sollzinssatz/i, w: 1.5, label: 'Finanzangebot-Spam (Kredit/Darlehen)' },
       { re: /ihr\s+(konto|paypal|amazon|apple|microsoft).{0,30}(gesperrt|deaktiviert)/i,   w: 2,   label: 'Phishing: Konto gesperrt' },
       { re: /passwort\s*(ablaufen|bestätigen|verifizieren|erneuern|expired)/i,             w: 2,   label: 'Phishing: Passwort-Anfrage' },
-      { re: /klicken\s*sie\s*hier|click\s*here|jetzt\s*klicken/i,                         w: 0.5, label: 'Generische Klick-Aufforderung' },
+      { re: /klicken\s*sie\s*hier|click\s*here|jetzt\s*klicken/i,                         w: 0.7, label: 'Generische Klick-Aufforderung' },
       { re: /dringend|urgent|sofort\s*handeln|act\s*now|limited\s*time|angebot\s*(endet|läuft)|läuft\s*(heute\s*)?ab|bald\s*nicht\s*mehr\s*verfügbar|bonus\s*(endet|läuft|expires)|angebot\s+endet\s+bald/i, w: 0.5, label: 'Künstliche Dringlichkeit' },
       { re: /100\s*%\s*(kostenlos|gratis|free)|völlig\s*kostenlos/i,                      w: 0.8, label: 'Gratis-Versprechen' },
       { re: /sie\s*wurden\s*ausgewählt|you\s*have\s*been\s*selected/i,                    w: 1.5, label: 'Pseudo-Auszeichnung' },
@@ -375,10 +387,61 @@ class SpamAnalyzer {
       { re: /wechat|微信|telegram\s*(channel|contact|group|id)|whatsapp\s*(contact|number|group)|line\s*id\s*:/i, w: 1.5, label: 'Messenger-Kontakt-Solicitation (WeChat/Telegram/WhatsApp)' },
       { re: /bundeszentralamt|finanzamt\b|bundeszoll|steuerpr[üu]fung.*krypto|amtliche?\s+(mahnung|aufforderung|mitteilung).*steuer/i, w: 2.5, label: 'Behörden-Impersonation (Finanzamt/BZSt)' },
       { re: /\b(UPS|DHL|FedEx|Hermes|DPD|GLS|Yodel|Evri)\b.{0,40}(paket|lieferung|sendung|delivery|tracking|notification|nicht\s*zugestellt)/i, w: 1.5, label: 'Kurierdienst-Erwähnung (auf Domain-Mismatch prüfen)' },
+
+      // SEO / Link-Building / Guest-Post-Outreach — eigene Spam-Klasse mit hoher Spezifität
+      { re: /\b(guest[\s-]?(post|blog|article|author)|gastbeitrag|gesponsorter?\s+(beitrag|artikel|post)|sponsored\s+(post|article|content|placement)|paid\s+(post|placement|article))\b/i,
+        w: 2.0, label: 'Gastbeitrag-/Sponsored-Content-Anfrage (Link-Building)' },
+      { re: /\b(backlinks?|link[\s-]?building|link[\s-]?exchange|link[\s-]?placement|link[\s-]?insertion|niche[\s-]?edit|do[\s-]?follow\s+link|reciprocal\s+link)\b/i,
+        w: 2.0, label: 'Backlink-/Link-Exchange-Anfrage' },
+      { re: /\b(?:DR|DA|TF|CF|PA)\s*[:=]?\s*\d{2,}\+?\b|\b(?:domain\s+(?:rating|authority)|trust\s+flow|citation\s+flow|page\s+authority|ahrefs\s+(?:rank|score))\b\s*(?:of\s+|=\s*|:\s*)?\d{2,}/i,
+        w: 1.8, label: 'SEO-Metrik-Versprechen (DR/DA/TF) — Link-Selling-Anbahnung' },
+      { re: /\b\d+(?:[.,]\d+)?\s*(?:[KMm]|million|tausend|thousand)\+?\s*(?:monthly|monatlich(?:e)?|per\s+month|im\s+monat)\s*(?:visit|visitor|audience|reach|traffic|impression|unique|reader|leser)/i,
+        w: 1.5, label: 'Reichweiten-Pitch ("2M+ monthly audience")' },
+      { re: /\b(write\s+for\s+us|contribute\s+to\s+(?:our|your)|content\s+collaboration|content\s+partnership|publishing\s+opportunity|featured\s+(?:article|post)\s+(?:opportunity|placement)|editorial\s+(?:placement|opportunity))\b/i,
+        w: 1.5, label: 'SEO-Outreach-Phrase ("write for us" / "content collaboration")' },
+
+      // Cold-Pitch-Floskeln — einzeln schwach, kumulativ stark (Compound-Check unten verstärkt)
+      { re: /\b(?:i\s+)?hope\s+(?:this|you|all)\s+(?:message\s+|email\s+|note\s+)?(?:finds?|are|is)\s+(?:you\s+)?(?:well|doing\s+well|good)\b/i,
+        w: 0.4, label: 'Generische Cold-Pitch-Eröffnung ("hope this finds you well")' },
+      { re: /\b(?:i'?m\s+|just\s+|wanted\s+to\s+|circling\s+back\s+|following\s+up\s+(?:on\s+)?)?reach(?:ing|ed)?\s+out(?:\s+to\s+(?:you|offer|propose|discuss))?\b/i,
+        w: 0.4, label: 'Cold-Pitch-Opener ("reaching out")' },
+      { re: /\b(?:exciting|amazing|unique|great|fantastic|incredible)\s+(?:opportunity|chance|partnership|collaboration)\b/i,
+        w: 0.5, label: 'Generisches Opportunity-Pitch-Adjektiv' },
     ];
 
     for (const p of patterns) {
       if (p.re.test(fullLower)) { score += p.w; reasons.push(p.label); }
+    }
+
+    // ── Free-Mail-Provider + B2B-Outreach (Compound-Check) ─────────────────────
+    // Persönliche Free-Mail-Adressen (Gmail, Yahoo, GMX …) sind legitim für
+    // Privatkorrespondenz, aber NIE für seriöse B2B-Outreach — echte Unternehmen
+    // nutzen ihre eigene Domain. Wir flaggen nur, wenn freemail + mindestens
+    // 2 Outreach-Signale zusammenkommen, um False-Positives bei privaten Mails
+    // zu vermeiden.
+    const freeMailBody = /^(?:gmail\.com|googlemail\.com|yahoo\.(?:com|de|co\.uk|fr|es|it)|outlook\.com|hotmail\.com|live\.com|gmx\.(?:de|net|com|at|ch)|web\.de|t-online\.de|aol\.com|icloud\.com|me\.com|mac\.com|protonmail\.com|proton\.me|tutanota\.com|tuta\.com|mail\.com|zoho\.com|fastmail\.com|yandex\.(?:com|ru))$/i;
+    const isFreeMail   = freeMailBody.test((this._lastFromDomain || '').toLowerCase());
+    if (isFreeMail) {
+      const outreachSignals = [
+        /\b(?:guest\s+post|backlink|link\s+building|sponsored\s+post|content\s+collaboration|write\s+for\s+us)\b/i,
+        /\b(?:DR|DA|TF)\s*[:=]?\s*\d{2,}\+?\b|\bdomain\s+(?:rating|authority)\b/i,
+        /\b\d+[KMm]\+?\s*(?:monthly|unique|visitor|audience|reach|traffic)/i,
+        /\bhope\s+(?:this|you).{0,30}(?:finds?|are)\s+(?:you\s+)?well\b/i,
+        /\b(?:reaching|reached)\s+out\b/i,
+        /\b(?:opportunity|partnership|collaboration)\b/i,
+      ];
+      const hits = outreachSignals.filter(re => re.test(fullText)).length;
+      if (hits >= 2) {
+        // False-Positive-Guard: echte persönliche Signatur mit Tel + Firmen-URL ≠
+        // Free-Mail-Domain → Penalty halbieren. Spam-Outreach hat fast nie beides.
+        const hasBusinessSignature =
+          /\b(?:tel|telefon|phone|mobile|mob\.?)\s*[:.]?\s*[+\d][\d\s\-/()]{6,}/i.test(plainText)
+          && /https?:\/\/(?!.*(?:gmail|googlemail|yahoo|outlook|hotmail|live\.com|gmx|web\.de|t-online|aol|icloud|protonmail|tutanota|mail\.com|zoho|fastmail|yandex))[\w.-]+\.[a-z]{2,}/i.test(bodyHtml || '');
+        let w = Math.min(3, 1.0 + hits * 0.5);   // 2 Hits = 2.0, 3 = 2.5, 4+ = 3.0
+        if (hasBusinessSignature) w *= 0.5;
+        score += w;
+        reasons.push(`Free-Mail-Provider (${this._lastFromDomain}) + ${hits} B2B-Outreach-Signale — kein seriöser Geschäftsabsender${hasBusinessSignature ? ' (Penalty halbiert wg. Business-Signatur)' : ''}`);
+      }
     }
 
     // Brand impersonation: subject prominently names a major brand but the sender domain
@@ -510,10 +573,12 @@ class SpamAnalyzer {
     const links     = [...new Set([...origSrcs, ...rawLinks])];
     const linkCount = rawLinks.length;   // visible href links only
 
-    // URL shorteners hide destination — always suspicious
-    const shortenerRe = /bit\.ly\/|tinyurl\.com\/|t\.co\/|goo\.gl\/|ow\.ly\/|cutt\.ly\/|rb\.gy\//i;
+    // URL shorteners hide destination — always suspicious.
+    // Bewusst NICHT enthalten: youtu.be (YouTube official), lnkd.in (LinkedIn),
+    // fb.me (Facebook), amzn.to (Amazon) — sind legitime Plattform-Shortener.
+    const shortenerRe = /\b(?:bit\.ly|tinyurl\.com|t\.co|goo\.gl|ow\.ly|cutt\.ly|rb\.gy|is\.gd|short\.io|tiny\.cc|shorturl\.at|rebrand\.ly|bit\.do|s\.id|link\.tl|tr\.im|soo\.gd|qr\.ae|x\.co)\//i;
     if (links.some(l => shortenerRe.test(l))) {
-      score += 1;
+      score += 1.5;
       reasons.push('URL-Verkürzer gefunden (versteckt Ziel-URL)');
     }
 
@@ -1158,7 +1223,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.1.16';
+const VERSION            = '2.2.3';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
@@ -1274,6 +1339,8 @@ Office.onReady(info => {
   document.getElementById('btn-delivery-report').addEventListener('click', downloadDeliverabilityReport);
   document.getElementById('btn-action-plan').addEventListener('click', () => generateArtifact('action-plan'));
   document.getElementById('btn-anschreiben').addEventListener('click', () => generateArtifact('anschreiben'));
+  document.getElementById('btn-compliance-b2b')?.addEventListener('click', () => generateComplianceReport('b2b'));
+  document.getElementById('btn-compliance-b2c')?.addEventListener('click', () => generateComplianceReport('b2c'));
   document.getElementById('btn-zip').addEventListener('click', downloadAssessmentZip);
 
   initPinHint();
@@ -2767,6 +2834,59 @@ async function saveReportToDb({ domain, sender, subject, emailDate, addinScore, 
     if (data.ok) showToast('In Datenbank gespeichert ✓', false);
   } catch {
     // silent — download already succeeded
+  }
+}
+
+// ─── Compliance assessment (B2B / B2C) ─────────────────────────────────────────
+
+async function generateComplianceReport(audience) {
+  const btn       = document.getElementById(`btn-compliance-${audience}`);
+  const origLabel = btn?.textContent || '';
+  if (!btn) return;
+
+  const senderEmail = Office.context.mailbox.item?.from?.emailAddress || '';
+  const domain      = (senderEmail.match(/@([\w.-]+)/) || [])[1];
+  if (!domain) {
+    showToast('⚠ Keine Absender-Domain erkannt', true);
+    return;
+  }
+
+  btn.disabled    = true;
+  btn.textContent = 'Prüfe…';
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ mode: 'compliance', audience, domain }),
+    });
+    if (!res.ok) throw new Error(`Worker-Fehler ${res.status}`);
+    const data = await res.json();
+    const html = data.html || '';
+    if (!html) throw new Error('Leere Antwort vom Worker');
+
+    const date     = new Date().toISOString().slice(0, 10);
+    const filename = `${domain}-Compliance-${audience.toUpperCase()}-${date}.html`;
+    const blob     = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url      = URL.createObjectURL(blob);
+    const a        = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+    showToast(`${filename} wird heruntergeladen…`, false);
+
+    saveReportToDb({
+      domain,
+      sender:    senderEmail,
+      subject:   `Compliance-Assessment ${audience.toUpperCase()}`,
+      emailDate: date,
+      type:      `compliance-${audience}`,
+      html,
+    });
+  } catch (err) {
+    showToast(`⚠ ${err.message}`, true);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = origLabel;
   }
 }
 

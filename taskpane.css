@@ -715,6 +715,15 @@ body {
 .btn-artifact:focus-visible { outline: 2px solid #8b5cf6; outline-offset: 2px; }
 .btn-artifact:disabled { opacity: 0.6; cursor: default; }
 
+.artifact-row-compliance { margin-top: 8px; }
+.btn-compliance {
+  border-color: #0284c7;
+  background:   #e0f2fe;
+  color:        #075985;
+}
+.btn-compliance:hover:not(:disabled) { background: #bae6fd; }
+.btn-compliance:focus-visible        { outline: 2px solid #0284c7; }
+
 /* ── Advice result ───────────────────────────────────────────────────────── */
 
 .advice-result { font-size: 13px; }
