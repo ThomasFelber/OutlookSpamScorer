@@ -461,6 +461,24 @@ class SpamAnalyzer {
       reasons.push(`Affiliate-/Lead-Gen-Marketing-Domain "${fromDomain}" — Drittanbieter-Massenversand-Netzwerk`);
     }
 
+    // ── Compromised West-African Institutional TLD ────────────────────────────
+    // .edu.ng, .ac.ng, .gov.ng etc. pass SPF/DKIM but are widely compromised
+    // for 419/advance-fee fraud — institutional accounts look trustworthy.
+    const westAfricanInstitTld = /\.(?:edu|ac|gov|sch|org|net)\.(?:ng|gh|ke|ug|tz|cm|ci|sn|rw|et|zm|bw)$/i;
+    if (fromDomain && westAfricanInstitTld.test(fromDomain)) {
+      score += 1.0;
+      reasons.push(`West-Afrikanische Institutionelle Domain "${fromDomain}" — häufig kompromittiert für Vorschuss-Betrug`);
+
+      // Compound: Google-WS-DKIM + institutional domain + free-mail Reply-To
+      const googleWsDkim = allDkimSigs.some(s => /\bd=(?:google\.com|googlemail\.com)\b/i.test(s));
+      const freeMailReTld = /^(?:gmail|googlemail|yahoo|hotmail|outlook|live|gmx|aol|icloud|protonmail|proton|tutanota|tuta|mail\.com|zoho|yandex)\.[a-z]{2,}$/i;
+      const replyToDomAf  = this._extractDomain(replyToHeader);
+      if (googleWsDkim && replyToDomAf && freeMailReTld.test(replyToDomAf)) {
+        score += 2.5;
+        reasons.push(`Compound 419-Muster: Google-WS-DKIM + "${fromDomain}" + Free-Mail Reply-To "${replyToDomAf}" — klassischer Vorschussbetrug`);
+      }
+    }
+
     // Expose auth state and BCL to _analyzeBody via instance state (avoids parameter threading)
     this._lastAuthFullyPasses = authFullyPasses;
     this._lastBclVal          = bclVal;
@@ -487,7 +505,9 @@ class SpamAnalyzer {
     // Spam keyword patterns (German + English)
     const patterns = [
       { re: /gewinn(en|er|t|chance)|ihre?\s+gewinnchance|lotterie|jackpot|millionen?\s*euro|preis\s*gewonnen|haben\s+(sie\s+)?gewonnen/i, w: 2, label: 'Gewinnversprechen' },
-      { re: /nigeria|prince|inheritance|erbschaft|million[s]?\s*dollar/i,                  w: 2.5, label: 'Nigeria-/Vorschussbetrug' },
+      { re: /\b(?:nigeria|ghana|uganda|central\s+bank\s+of|next[\s-]?of[\s-]?kin|beneficiary\s+(?:of|fund)|atm\s+(?:card|release)|inheritance\s+(?:fund|claim|transfer)|unclaimed\s+(?:fund|deposit)|diplomat(?:ic)?\s+(?:box|trunk)|anti[\s-]?terrorism\s+clearance|fund\s+(?:transfer|release)|\$\s*\d[\d.,]*\s*(?:m(?:illion)?|b(?:illion)?)\b|millions?\s+(?:usd|us\$|\$)|billions?\s+(?:usd|us\$|\$)|prince\b|erbschaft|million[s]?\s*dollar)\b/i, w: 2.5, label: 'Nigeria-419-/Vorschussbetrug' },
+      { re: /\b(?:western\s+union|moneygram|ria\s+(?:money|transfer)|wire\s+(?:the\s+)?(?:transfer|fee|charge)|transaction\s+pin\b|secret\s+(?:pin|code)\s+(?:to|for)|pay\s+(?:the\s+)?(?:clearance|delivery|release|insurance|legal)\s+fee)\b/i, w: 1.5, label: 'Überweisungs-Kanal (Western Union/MoneyGram) — Vorschussbetrug-Signal' },
+      { re: /\b(?:central\s+bank\s+of\s+(?:nigeria|ghana|uganda|kenya|africa)|uba\s+(?:plc|bank|nigeria)|first\s+bank\s+(?:of\s+)?nigeria|zenith\s+bank|access\s+bank\s+nigeria|union\s+bank\s+of\s+nigeria|polaris\s+bank)\b/i, w: 1.5, label: 'West-Afrikanische Bankbehörde im Text — 419-Fraud-Signal' },
       { re: /viagra|cialis|levitra|pharmacy|apotheke\s*ohne\s*rezept/i,                    w: 2.5, label: 'Pharma-Spam' },
       { re: /casino|online.?wett(en|büro)|glücksspiel|freispiel(e)?|\bslots?\b|roulette|blackjack|poker\s*bonus/i, w: 1.5, label: 'Glücksspiel/Casino' },
       { re: /\d[\d.,]*\s*€\s*(zum|bei)\s+(niedrig|günstig|tief)zins|kreditangebot|sofortkredit|kredit\s+ohne\s+(schufa|bonitätsprüfung)|umschuldung|privat(kredit|darlehen)|effektiver\s+jahreszins|sollzinssatz/i, w: 1.5, label: 'Finanzangebot-Spam (Kredit/Darlehen)' },
@@ -750,6 +770,20 @@ class SpamAnalyzer {
     if (calendarSubject.test(subject || '') && !hasIcsPayload) {
       score += 1.5;
       reasons.push('Kalender-Einladungs-Pretext im Subject ohne ICS-Payload — Curiosity-Spam-Pretext');
+    }
+
+    // ── ALL-CAPS subject line ──────────────────────────────────────────────────
+    // "FUNDS IS LOADED INTO AN ATM CARD" — legitimate senders never shout.
+    // Fires only when ≥4 words and ≥80% are all-caps (excludes normal acronyms).
+    if (subject) {
+      const subjWords  = subject.split(/\s+/).filter(w => w.length > 2);
+      if (subjWords.length >= 4) {
+        const capsWords = subjWords.filter(w => w === w.toUpperCase() && /[A-Z]/.test(w));
+        if (capsWords.length / subjWords.length >= 0.8) {
+          score += 1.2;
+          reasons.push(`Betreff komplett in Großbuchstaben: "${subject.slice(0, 60)}" — aggressives Spam-Muster`);
+        }
+      }
     }
 
     // Exclamation mark analysis — density + subject + consecutive (not raw count)
@@ -1456,7 +1490,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.6';
+const VERSION            = '2.2.7';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
