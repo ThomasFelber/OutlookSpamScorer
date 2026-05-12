@@ -1490,7 +1490,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.7';
+const VERSION            = '2.2.8';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
@@ -1581,6 +1581,9 @@ let lastClaudeResult         = null;
 let lastAdviceResult         = null;
 let lastAnschreibenHtml      = null;
 let lastActionPlanHtml       = null;
+let lastDeliveryReportHtml   = null;
+let lastComplianceB2bHtml    = null;
+let lastComplianceB2cHtml    = null;
 let lastDnsResult            = null;
 
 // ─── Office init ───────────────────────────────────────────────────────────────
@@ -1640,6 +1643,9 @@ function analyzeCurrentItem() {
   lastDnsResult           = null;
   lastAnschreibenHtml     = null;
   lastActionPlanHtml      = null;
+  lastDeliveryReportHtml  = null;
+  lastComplianceB2bHtml   = null;
+  lastComplianceB2cHtml   = null;
 
   // Reset hidden text expander
   const htSection = document.getElementById('hidden-text-section');
@@ -1869,7 +1875,8 @@ async function prefetchExplanations(signals) {
 
 function applyAccountVisibility() {
   document.getElementById('artifacts-section')?.classList.toggle('hidden', !isAuthorizedAccount);
-  document.getElementById('export-section')?.classList.toggle('hidden',    isAuthorizedAccount);
+  // ZIP export is always visible — bundles all HTML reports generated in the current session
+  document.getElementById('export-section')?.classList.remove('hidden');
   // Score 2 widget visible only for the authorized account
   document.getElementById('opp-wrap')?.classList.toggle('hidden',            !isAuthorizedAccount);
   document.getElementById('opp-reasons-section')?.classList.toggle('hidden', !isAuthorizedAccount);
@@ -2569,6 +2576,15 @@ async function downloadAssessmentZip() {
       zip.file(`${domain}-ai-assessment-${date}.txt`, aiLines.join('\n'));
     }
 
+    // 4. HTML reports — include any that have already been generated this session
+    if (lastDeliveryReportHtml)  zip.file(`${domain}-Report-${date}.html`,           lastDeliveryReportHtml);
+    if (lastActionPlanHtml)      zip.file(`${domain}-Aktionsplan-${date}.html`,       lastActionPlanHtml);
+    if (lastAnschreibenHtml)     zip.file(`${domain}-Anschreiben-${date}.html`,       lastAnschreibenHtml);
+    if (lastComplianceB2bHtml)   zip.file(`${domain}-Compliance-B2B-${date}.html`,    lastComplianceB2bHtml);
+    if (lastComplianceB2cHtml)   zip.file(`${domain}-Compliance-B2C-${date}.html`,    lastComplianceB2cHtml);
+
+    const htmlCount = [lastDeliveryReportHtml, lastActionPlanHtml, lastAnschreibenHtml, lastComplianceB2bHtml, lastComplianceB2cHtml].filter(Boolean).length;
+
     const blob     = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
     const url      = URL.createObjectURL(blob);
     const filename = `${domain}-Assessment-${date}.zip`;
@@ -2578,7 +2594,8 @@ async function downloadAssessmentZip() {
     a.click();
     URL.revokeObjectURL(url);
 
-    showToast(`${filename} wird heruntergeladen…`, false);
+    const extra = htmlCount > 0 ? ` inkl. ${htmlCount} HTML-Bericht${htmlCount > 1 ? 'e' : ''}` : '';
+    showToast(`${filename}${extra} wird heruntergeladen…`, false);
   } catch (err) {
     showToast(`⚠ ${err.message}`, true);
   } finally {
@@ -3059,12 +3076,13 @@ async function downloadDeliverabilityReport() {
     });
 
     const s    = rStr();
+    const date   = new Date().toISOString().slice(0, 10);
+    const domain = (senderEmail.match(/@([\w.-]+)/) || [])[1] || 'sender';
+    lastDeliveryReportHtml = html;           // cache for ZIP bundle
     const blob = new Blob([html], { type: 'text/html; charset=utf-8' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
-    const date   = new Date().toISOString().slice(0, 10);
-    const domain = (senderEmail.match(/@([\w.-]+)/) || [])[1] || 'sender';
     a.download = `${domain}-Report-${date}.html`;
     document.body.appendChild(a);
     a.click();
@@ -3134,6 +3152,7 @@ async function generateComplianceReport(audience) {
 
     const date     = new Date().toISOString().slice(0, 10);
     const filename = `${domain}-Compliance-${audience.toUpperCase()}-${date}.html`;
+    if (audience === 'b2b') lastComplianceB2bHtml = html; else lastComplianceB2cHtml = html;  // cache for ZIP
     const blob     = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url      = URL.createObjectURL(blob);
     const a        = document.createElement('a');
