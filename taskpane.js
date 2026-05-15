@@ -450,6 +450,13 @@ class SpamAnalyzer {
       score += 0.8;
       reasons.push(`Vokal-arme Random-Local-Part "${fromLocalPart}" — Bot-generierte Versand-Adresse`);
     }
+    // Also check the SLD itself (e.g. "schwarzjhyh" in schwarzjhyh.com).
+    // The subdomain check above uses slice(0, -2) and misses single-label domains.
+    const sldPart = fromHostParts2.length >= 2 ? fromHostParts2[fromHostParts2.length - 2] : '';
+    if (!gibberishSubdomain && isGibberish(sldPart)) {
+      score += 1.5;
+      reasons.push(`Gibberish-Root-Domain "${fromDomain}" — Throwaway-Spam-Domain`);
+    }
 
     // ── Affiliate-/Lead-Gen-Marketing-Domain ───────────────────────────────────
     // Domain-Namen mit "leads-marketing", "affiliate", "lead-gen", "email-
@@ -510,6 +517,8 @@ class SpamAnalyzer {
       { re: /\b(?:central\s+bank\s+of\s+(?:nigeria|ghana|uganda|kenya|africa)|uba\s+(?:plc|bank|nigeria)|first\s+bank\s+(?:of\s+)?nigeria|zenith\s+bank|access\s+bank\s+nigeria|union\s+bank\s+of\s+nigeria|polaris\s+bank)\b/i, w: 1.5, label: 'West-Afrikanische Bankbehörde im Text — 419-Fraud-Signal' },
       { re: /viagra|cialis|levitra|pharmacy|apotheke\s*ohne\s*rezept/i,                    w: 2.5, label: 'Pharma-Spam' },
       { re: /casino|online.?wett(en|büro)|glücksspiel|freispiel(e)?|\bslots?\b|roulette|blackjack|poker\s*bonus/i, w: 1.5, label: 'Glücksspiel/Casino' },
+      { re: /\b(?:\d{3,4}\s*%\s*(?:bonus|willkommensbonus|welcome\s+bonus|einzahlungsbonus|deposit\s+bonus|match\s+bonus)|(?:bis\s+zu|up\s+to)\s+\d{3,}(?:\s*€|\s*eur|\s*\$|\s*usd).*?bonus|\d{2,3}\s+freispiele|\d{2,3}\s+free\s+spins)\b/i,
+        w: 1.5, label: 'Extreme Bonus-%-Versprechen (Casino/Gambling-Spam)' },
       { re: /\d[\d.,]*\s*€\s*(zum|bei)\s+(niedrig|günstig|tief)zins|kreditangebot|sofortkredit|kredit\s+ohne\s+(schufa|bonitätsprüfung)|umschuldung|privat(kredit|darlehen)|effektiver\s+jahreszins|sollzinssatz/i, w: 1.5, label: 'Finanzangebot-Spam (Kredit/Darlehen)' },
       { re: /ihr\s+(konto|paypal|amazon|apple|microsoft).{0,30}(gesperrt|deaktiviert)/i,   w: 2,   label: 'Phishing: Konto gesperrt' },
       { re: /passwort\s*(ablaufen|bestätigen|verifizieren|erneuern|expired)/i,             w: 2,   label: 'Phishing: Passwort-Anfrage' },
@@ -519,9 +528,15 @@ class SpamAnalyzer {
       { re: /sie\s*wurden\s*ausgewählt|you\s*have\s*been\s*selected/i,                    w: 1.5, label: 'Pseudo-Auszeichnung' },
       { re: /\bcrypto|bitcoin|kryptowährun|invest.{0,30}(rendite|gewinne?|robot)|hohe\s*rendite|trading.{0,20}(auto|bot|signal)|warum\s+alle.{0,20}invest|fibonacci|forex\s+signal/i, w: 1.5, label: 'Crypto/Investment-Spam' },
       { re: /ihre\s*(daten|informationen)\s*(wurden\s*)?bestätigen|verify\s*your\s*info/i, w: 1.5, label: 'Datenmissbrauch-Phishing' },
+      // Crypto-wallet credential theft — no legitimate service ever asks for a seed phrase
+      { re: /\b(?:seed\s+phrase|recovery\s+phrase|secret\s+(?:phrase|words?)|(?:12|24)[-\s]?(?:word|wort)s?\s+(?:phrase|key|seed)|mnemonic(?:\s+phrase)?|private\s+key\s+(?:backup|recovery|export)|enter\s+your\s+(?:wallet\s+)?(?:phrase|passphrase)|regain\s+(?:access|control)\s+(?:to\s+)?(?:your\s+)?wallet|wallet\s+(?:verification|verify)\s+required)\b/i,
+        w: 2.5, label: 'Krypto-Wallet-Phishing: Seed-/Recovery-Phrase angefordert — nie legitim' },
+      // Fake mandatory/security subject prefix — fires on fullLower which starts with subject
+      { re: /^mandatory\s*:\s*(?:regain|verify|update|confirm|restore|secure|unlock|action)\b/i,
+        w: 1.0, label: 'Imperatives Security-Subject-Prefix ("Mandatory: regain/verify…") — Fake-Dringlichkeit' },
       { re: /lions?\s*(mane|spray)|körper\s*reset|nahrungsergänzung|supplement\b|fettverbrenner|schlank(heits)?|kräuter.{0,25}(spray|tropfen|kapsel)|testosteron.{0,20}boost|abnehm|\bdetox\b|keto\s*(diät|plan|programm|rezept|\b)|\d+\s*kg\s*(verloren?|abgenommen)|gewicht\s*(verloren?|verlier|abgenomm)|bauchfett|taille\s*(reduzier|weg|schmaler)/i, w: 1.5, label: 'Supplement/Gewichtsabnahme-Spam' },
       { re: /\b(?:vita[-\s]?glp|gluco[-\s]?pro|sugar[-\s]?defender|ozempic[-_]?(?:alternative|natural|generic)|GLP[-\s]?1\s+(?:natural|alternative|generic)|abnehmspritze\s+(?:ohne\s+rezept|alternative|generic))\b/i, w: 1.5, label: 'GLP-1-/Ozempic-Klon-Spam (Supplement)' },
-      { re: /wechat|微信|telegram\s*(channel|contact|group|id)|whatsapp\s*(contact|number|group)|line\s*id\s*:/i, w: 1.5, label: 'Messenger-Kontakt-Solicitation (WeChat/Telegram/WhatsApp)' },
+      { re: /wechat|微信|t\.me\/\S|telegram\.me\/\S|telegram\s*(?:channel|contact|group|id|username|handle)|whatsapp\s*(?:contact|number|group)|line\s*id\s*:/i, w: 1.5, label: 'Messenger-Kontakt-Solicitation (WeChat/Telegram t.me/WhatsApp)' },
       { re: /bundeszentralamt|finanzamt\b|bundeszoll|steuerpr[üu]fung.*krypto|amtliche?\s+(mahnung|aufforderung|mitteilung).*steuer/i, w: 2.5, label: 'Behörden-Impersonation (Finanzamt/BZSt)' },
       { re: /\b(UPS|DHL|FedEx|Hermes|DPD|GLS|Yodel|Evri)\b.{0,40}(paket|lieferung|sendung|delivery|tracking|notification|nicht\s*zugestellt)/i, w: 1.5, label: 'Kurierdienst-Erwähnung (auf Domain-Mismatch prüfen)' },
 
@@ -534,8 +549,8 @@ class SpamAnalyzer {
         w: 1.8, label: 'SEO-Metrik-Versprechen (DR/DA/TF) — Link-Selling-Anbahnung' },
       { re: /\b\d+(?:[.,]\d+)?\s*(?:[KMm]|million|tausend|thousand)\+?\s*(?:monthly|monatlich(?:e)?|per\s+month|im\s+monat)\s*(?:visit|visitor|audience|reach|traffic|impression|unique|reader|leser)/i,
         w: 1.5, label: 'Reichweiten-Pitch ("2M+ monthly audience")' },
-      { re: /\b(write\s+for\s+us|contribute\s+to\s+(?:our|your)|content\s+collaboration|content\s+partnership|publishing\s+opportunity|featured\s+(?:article|post)\s+(?:opportunity|placement)|editorial\s+(?:placement|opportunity))\b/i,
-        w: 1.5, label: 'SEO-Outreach-Phrase ("write for us" / "content collaboration")' },
+      { re: /\b(write\s+for\s+us|contribute\s+to\s+(?:our|your)|content\s+collaboration|content\s+partnership|publishing\s+opportunity|featured\s+(?:article|post)\s+(?:opportunity|placements?)|editorial\s+(?:placements?|opportunity|collaboration)|premium\s+(?:editorial|publications?|placements?))\b/i,
+        w: 1.5, label: 'SEO-Outreach-Phrase ("write for us" / "editorial placement" / "premium publications")' },
 
       // Cold-Pitch-Floskeln — einzeln schwach, kumulativ stark (Compound-Check unten verstärkt)
       { re: /\b(?:i\s+)?hope\s+(?:this|you|all)\s+(?:message\s+|email\s+|note\s+)?(?:finds?|are|is)\s+(?:you\s+)?(?:well|doing\s+well|good)\b/i,
@@ -669,6 +684,11 @@ class SpamAnalyzer {
         { re: /\badidas\b/i,                         roots: ['adidas.com', 'adidas.de'] },
         { re: /\blinkedin\b/i,                       roots: ['linkedin.com'] },
         { re: /\btiktok\b/i,                         roots: ['tiktok.com'] },
+        // Crypto wallets — frequent phishing impersonation targets
+        { re: /\bexodus\b(?!\s*(?:road|movie|music|album|band))/i, roots: ['exodus.com'] },
+        { re: /\bmeta\s*mask\b/i,                                   roots: ['metamask.io'] },
+        { re: /\btrezor\b/i,                                        roots: ['trezor.io', 'trezor.com'] },
+        { re: /\bphantom\s+wallet\b/i,                              roots: ['phantom.app'] },
       ];
       // Check subject first (high confidence, weight 2.5).
       // If the subject is clean, fall back to the first 800 chars of body text (weight 1.5)
@@ -784,6 +804,15 @@ class SpamAnalyzer {
           reasons.push(`Betreff komplett in Großbuchstaben: "${subject.slice(0, 60)}" — aggressives Spam-Muster`);
         }
       }
+    }
+
+    // ── Emoji cluster in subject ──────────────────────────────────────────────
+    // 3+ emojis in the subject line = aggressive promotional tactic.
+    // ⚡️WILLKOMMENSBONUS 400%⚡️ is never used by legitimate senders.
+    const subjectEmojiCount = ((subject || '').match(/[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}\u{2300}-\u{23FF}]/gu) || []).length;
+    if (subjectEmojiCount >= 3) {
+      score += 0.8;
+      reasons.push(`${subjectEmojiCount} Emojis im Betreff — aggressives Promo-Spam-Muster`);
     }
 
     // Exclamation mark analysis — density + subject + consecutive (not raw count)
@@ -1490,7 +1519,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.8';
+const VERSION            = '2.2.9';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
