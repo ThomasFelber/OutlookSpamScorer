@@ -171,6 +171,15 @@ class SpamAnalyzer {
 
       if (/dmarc=fail/i.test(authLine))   { score += 2;   reasons.push('DMARC: FAIL'); }
 
+      // temperror = DNS timeout during auth lookup — legitimate senders have stable DNS
+      const spfTemperror  = /spf=temperror/i.test(authLine);
+      const dkimTemperror = /dkim=temperror/i.test(authLine);
+      if (spfTemperror || dkimTemperror) {
+        const which = [spfTemperror && 'SPF', dkimTemperror && 'DKIM'].filter(Boolean).join('+');
+        score += 1.0;
+        reasons.push(`${which}-Temperror: DNS-Timeout bei Auth-Prüfung — instabile Versand-Infrastruktur`);
+      }
+
       // compauth=fail — Microsoft Composite Auth failed despite individual checks
       const compAuth = (authLine.match(/compauth=(pass|fail|softpass)/i) || [])[1]?.toLowerCase() ?? null;
       if (compAuth === 'fail') { score += 2; reasons.push('compauth=fail — Microsoft Composite Auth versagt'); }
@@ -273,6 +282,16 @@ class SpamAnalyzer {
         score += 0.5;
         reasons.push(`Return-Path-Domain abweichend (${returnPathDomain})`);
       }
+    }
+
+    // To: header with non-internet TLD — BCC spam uses internal routing labels
+    // (e.g. "admin@ryzm.01rkzrfv.ou1") that are never valid internet domains.
+    // Real internet TLDs are 2–6 letters; anything with digits or >6 chars is internal.
+    const toHeader  = this._getHeader(headers, 'To') || '';
+    const toDomain  = this._extractDomain(toHeader);
+    if (toDomain && !/\.[a-z]{2,6}$/i.test(toDomain)) {
+      score += 0.8;
+      reasons.push(`To:-Adresse mit nicht-internetfähigem Domain-Format "${toDomain}" — BCC-Massenversand-Indikator`);
     }
 
     // HELO-Domain-Mismatch wird nicht mehr als Spam-Indikator gewertet — siehe
@@ -415,7 +434,16 @@ class SpamAnalyzer {
     // Spam keywords in the From display name (e.g. "Detox Nachrichten" <alert@andressacupuncture.com>).
     // Spammers set an enticing display name that has nothing to do with the sender domain.
     // Only fires when the display name exists and is distinct from the domain name.
-    const fromDisplayName = (fromHeader.match(/^"?([^"<@\n]+?)"?\s*</) || [])[1]?.trim() || '';
+    // Decode RFC-2047 MIME words first — spammers encode names to bypass regex checks.
+    const isMimeEncodedFrom = /=\?[A-Za-z0-9_-]+\?[BQbq]\?/i.test(fromHeader);
+    if (isMimeEncodedFrom) {
+      score += 0.8;
+      reasons.push('MIME-kodierter Absender-Anzeigename — Obfuskationsversuch (verdeckt Brand-Impersonation)');
+    }
+    const fromHeaderDecoded = isMimeEncodedFrom ? this._decodeMimeWords(fromHeader) : fromHeader;
+    const fromDisplayName   = (fromHeaderDecoded.match(/^"?([^"<@\n]+?)"?\s*</) || [])[1]?.trim()
+                           || (fromHeader.match(/^"?([^"<@\n]+?)"?\s*</) || [])[1]?.trim()
+                           || '';
     if (fromDisplayName) {
       const displayLower = fromDisplayName.toLowerCase();
       const domainRoot   = this._extractRootDomain(fromDomain) || '';
@@ -450,6 +478,16 @@ class SpamAnalyzer {
       score += 0.8;
       reasons.push(`Vokal-arme Random-Local-Part "${fromLocalPart}" — Bot-generierte Versand-Adresse`);
     }
+    // Return-Path local part may be gibberish even when From looks clean
+    // (e.g. contact.qfcko@physicist.la — "qfcko" = 0 vowels = gibberish)
+    const returnPathHdrRP  = this._getHeader(headers, 'Return-Path') || '';
+    const returnPathEmailRP = (returnPathHdrRP.match(/<([^>]+)>/) || [])[1] || returnPathHdrRP.trim();
+    const returnPathLocalRP = (returnPathEmailRP.split('@')[0] || '').split('.').pop();
+    if (returnPathLocalRP && isGibberish(returnPathLocalRP) && returnPathLocalRP !== fromLocalPart) {
+      score += 0.8;
+      reasons.push(`Gibberish-Localpart im Return-Path "${returnPathEmailRP}" — Bot-generierte Bounce-Adresse`);
+    }
+
     // Also check the SLD itself (e.g. "schwarzjhyh" in schwarzjhyh.com).
     // The subdomain check above uses slice(0, -2) and misses single-label domains.
     const sldPart = fromHostParts2.length >= 2 ? fromHostParts2[fromHostParts2.length - 2] : '';
@@ -526,6 +564,12 @@ class SpamAnalyzer {
       { re: /dringend|urgent|sofort\s*handeln|act\s*now|limited\s*time|angebot\s*(endet|läuft)|läuft\s*(heute\s*)?ab|bald\s*nicht\s*mehr\s*verfügbar|bonus\s*(endet|läuft|expires)|angebot\s+endet\s+bald/i, w: 0.5, label: 'Künstliche Dringlichkeit' },
       { re: /100\s*%\s*(kostenlos|gratis|free)|völlig\s*kostenlos/i,                      w: 0.8, label: 'Gratis-Versprechen' },
       { re: /sie\s*wurden\s*ausgewählt|you\s*have\s*been\s*selected/i,                    w: 1.5, label: 'Pseudo-Auszeichnung' },
+      // Gift-card / reward lure — "Geschenkkarte im Wert von 1000€", "PayPal Guthaben 500€"
+      { re: /\b(?:geschenkkarte?n?|gift[-\s]?card|gutscheinkarte?).{0,60}(?:€\s*\d{2,}|\d{2,}\s*€|\$\s*\d{2,}|\d{2,}\s*\$|im\s+wert\s+von|worth\s+\$?\d)|(?:paypal|amazon|google\s+play|apple|netflix)\s+(?:guthaben|geschenkkarte?|gift[-\s]?card)\b/i,
+        w: 2.0, label: 'Geschenkkarten-/Guthaben-Köder (Gift-Card-Phishing)' },
+      // Flight-compensation phishing — German Fluggastrechte scam
+      { re: /\b(?:bis\s+zu\s+\d{2,4}\s*€\s*entsch[äa]digung|fluggast(?:recht(?:e)?|entsch[äa]digung)|flugversp[äa]tung.{0,30}entsch[äa]dig|entsch[äa]dig.{0,30}(?:flug|reise)|eu.{0,10}(?:261|fluggast).{0,20}entsch[äa]dig|flight\s+compensation\s+claim|claim\s+(?:your\s+)?(?:flight|air\s+travel)|air\s+passenger\s+rights\s+claim)\b/i,
+        w: 2.0, label: 'Fluggastrechte-/Entschädigungs-Köder (typisches DE-Phishing-Thema)' },
       { re: /\bcrypto|bitcoin|kryptowährun|invest.{0,30}(rendite|gewinne?|robot)|hohe\s*rendite|trading.{0,20}(auto|bot|signal)|warum\s+alle.{0,20}invest|fibonacci|forex\s+signal/i, w: 1.5, label: 'Crypto/Investment-Spam' },
       { re: /ihre\s*(daten|informationen)\s*(wurden\s*)?bestätigen|verify\s*your\s*info/i, w: 1.5, label: 'Datenmissbrauch-Phishing' },
       // Crypto-wallet credential theft — no legitimate service ever asks for a seed phrase
@@ -901,6 +945,26 @@ class SpamAnalyzer {
     if (links.some(l => /[?&][a-z]{1,6}=[a-z0-9]{4,}![a-z0-9!]{4,}/i.test(l))) {
       score += 1.5;
       reasons.push('Obfuskierte URL-Parameter mit Sonderzeichen — Spam-Tracking-Token');
+    }
+
+    // ── Redirect-Funnel: all links point to same single foreign domain ──────────
+    // Three identical links to healthyandthriving.com while subject is about flights
+    // = click-farm cloaking through a single unrelated domain.
+    if (links.length >= 2) {
+      const linkRoots = links
+        .map(l => { const m = l.match(/^https?:\/\/([^/?#]+)/); return m ? this._extractRootDomain(m[1]) : null; })
+        .filter(Boolean);
+      const uniqueRoots = [...new Set(linkRoots)];
+      if (uniqueRoots.length === 1) {
+        const funnel    = uniqueRoots[0];
+        const sndRoot   = this._lastFromRootDomain || '';
+        const espRe     = /sendgrid|mailchimp|klaviyo|constantcontact|hubspot|marketo|pardot|brevo|mailjet|mailgun|amazonses|expurgate|rapidmail|salesforce|eloqua/i;
+        const sndPrefix = sndRoot.split('.')[0];
+        if (funnel !== sndRoot && !espRe.test(funnel) && !(sndPrefix && funnel.includes(sndPrefix))) {
+          score += 1.5;
+          reasons.push(`Redirect-Funnel: alle ${links.length} Links zeigen auf fremde Domain "${funnel}" — Click-Cloaking-Indikator`);
+        }
+      }
     }
 
     if (linkCount > 0) {
@@ -1515,11 +1579,31 @@ class SpamAnalyzer {
       .replace(/\s{2,}/g, ' ')
       .trim();
   }
+
+  // RFC 2047 MIME-word decoder — handles =?charset?B?base64?= and =?charset?Q?qp?=
+  // Used to decode From display names that spammers encode to hide brand names from
+  // regex checks (e.g. "=?UTF-8?B?UGF5UGFsIEd1dGhhYmVu?=" → "PayPal Guthaben").
+  _decodeMimeWords(str) {
+    if (!str || !str.includes('=?')) return str;
+    return str.replace(/=\?([A-Za-z0-9_-]+)\?([BQbq])\?([^?]*)\?=/g, (_, _cs, enc, text) => {
+      try {
+        if (enc.toUpperCase() === 'B') {
+          const bytes = atob(text.replace(/\s/g, ''));
+          return decodeURIComponent(
+            bytes.split('').map(c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0')).join('')
+          );
+        }
+        // Quoted-Printable
+        return text.replace(/_/g, ' ')
+                   .replace(/=([0-9A-Fa-f]{2})/g, (__, h) => String.fromCharCode(parseInt(h, 16)));
+      } catch { return text; }
+    });
+  }
 }
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.9';
+const VERSION            = '2.2.10';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
