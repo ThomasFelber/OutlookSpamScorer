@@ -198,17 +198,28 @@ class SpamAnalyzer {
     if (/^\s*yes/i.test(xSpamStatus)) { score += 2; reasons.push('Server: als Spam markiert (X-Spam-Status)'); }
     if (/yes/i.test(xSpamFlag))       { score += 1; reasons.push('Server: X-Spam-Flag gesetzt'); }
 
-    // Microsoft Exchange signals — declared here, NOT scored here.
-    // SCL, BCL, dest:J and OFR reflect the *recipient* MTA's verdict, not the
-    // content quality. Including them in Score 1 would make the spam verdict
-    // dependent on which email system receives the test message.
-    // They are used exclusively in _computeOpportunityScore (Score 2).
+    // Microsoft Exchange signals — SCL, dest:J and OFR reflect the *recipient*
+    // MTA's verdict and are NOT scored here; they are reserved for Score 2
+    // (_computeOpportunityScore) to avoid score drift across different mail systems.
+    // Exception: BCL ≥ 7 is scored directly — it measures the *sender's* aggregate
+    // complaint rate across all of Microsoft's infrastructure, making it a content/
+    // sender quality signal rather than a per-recipient routing decision.
     const scl        = parseInt(this._getHeader(headers, 'X-MS-Exchange-Organization-SCL') || '', 10); // eslint-disable-line no-unused-vars
     const msAntispam = this._getHeader(headers, 'X-Microsoft-Antispam') || '';
     const bclM       = msAntispam.match(/BCL:(\d+)/);
     const bclVal     = bclM ? parseInt(bclM[1], 10) : 0;   // shared with _analyzeBody via this._lastBclVal
     const msDelivery = this._getHeader(headers, 'X-Microsoft-Antispam-Mailbox-Delivery') || ''; // eslint-disable-line no-unused-vars
     const hasOFR     = /OFR:SpamFilter/i.test(msDelivery); // eslint-disable-line no-unused-vars
+
+    // BCL direct scoring — BCL 7–9 = confirmed bulk complaint sender across
+    // Microsoft's recipient pool.  Legitimate commercial senders never exceed BCL 3.
+    if (bclVal >= 8) {
+      score += 2.0;
+      reasons.push(`BCL=${bclVal} — Microsoft stuft Absender als Bulk-Spam ein (sehr hohe Beschwerderate bei Empfängern)`);
+    } else if (bclVal >= 7) {
+      score += 1.2;
+      reasons.push(`BCL=${bclVal} — erhöhte Microsoft-Beschwerderate (Spam-Schwelle erreicht)`);
+    }
 
     // Reply-To domain differs from From domain — classic phishing pattern.
     // Use root-domain comparison so subdomain senders (noreply@mail.company.com) replying
@@ -383,6 +394,31 @@ class SpamAnalyzer {
       reasons.push(`Spam-Keyword im Absender-Nutzernamen: "${fromLocalPart}"`);
     }
 
+    // ── Mass-list From local-part ──────────────────────────────────────────────
+    // "members@", "subscribers@", "recipients@" etc. are mailing-list identifiers.
+    // No legitimate courier, bank or SaaS ever sends transactional / security mail
+    // from a list-style local-part — only bulk outreach platforms do.
+    const massListLocalPart = /^(?:members?|subscribers?|recipients?|audience|opt[-_]?in|listserv|announce(?:ments?)?|broadcast[s]?)(?:\d{0,4})$/i;
+    if (massListLocalPart.test(fromLocalPart)) {
+      score += 0.8;
+      reasons.push(`Massen-Mail-Local-Part "${fromLocalPart}@${fromDomain}" — kein transaktionaler Absender (Kurierdienst/Bank/SaaS nutzen diese Local-Parts nicht)`);
+    }
+
+    // ── Spam/gambling keyword in sending subdomain ────────────────────────────
+    // "poker.sjcomputersolutions.com" — the subdomain "poker" is a gambling keyword
+    // on an unrelated domain.  Legitimate ESPs use mail., smtp., em., send., bounce.
+    // A topic-mismatched subdomain indicates rented or hijacked sending infrastructure.
+    if (fromDomain) {
+      const subdomainSegment = fromDomain.split('.').slice(0, -2).join('.');
+      if (subdomainSegment) {
+        const subdomainSpamKw = /(?:^|[-_.])(?:casino|poker|jackpot|lotto|bet(?:ting)?|slot[s]?|gambl(?:e|ing)|adult|pharma|pill[s]?|member[s]?|winner[s]?|prize|reward[s]?|bonus(?:es)?|income|invest(?:ment[s]?)?|forex|crypto|bitcoin)(?:[-_.]|$)/i;
+        if (subdomainSpamKw.test('.' + subdomainSegment + '.')) {
+          score += 1.0;
+          reasons.push(`Spam-Keyword im Subdomain-Segment "${subdomainSegment}" von "${fromDomain}" — thematischer Mismatch zur Absender-Domain`);
+        }
+      }
+    }
+
     // Manufactured business identity on a free-mail provider: real Content Managers,
     // Marketing Specialists, Outreach Agents etc. have company email — not gmail/yahoo.
     // Pattern: "<firstname>.<role-keyword>@<freemail>" — e.g. "adamr.contentmanager@gmail.com"
@@ -444,15 +480,42 @@ class SpamAnalyzer {
     const fromDisplayName   = (fromHeaderDecoded.match(/^"?([^"<@\n]+?)"?\s*</) || [])[1]?.trim()
                            || (fromHeader.match(/^"?([^"<@\n]+?)"?\s*</) || [])[1]?.trim()
                            || '';
-    if (fromDisplayName) {
-      const displayLower = fromDisplayName.toLowerCase();
+    // Strip surrounding RFC-2822 / stray quote chars before any display-name
+    // checks — some MTAs keep the raw quoting characters so the stored value is
+    // literally '"DHL"' rather than just 'DHL'.
+    const fromDisplayNameClean = fromDisplayName.replace(/^["'«»\s]+|["'«»\s]+$/g, '').trim();
+
+    if (fromDisplayNameClean) {
+      const displayLower = fromDisplayNameClean.toLowerCase();
       const domainRoot   = this._extractRootDomain(fromDomain) || '';
       // Skip if the display name is just the company name embedded in the domain
       const domainWord   = domainRoot.split('.')[0];
       if (!displayLower.includes(domainWord) &&
-          /detox|abnehm|gewicht\s*(verlier|verlor|abgenomm)|schlank|fettverbrenner|keto\b|nahrungsergänzung|supplement|casino|jackpot|gewinn(?!chein)|lotterie|crypto|bitcoin|kredit(?!karte)|darlehen|niedrigzins|pharma|viagra|glück.{0,10}spiel/i.test(fromDisplayName)) {
+          /detox|abnehm|gewicht\s*(verlier|verlor|abgenomm)|schlank|fettverbrenner|keto\b|nahrungsergänzung|supplement|casino|jackpot|gewinn(?!chein)|lotterie|crypto|bitcoin|kredit(?!karte)|darlehen|niedrigzins|pharma|viagra|glück.{0,10}spiel/i.test(fromDisplayNameClean)) {
         score += 1.5;
-        reasons.push(`Spam-Keyword im Absender-Anzeigename: "${fromDisplayName}"`);
+        reasons.push(`Spam-Keyword im Absender-Anzeigename: "${fromDisplayNameClean}"`);
+      }
+
+      // ── Courier-brand display-name impersonation (header-side) ─────────────
+      // Checked here — independent of body parsing — so it fires even when the
+      // body-side brandMap loop can't match (image-only body, 800-char cutoff,
+      // or missing display name downstream).
+      const courierBrandRe = /^(?:DHL|UPS|Fed\s*Ex|Hermes|GLS|DPD|Evri|Yodel|DB\s*Schenker|Deutsche\s*Post|USPS|Royal\s*Mail|Colissimo|PostNL|Chronopost|Correos)\b/i;
+      const officialCourierRoots = new Set([
+        'dhl.de', 'dhl.com', 'dhl-group.com', 'dpdhl.com',
+        'ups.com', 'ups.de',
+        'fedex.com',
+        'hermes.de', 'myhermes.de', 'hermesworld.com', 'hlg.de',
+        'gls-group.com', 'gls-group.eu', 'gls-germany.de',
+        'dpd.com', 'dpd.de',
+        'deutschepost.de', 'deutsche-post.de', 'post.de',
+        'evri.com', 'yodel.co.uk',
+      ]);
+      if (courierBrandRe.test(fromDisplayNameClean)
+          && fromDomain
+          && !officialCourierRoots.has(this._extractRootDomain(fromDomain))) {
+        score += 2.5;
+        reasons.push(`Kurierdienst-Impersonation im Absender-Anzeigenamen: "${fromDisplayNameClean}" — Domain "${fromDomain}" ist kein offizieller Kurierdienst`);
       }
     }
 
@@ -496,6 +559,26 @@ class SpamAnalyzer {
       reasons.push(`Gibberish-Root-Domain "${fromDomain}" — Throwaway-Spam-Domain`);
     }
 
+    // ── Message-ID domain gibberish ───────────────────────────────────────────
+    // Legitimate MTAs stamp their own FQDN or their ESP's domain in Message-ID.
+    // Spam pipelines generate random-token domains (e.g. <xyz@qxjkrpd.invalid>)
+    // that are distinct from any real sending infrastructure.
+    const msgId      = this._getHeader(headers, 'Message-ID') || '';
+    const msgIdDomM  = msgId.match(/@([\w.-]+)/);
+    const msgIdDom   = msgIdDomM ? msgIdDomM[1].toLowerCase() : null;
+    if (msgIdDom) {
+      const msgIdParts   = msgIdDom.split('.');
+      const msgIdSld     = msgIdParts.length >= 2 ? msgIdParts[msgIdParts.length - 2] : '';
+      const msgIdSndRoot = this._extractRootDomain(fromDomain) || '';
+      const msgIdRoot    = this._extractRootDomain(msgIdDom)   || '';
+      // Only flag when the Message-ID domain is gibberish AND doesn't belong
+      // to the sender's own root domain (to allow MX-signed bounce addresses)
+      if (isGibberish(msgIdSld) && msgIdRoot !== msgIdSndRoot) {
+        score += 1.2;
+        reasons.push(`Gibberish-Message-ID-Domain "${msgIdDom}" — Spam-Pipeline-generierte Message-ID`);
+      }
+    }
+
     // ── Affiliate-/Lead-Gen-Marketing-Domain ───────────────────────────────────
     // Domain-Namen mit "leads-marketing", "affiliate", "lead-gen", "email-
     // marketing" sind nahezu ausschließlich Drittanbieter-Bulk-Marketing-
@@ -529,7 +612,7 @@ class SpamAnalyzer {
     this._lastBclVal          = bclVal;
     this._lastFromHeader      = fromHeader;
     this._lastFromDomain      = fromDomain;
-    this._lastDisplayName     = fromDisplayName;
+    this._lastDisplayName     = fromDisplayNameClean;
 
     return score;
   }
@@ -564,13 +647,17 @@ class SpamAnalyzer {
       { re: /dringend|urgent|sofort\s*handeln|act\s*now|limited\s*time|angebot\s*(endet|läuft)|läuft\s*(heute\s*)?ab|bald\s*nicht\s*mehr\s*verfügbar|bonus\s*(endet|läuft|expires)|angebot\s+endet\s+bald/i, w: 0.5, label: 'Künstliche Dringlichkeit' },
       { re: /100\s*%\s*(kostenlos|gratis|free)|völlig\s*kostenlos/i,                      w: 0.8, label: 'Gratis-Versprechen' },
       { re: /sie\s*wurden\s*ausgewählt|you\s*have\s*been\s*selected/i,                    w: 1.5, label: 'Pseudo-Auszeichnung' },
-      // Gift-card / reward lure — "Geschenkkarte im Wert von 1000€", "PayPal Guthaben 500€"
-      { re: /\b(?:geschenkkarte?n?|gift[-\s]?card|gutscheinkarte?).{0,60}(?:€\s*\d{2,}|\d{2,}\s*€|\$\s*\d{2,}|\d{2,}\s*\$|im\s+wert\s+von|worth\s+\$?\d)|(?:paypal|amazon|google\s+play|apple|netflix)\s+(?:guthaben|geschenkkarte?|gift[-\s]?card)\b/i,
+      // Gift-card / reward lure — "Geschenkkarte im Wert von 1000€", "Booking.com-Geschenkkarte wartet auf Sie"
+      // Second branch: major brands + Geschenkkarte/Gift Card (no amount needed — brand + keyword = high confidence)
+      { re: /\b(?:geschenkkarte?n?|gift[-\s]?card|gutscheinkarte?).{0,80}(?:€\s*\d{2,}|\d{2,}\s*€|\$\s*\d{2,}|\d{2,}\s*\$|im\s+wert\s+von|worth\s+\$?\d|wartet\s+(?:auf\s+)?(?:sie|dich)|bereit(?:gestellt|liegt|steht)|claim\b|unclaimed\b)|(?:booking\.com|paypal|amazon|google\s+play|apple|netflix|visa|mastercard)\s*[-–]?\s*(?:guthaben|geschenkkarte?|gift[-\s]?card)\b/i,
         w: 2.0, label: 'Geschenkkarten-/Guthaben-Köder (Gift-Card-Phishing)' },
       // Flight-compensation phishing — German Fluggastrechte scam
       { re: /\b(?:bis\s+zu\s+\d{2,4}\s*€\s*entsch[äa]digung|fluggast(?:recht(?:e)?|entsch[äa]digung)|flugversp[äa]tung.{0,30}entsch[äa]dig|entsch[äa]dig.{0,30}(?:flug|reise)|eu.{0,10}(?:261|fluggast).{0,20}entsch[äa]dig|flight\s+compensation\s+claim|claim\s+(?:your\s+)?(?:flight|air\s+travel)|air\s+passenger\s+rights\s+claim)\b/i,
         w: 2.0, label: 'Fluggastrechte-/Entschädigungs-Köder (typisches DE-Phishing-Thema)' },
       { re: /\bcrypto|bitcoin|kryptowährun|invest.{0,30}(rendite|gewinne?|robot)|hohe\s*rendite|trading.{0,20}(auto|bot|signal)|warum\s+alle.{0,20}invest|fibonacci|forex\s+signal/i, w: 1.5, label: 'Crypto/Investment-Spam' },
+      // Investment-scam narrative hooks — "Warum kaufen die Reichen…", passive income promises
+      { re: /\b(?:warum\s+(?:kaufen|investieren)\s+die\s+(?:reichen?|wohlhabenden?|super[-\s]?reichen?)|why\s+(?:the\s+)?(?:rich|wealthy)\s+(?:people\s+)?(?:invest|buy|never\s+tell)|reich\s+werden\s+(?:mit|durch|über)\s+(?:bitcoin|krypto|gold|aktien|trading)|finanzielle\s+(?:freiheit|unabhängigkeit)\s+(?:in|innerhalb)\s+\d+|passives?\s+einkommen\s+(?:von|bis\s+zu)\s+\d+|(?:verdiene[nt]?|erhalte[nt]?|gewinne[nt]?)\s+\d{3,}\s*€.*(?:täglich|pro\s+tag|daily)|mit\s+(?:nur\s+)?\d+\s*€.*(?:täglich|daily)\s+\d{3,})\b/i,
+        w: 1.5, label: 'Investment-Scam-Narrative ("Warum kaufen die Reichen…" / passives Einkommen / täglich X€)' },
       { re: /ihre\s*(daten|informationen)\s*(wurden\s*)?bestätigen|verify\s*your\s*info/i, w: 1.5, label: 'Datenmissbrauch-Phishing' },
       // Crypto-wallet credential theft — no legitimate service ever asks for a seed phrase
       { re: /\b(?:seed\s+phrase|recovery\s+phrase|secret\s+(?:phrase|words?)|(?:12|24)[-\s]?(?:word|wort)s?\s+(?:phrase|key|seed)|mnemonic(?:\s+phrase)?|private\s+key\s+(?:backup|recovery|export)|enter\s+your\s+(?:wallet\s+)?(?:phrase|passphrase)|regain\s+(?:access|control)\s+(?:to\s+)?(?:your\s+)?wallet|wallet\s+(?:verification|verify)\s+required)\b/i,
@@ -583,6 +670,11 @@ class SpamAnalyzer {
       { re: /wechat|微信|t\.me\/\S|telegram\.me\/\S|telegram\s*(?:channel|contact|group|id|username|handle)|whatsapp\s*(?:contact|number|group)|line\s*id\s*:/i, w: 1.5, label: 'Messenger-Kontakt-Solicitation (WeChat/Telegram t.me/WhatsApp)' },
       { re: /bundeszentralamt|finanzamt\b|bundeszoll|steuerpr[üu]fung.*krypto|amtliche?\s+(mahnung|aufforderung|mitteilung).*steuer/i, w: 2.5, label: 'Behörden-Impersonation (Finanzamt/BZSt)' },
       { re: /\b(UPS|DHL|FedEx|Hermes|DPD|GLS|Yodel|Evri)\b.{0,40}(paket|lieferung|sendung|delivery|tracking|notification|nicht\s*zugestellt)/i, w: 1.5, label: 'Kurierdienst-Erwähnung (auf Domain-Mismatch prüfen)' },
+      // Delivery-address confirmation scam — the most common German DHL/courier
+      // phishing phrase family.  Legitimate carriers never ask recipients to
+      // confirm or re-enter a delivery address via an email CTA link.
+      { re: /\b(?:bestätigen\s+sie\s+(?:ihre?\s+)?(?:lieferadresse|versandadresse|zustelladresse|adresse)|(?:ihre?\s+)?(?:lieferadresse|versandadresse|zustelladresse)\s+(?:bestätigen|aktualisieren|verifizieren|eingeben|angeben)|adresse\s+(?:f[üu]r\s+(?:die\s+)?lieferung|zum\s+versand)\s+(?:bestätigen|aktualisieren)|confirm\s+(?:your\s+)?(?:delivery|shipping)\s+address|update\s+(?:your\s+)?(?:delivery|shipping)\s+address|lieferung\s+(?:fehlgeschlagen|nicht\s+(?:möglich|zustellbar|erfolgt|möglich)|verpasst)\b)/i,
+        w: 2.0, label: 'Lieferadress-Bestätigungs-Phishing (DHL/Hermes/UPS-Scam-Template — "Bestätigen Sie die Lieferadresse")' },
 
       // SEO / Link-Building / Guest-Post-Outreach — eigene Spam-Klasse mit hoher Spezifität
       { re: /\b(guest[\s-]?(post|blog|article|author)|gastbeitrag|gesponsorter?\s+(beitrag|artikel|post)|sponsored\s+(post|article|content|placement)|paid\s+(post|placement|article))\b/i,
@@ -733,6 +825,10 @@ class SpamAnalyzer {
         { re: /\bmeta\s*mask\b/i,                                   roots: ['metamask.io'] },
         { re: /\btrezor\b/i,                                        roots: ['trezor.io', 'trezor.com'] },
         { re: /\bphantom\s+wallet\b/i,                              roots: ['phantom.app'] },
+        // Travel / hospitality — common gift-card and flight-comp phishing lures
+        { re: /\bbooking\.com\b/i,  roots: ['booking.com'] },
+        { re: /\bexpedia\b/i,       roots: ['expedia.com', 'expedia.de'] },
+        { re: /\bhrs\.(?:de|com)\b|\bhrs\s+hotel\b/i, roots: ['hrs.com', 'hrs.de'] },
       ];
       // Check subject first (high confidence, weight 2.5).
       // If the subject is clean, fall back to the first 800 chars of body text (weight 1.5)
@@ -834,6 +930,20 @@ class SpamAnalyzer {
     if (calendarSubject.test(subject || '') && !hasIcsPayload) {
       score += 1.5;
       reasons.push('Kalender-Einladungs-Pretext im Subject ohne ICS-Payload — Curiosity-Spam-Pretext');
+    }
+
+    // ── Fake "Re:" prefix on transactional / delivery subject ─────────────────
+    // Legitimate parcel notifications, order confirmations and account alerts are
+    // NEVER replies to prior conversations.  Prepending "Re:" inflates open rates
+    // by faking a thread — a well-known phishing and spam technique.
+    // Guard: only fire when the subject also contains a delivery / account keyword
+    // to avoid penalising genuine B2B reply chains.
+    if (/^Re\s*:/i.test(subject || '')) {
+      const transactionalCtx = /\b(?:paket|lieferung|lieferadresse|versandadresse|sendung|zustellung|tracking|delivery|parcel|order|bestellung|rechnung|invoice|zahlung|payment|konto|account|verify|bestätigen|verifizieren|confirm)\b/i;
+      if (transactionalCtx.test(subject)) {
+        score += 1.5;
+        reasons.push('Gefälschtes "Re:"-Präfix auf transaktionalem Betreff (Paket/Zahlung/Konto) — Engagement-Manipulation');
+      }
     }
 
     // ── ALL-CAPS subject line ──────────────────────────────────────────────────
@@ -1603,7 +1713,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.10';
+const VERSION            = '2.2.12';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
