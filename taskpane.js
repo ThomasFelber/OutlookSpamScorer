@@ -166,6 +166,7 @@ class SpamAnalyzer {
     if (authLine) {
       if (/spf=fail/i.test(authLine))     { score += 1.5; reasons.push('SPF: FAIL'); }
       else if (/spf=softfail/i.test(authLine)) { score += 0.75; reasons.push('SPF: SOFTFAIL'); }
+      else if (/spf=none/i.test(authLine)) { score += 0.5; reasons.push('SPF=none — kein SPF-Eintrag für Absender-Domain (unauthentifiziert)'); }
 
       if (/dkim=fail/i.test(authLine))    { score += 1.5; reasons.push('DKIM: FAIL'); }
 
@@ -219,6 +220,11 @@ class SpamAnalyzer {
     } else if (bclVal >= 7) {
       score += 1.2;
       reasons.push(`BCL=${bclVal} — erhöhte Microsoft-Beschwerderate (Spam-Schwelle erreicht)`);
+    } else if (bclVal >= 5) {
+      // BCL 5–6 = leicht erhöhte Beschwerderate — unter Microsoft-Spam-Schwelle (7),
+      // aber über dem Erwartungswert seriöser Absender (≤3). Kleines Gewicht.
+      score += 0.4;
+      reasons.push(`BCL=${bclVal} — leicht erhöhte Microsoft-Beschwerderate (unter Spam-Schwelle, für seriöse Absender auffällig)`);
     }
 
     // Reply-To domain differs from From domain — classic phishing pattern.
@@ -305,6 +311,24 @@ class SpamAnalyzer {
       reasons.push(`To:-Adresse mit nicht-internetfähigem Domain-Format "${toDomain}" — BCC-Massenversand-Indikator`);
     }
 
+    // ── Cc: non-internet-TLD check ─────────────────────────────────────────────
+    // Spam pipelines sometimes embed internal routing labels in the Cc: header
+    // (e.g. "admin@vxys.usqysljq.xkg") alongside the real recipient. Check all
+    // angle-bracket addresses in Cc: — we only need one suspicious domain to fire.
+    const ccHeader = this._getHeader(headers, 'Cc') || '';
+    if (ccHeader) {
+      const ccAddressMatches = ccHeader.match(/<([^>]+)>/g) || ccHeader.match(/[\w.+-]+@[\w.-]+/g) || [];
+      for (const addr of ccAddressMatches) {
+        const ccEmail  = addr.startsWith('<') ? addr.slice(1, -1) : addr;
+        const ccDomain = (ccEmail.split('@')[1] || '').toLowerCase();
+        if (ccDomain && !/\.[a-z]{2,6}$/i.test(ccDomain)) {
+          score += 0.8;
+          reasons.push(`Cc:-Adresse mit nicht-internetfähigem Domain-Format "${ccDomain}" — BCC-Massenversand-Indikator`);
+          break;
+        }
+      }
+    }
+
     // HELO-Domain-Mismatch wird nicht mehr als Spam-Indikator gewertet — siehe
     // _calculateOpportunityScore() für die Behandlung als Verbesserungspotenzial.
 
@@ -350,6 +374,18 @@ class SpamAnalyzer {
       }
     }
 
+    // ── ARC-Seal cv=fail ──────────────────────────────────────────────────────
+    // ARC (Authenticated Received Chain) seals the auth state at each hop.
+    // cv=fail means a relay modified the message after it was sealed — a clear
+    // sign of tampering or compromised relay infrastructure.
+    {
+      const arcSealHeaders = headers.match(/^ARC-Seal:[^\n]+(?:\n[ \t][^\n]+)*/gim) || [];
+      if (arcSealHeaders.some(h => /\bcv=fail\b/i.test(h))) {
+        score += 1.5;
+        reasons.push('ARC-Seal cv=fail — ARC-Authentifizierungskette fehlgeschlagen (Relay-Modifikation oder kompromittierte Infrastruktur)');
+      }
+    }
+
     // Suspicious sender domain patterns
     const fromDomain = this._extractDomain(fromHeader);
     if (fromDomain) {
@@ -363,6 +399,19 @@ class SpamAnalyzer {
       if (suspSenderTld.test(fromDomain)) {
         score += 1.5;
         reasons.push(`Verdächtige Absender-Domain-TLD (.${fromDomain.split('.').pop()})`);
+        // Compound: suspicious TLD + auth temperror → throwaway infrastructure double-signal
+        if (authLine && (/spf=temperror/i.test(authLine) || /dkim=temperror/i.test(authLine))) {
+          score += 1.0;
+          reasons.push(`Compound: Auth-Temperror + verdächtige Sender-TLD (.${fromDomain.split('.').pop()}) — Throwaway-Infrastruktur-Kombination`);
+        }
+      }
+
+      // Microsoft 365 tenant subdomain as From — real businesses configure a custom domain;
+      // onmicrosoft.com is the default fallback for unconfigured tenants and a common
+      // phishing infrastructure choice (easy to spin up, passes O365 auth checks).
+      if (/\.onmicrosoft\.com$/i.test(fromDomain) && !authFullyPasses) {
+        score += 1.5;
+        reasons.push(`From-Domain "${fromDomain}" ist ein Microsoft-Tenant-Subdomain — kein professionell konfigurierter Absender`);
       }
     }
 
@@ -438,6 +487,33 @@ class SpamAnalyzer {
     if (alertPrefix.test(fromLocalPart) && fromDomain && !trustedAlertSenders.test(fromDomain)) {
       score += 1.5;
       reasons.push(`"${fromLocalPart}@"-Absender auf nicht-zertifizierter Domain ${fromDomain} — echte Alerts kommen von Banken/Behörden/großen SaaS-Providern`);
+    }
+
+    // ── Krypto-/Fintech-Marke als From-Local-Part ─────────────────────────────
+    // z.B. bitpanda@malumaiese.com — Phishing-Kits setzen den Markennamen als
+    // Local-Part, damit er in der Absender-Vorschau mancher Mail-Clients erscheint.
+    // Kein legitimer Exchange versendet niemals von einer fremden Domain.
+    const cryptoFintechLocalPart = [
+      { re: /^bitpanda\d*$/i,       root: 'bitpanda.com' },
+      { re: /^coinbase\d*$/i,       root: 'coinbase.com' },
+      { re: /^binance\d*$/i,        root: 'binance.com' },
+      { re: /^kraken\d*$/i,         root: 'kraken.com' },
+      { re: /^bybit\d*$/i,          root: 'bybit.com' },
+      { re: /^etoro\d*$/i,          root: 'etoro.com' },
+      { re: /^traderepublic\d*$/i,  root: 'traderepublic.com' },
+      { re: /^nexo\d*$/i,           root: 'nexo.io' },
+      { re: /^n26\d*$/i,            root: 'n26.com' },
+      { re: /^revolut\d*$/i,        root: 'revolut.com' },
+      { re: /^bitstamp\d*$/i,       root: 'bitstamp.net' },
+      { re: /^kucoin\d*$/i,         root: 'kucoin.com' },
+    ];
+    for (const { re: lcRe, root: officialRoot } of cryptoFintechLocalPart) {
+      if (lcRe.test(fromLocalPart) && fromDomain
+          && this._extractRootDomain(fromDomain) !== officialRoot) {
+        score += 2.0;
+        reasons.push(`Krypto/Fintech-Marke als Absender-Local-Part: "${fromLocalPart}@${fromDomain}" — offizielle Domain ist ${officialRoot}`);
+        break;
+      }
     }
 
     // Bulk-mail-infrastructure headers (X-Job-ID, X-Feedback-ID, X-Campaign-Id …)
@@ -525,10 +601,12 @@ class SpamAnalyzer {
     const fromHostParts2  = (fromDomain || '').split('.');
     const subdomainParts2 = fromHostParts2.slice(0, -2);
     const isGibberish = s => {
-      if (!s || s.length < 6) return false;
+      // Min-length 4: catches short throwaway tokens like "vxys", "xwjvv".
+      // Vowel threshold 15%: pure-consonant strings (0 vowels / 4 chars = 0%) are always caught.
+      if (!s || s.length < 4) return false;
       const vowels = (s.match(/[aeiouäöü]/gi) || []).length;
       return (vowels / s.length) < 0.15
-          || /^[bcdfghjklmnpqrstvwxz]{5,}$/i.test(s);
+          || /^[bcdfghjklmnpqrstvwxz]{4,}$/i.test(s);
     };
     const gibberishSubdomain = subdomainParts2.some(isGibberish);
     const fromLocalLast = (fromLocalPart || '').split('.').pop() || '';
@@ -550,6 +628,20 @@ class SpamAnalyzer {
       score += 0.8;
       reasons.push(`Gibberish-Localpart im Return-Path "${returnPathEmailRP}" — Bot-generierte Bounce-Adresse`);
     }
+    // Also check the Return-Path's sending subdomain SLD for gibberish
+    // (e.g. evghw2jbr.brendanclouthier.com — evghw2jbr has ~11% vowels).
+    // Only fires when Return-Path root ≠ From root (avoids double-count with mismatch penalty).
+    const returnPathDomainRP = (returnPathEmailRP.split('@')[1] || '').toLowerCase();
+    if (returnPathDomainRP) {
+      const rpParts = returnPathDomainRP.split('.');
+      const rpSld   = rpParts.length >= 2 ? rpParts[rpParts.length - 2] : '';
+      const rpRoot  = this._extractRootDomain(returnPathDomainRP) || '';
+      const frRoot  = this._extractRootDomain(fromDomain) || '';
+      if (rpSld && isGibberish(rpSld) && rpRoot !== frRoot) {
+        score += 0.8;
+        reasons.push(`Gibberish-SLD im Return-Path-Domain "${returnPathDomainRP}" — Bot-generierte Versand-Infrastruktur`);
+      }
+    }
 
     // Also check the SLD itself (e.g. "schwarzjhyh" in schwarzjhyh.com).
     // The subdomain check above uses slice(0, -2) and misses single-label domains.
@@ -557,6 +649,17 @@ class SpamAnalyzer {
     if (!gibberishSubdomain && isGibberish(sldPart)) {
       score += 1.5;
       reasons.push(`Gibberish-Root-Domain "${fromDomain}" — Throwaway-Spam-Domain`);
+    }
+
+    // ── SLD digit+consonant-suffix pattern ─────────────────────────────────────
+    // e.g. "jinan15drt" — 2–8 letters + 1–4 digits + 2–5 consonants. The vowel
+    // check above misses these because a leading segment like "jinan" has vowels.
+    // This pattern fingerprints machine-generated SLDs used in bulk campaigns.
+    if (!gibberishSubdomain && !isGibberish(sldPart) && sldPart.length >= 6) {
+      if (/^[a-z]{2,8}\d{1,4}[bcdfghjklmnpqrstvwxz]{2,5}$/i.test(sldPart)) {
+        score += 0.8;
+        reasons.push(`SLD-Digit-Konsonant-Suffix "${sldPart}" in "${fromDomain}" — maschinengeniertes Throwaway-Domain-Muster`);
+      }
     }
 
     // ── Message-ID domain gibberish ───────────────────────────────────────────
@@ -666,7 +769,7 @@ class SpamAnalyzer {
       { re: /^mandatory\s*:\s*(?:regain|verify|update|confirm|restore|secure|unlock|action)\b/i,
         w: 1.0, label: 'Imperatives Security-Subject-Prefix ("Mandatory: regain/verify…") — Fake-Dringlichkeit' },
       { re: /lions?\s*(mane|spray)|körper\s*reset|nahrungsergänzung|supplement\b|fettverbrenner|schlank(heits)?|kräuter.{0,25}(spray|tropfen|kapsel)|testosteron.{0,20}boost|abnehm|\bdetox\b|keto\s*(diät|plan|programm|rezept|\b)|\d+\s*kg\s*(verloren?|abgenommen)|gewicht\s*(verloren?|verlier|abgenomm)|bauchfett|taille\s*(reduzier|weg|schmaler)/i, w: 1.5, label: 'Supplement/Gewichtsabnahme-Spam' },
-      { re: /\b(?:vita[-\s]?glp|gluco[-\s]?pro|sugar[-\s]?defender|ozempic[-_]?(?:alternative|natural|generic)|GLP[-\s]?1\s+(?:natural|alternative|generic)|abnehmspritze\s+(?:ohne\s+rezept|alternative|generic))\b/i, w: 1.5, label: 'GLP-1-/Ozempic-Klon-Spam (Supplement)' },
+      { re: /\b(?:vita[-\s]?glp|gluco[-\s]?pro|sugar[-\s]?defender|ozempic[-_]?(?:alternative|natural|generic)|GLP[-\s]?1\s+(?:natural|alternative|generic)|abnehmspritze\s+(?:ohne\s+rezept|alternative|generic)|mounjaslim|mounjaro(?:\s*(?:alternative|effekt|slim|wirkung|preis|kaufen))?|diät[-\s]?spray\b|schlank[-\s]?spray\b)\b/i, w: 1.5, label: 'GLP-1-/Ozempic-/Diät-Spray-Klon-Spam (Supplement)' },
       { re: /wechat|微信|t\.me\/\S|telegram\.me\/\S|telegram\s*(?:channel|contact|group|id|username|handle)|whatsapp\s*(?:contact|number|group)|line\s*id\s*:/i, w: 1.5, label: 'Messenger-Kontakt-Solicitation (WeChat/Telegram t.me/WhatsApp)' },
       { re: /bundeszentralamt|finanzamt\b|bundeszoll|steuerpr[üu]fung.*krypto|amtliche?\s+(mahnung|aufforderung|mitteilung).*steuer/i, w: 2.5, label: 'Behörden-Impersonation (Finanzamt/BZSt)' },
       { re: /\b(UPS|DHL|FedEx|Hermes|DPD|GLS|Yodel|Evri)\b.{0,40}(paket|lieferung|sendung|delivery|tracking|notification|nicht\s*zugestellt)/i, w: 1.5, label: 'Kurierdienst-Erwähnung (auf Domain-Mismatch prüfen)' },
@@ -689,6 +792,37 @@ class SpamAnalyzer {
         w: 1.5, label: 'SEO-Outreach-Phrase ("write for us" / "editorial placement" / "premium publications")' },
 
       // Cold-Pitch-Floskeln — einzeln schwach, kumulativ stark (Compound-Check unten verstärkt)
+      // ── Casino slot game names — specific product names used in spam templates ─
+      { re: /\b(?:big\s+bass\s+bonanza|book\s+of\s+(?:dead|ra)\b|gates?\s+of\s+olympus|sweet\s+bonanza|wolf\s+gold|pragmatic\s+play|starburst\s+(?:slot|spin)|gonzo'?s?\s+quest|mega\s+moolah)\b|\b\d+\s+kostenlose?\s+(?:spins?|drehs?|runden?)\b|\bfree\s+spins?\s+(?:ohne\s+einzahlung|no\s+deposit)\b/i,
+        w: 1.5, label: 'Casino-Slot-Spiel-Köder (Big Bass Bonanza, Book of Dead, Free Spins ohne Einzahlung)' },
+
+      // ── FOMO / Social-Proof-Lockmittel ─────────────────────────────────────────
+      // "über das alle reden", "lass dir das nicht entgehen" — kein seriöser Absender
+      // formuliert so; typisch für Supplement-, Casino- und Investment-Spam.
+      { re: /\b(?:alle\s+(?:greifen\s+zu|reden\s+(?:dar[üu]ber|davon)|kaufen\s+es|wollen\s+es)|[üu]ber\s+(?:das|den|die)\s+alle\s+reden|lass\s+dir\s+das\s+nicht\s+entgehen\b|verpasse\s+(?:diese[sn]?\s+)?(?:chance|angebot|m[öo]glichkeit)\s+nicht\b|jetzt\s+(?:viral|im\s+trend)\b|viral\s+gegangen\b|der\s+(?:neue\s+)?(?:geheimtipp|trick)\s+(?:der\s+)?(?:[äa]rzte|apotheker|experten|stars|prominenten)\b)\b/i,
+        w: 0.8, label: 'FOMO/Virality-Lockmittel ("alle reden darüber", "lass dir das nicht entgehen", "viral")' },
+
+      // ── Wunder-Quick-Fix / "in X Minuten prüfen" ──────────────────────────────
+      // Infomercial-Phrase ("kein Werkzeug nötig") und Phishing-Tempo-Framing
+      // ("Flug in wenigen Minuten überprüfen") — seriöse Anbieter garantieren keine
+      // Sofort-Erledigungen für komplexe Prozesse.
+      { re: /\b(?:in\s+(?:nur\s+)?(?:\d+|wenigen?|einigen?)\s+(?:minuten?|sekunden?)\s+(?:pr[üu]fen|[üu]berpr[üu]fen|beantragen|berechnen|erfahren|sichern|beanspruchen|herausfinden|erledigt?)|[üu]berpr[üu]fen\s+sie\s+(?:ihren?\s+)?(?:flug|anspruch|erstattung)\s+in\s+(?:\d+|wenigen?)\s+minuten?|kein\s+(?:werkzeug|handwerker?|aufwand)\s+(?:n[öo]tig|erforderlich|notwendig)|ohne\s+(?:werkzeug|handwerker?)\s+(?:in\s+(?:\d+|wenigen?)\s+minuten?|montierbar|installierbar)\b)\b/i,
+        w: 1.2, label: 'Wunder-Quick-Fix / Sekundenentscheid ("in X Minuten prüfen", "kein Werkzeug nötig")' },
+
+      // ── ESP-Merge-Tags nicht ersetzt ───────────────────────────────────────────
+      // %%firstname%%, __FIRSTNAME__, {{firstname}} — andere Syntax als unser
+      // bestehender {Name}-Check (der nur den Betreff abdeckt). Ergänzt um
+      // die im Body vorkommenden ESP-Template-Formate.
+      { re: /%%[A-Za-z_]{2,20}%%|__[A-Z_]{3,20}__|(?<!\{)\{\{[A-Za-z_]{2,20}\}\}(?!\})/,
+        w: 2.0, label: 'Nicht ersetzter ESP-Platzhalter (%%VAR%%, __VAR__, {{var}}) — Massen-E-Mail bestätigt' },
+
+      // ── Krypto/Finanz-Konto-Alarm ──────────────────────────────────────────────
+      // "Abhebung", "Auszahlung", "Withdrawal" allein sind legitim bei echten Banken.
+      // Auf einer nicht-offiziellen Domain + Krypto-Brand-Impersonation = Phishing.
+      // Niedriges Gewicht — kombiniert mit brandMap-Check erst stark.
+      { re: /\b(?:abhebung(?:s(?:anfrage|status|limit|best[äa]tigung))?|auszahlung(?:s(?:anfrage|status|limit|best[äa]tigung))?|withdrawal(?:\s+(?:request|status|limit|failed|pending|blocked))?|[üu]berweisung\s+(?:gesperrt|fehlgeschlagen|ausstehend)|konto\s+(?:eingeschr[äa]nkt|gesperrt|limitiert)|account\s+(?:restricted|suspended|action\s+required))\b/i,
+        w: 0.7, label: 'Finanz-/Konto-Alarm-Begriff (Abhebung/Withdrawal/Account restricted — Phishing-Kontext)' },
+
       { re: /\b(?:i\s+)?hope\s+(?:this|you|all)\s+(?:message\s+|email\s+|note\s+)?(?:finds?|are|is)\s+(?:you\s+)?(?:well|doing\s+well|good)\b/i,
         w: 0.4, label: 'Generische Cold-Pitch-Eröffnung ("hope this finds you well")' },
       { re: /\b(?:i'?m\s+|just\s+|wanted\s+to\s+|circling\s+back\s+|following\s+up\s+(?:on\s+)?)?reach(?:ing|ed)?\s+out(?:\s+to\s+(?:you|offer|propose|discuss))?\b/i,
@@ -809,6 +943,12 @@ class SpamAnalyzer {
         // Telecoms
         { re: /\btelekom\b|\bdeutsche\s*telekom\b/i, roots: ['telekom.de', 'telekom.com', 'deutschetelekom.com'] },
         { re: /\bvodafone\b/i,                       roots: ['vodafone.de', 'vodafone.com'] },
+        // CH / AT Telecoms — häufig in CH-fokussierten Phishing-Kampagnen imitiert
+        { re: /\bswisscom\b/i,                       roots: ['swisscom.ch', 'swisscom.com'] },
+        { re: /\bsunrise\s*(?:ch)?\b/i,              roots: ['sunrise.ch'] },
+        { re: /\bsalt\s+mobile\b|\bsalt\.ch\b/i,     roots: ['salt.ch'] },
+        { re: /\bswiss\s*post\b|\bpost\.ch\b/i,       roots: ['post.ch'] },
+        { re: /\bsbb\s+cff\b|\bsbb\.ch\b/i,          roots: ['sbb.ch'] },
         // Globale Marken (häufig im Spear-Phishing für Recruitment-Scams)
         { re: /\bray[-\s]?ban\b/i,                   roots: ['ray-ban.com', 'rayban.com'] },
         { re: /\bmeta\b(?!\s*(?:gen|tag|data|\sdescription))/i, roots: ['meta.com', 'facebook.com', 'fb.com', 'instagram.com'] },
@@ -829,6 +969,23 @@ class SpamAnalyzer {
         { re: /\bbooking\.com\b/i,  roots: ['booking.com'] },
         { re: /\bexpedia\b/i,       roots: ['expedia.com', 'expedia.de'] },
         { re: /\bhrs\.(?:de|com)\b|\bhrs\s+hotel\b/i, roots: ['hrs.com', 'hrs.de'] },
+        // Cosmetics / beauty — häufig für deutsche Gift-Card-/Geschenk-Phishing imitiert
+        { re: /\brituals\b/i,        roots: ['rituals.com'] },
+        { re: /\bdouglas\b/i,        roots: ['douglas.de', 'douglas.com'] },
+        { re: /\bsephora\b/i,        roots: ['sephora.de', 'sephora.com'] },
+        { re: /\bnivea\b/i,          roots: ['nivea.de', 'nivea.com', 'beiersdorf.com'] },
+        { re: /\bl'?or[eé]al\b/i,    roots: ['loreal.de', 'loreal.com', 'loreal.fr'] },
+        // Crypto exchanges — account-alert phishing impersonation targets
+        { re: /\bbitpanda\b/i,                    roots: ['bitpanda.com'] },
+        { re: /\bcoinbase\b/i,                    roots: ['coinbase.com'] },
+        { re: /\bbinance\b/i,                     roots: ['binance.com'] },
+        { re: /\bkraken\b(?!\s*(?:rum|energy))/i, roots: ['kraken.com'] },
+        { re: /\bbybit\b/i,                       roots: ['bybit.com'] },
+        { re: /\betoro\b/i,                       roots: ['etoro.com'] },
+        { re: /\btrade\s*republic\b/i,            roots: ['traderepublic.com'] },
+        { re: /\bnexo\b(?!\s*(?:science|lab))/i,  roots: ['nexo.io', 'nexo.com'] },
+        { re: /\bkucoin\b/i,                      roots: ['kucoin.com'] },
+        { re: /\bokx\b/i,                         roots: ['okx.com'] },
       ];
       // Check subject first (high confidence, weight 2.5).
       // If the subject is clean, fall back to the first 800 chars of body text (weight 1.5)
@@ -939,10 +1096,18 @@ class SpamAnalyzer {
     // Guard: only fire when the subject also contains a delivery / account keyword
     // to avoid penalising genuine B2B reply chains.
     if (/^Re\s*:/i.test(subject || '')) {
-      const transactionalCtx = /\b(?:paket|lieferung|lieferadresse|versandadresse|sendung|zustellung|tracking|delivery|parcel|order|bestellung|rechnung|invoice|zahlung|payment|konto|account|verify|bestätigen|verifizieren|confirm)\b/i;
+      const transactionalCtx = /\b(?:paket|lieferung|lieferadresse|versandadresse|sendung|zustellung|tracking|delivery|parcel|order|bestellung|rechnung|invoice|zahlung|payment|konto|account|verify|best[äa]tigen|verifizieren|confirm|rabatt|discount|sale|promo|gutschein|angebot)\b/i;
       if (transactionalCtx.test(subject)) {
         score += 1.5;
-        reasons.push('Gefälschtes "Re:"-Präfix auf transaktionalem Betreff (Paket/Zahlung/Konto) — Engagement-Manipulation');
+        reasons.push('Gefälschtes "Re:"-Präfix auf transaktionalem/kommerziellem Betreff (Paket/Zahlung/Konto/Angebot) — Engagement-Manipulation');
+      } else {
+        // Lower weight for generic promo/supplement/casino subjects — legitimate reply
+        // chains mentioning these topics are possible, but far less common than spam.
+        const promoCtx = /\b(?:di[äa]t|spray|abnehm|schlank|casino|freispiel|krypto|crypto|invest|rendite|kredit|darlehen|pharma|viagra|gewinn(?!schein))\b/i;
+        if (promoCtx.test(subject)) {
+          score += 1.0;
+          reasons.push('Gefälschtes "Re:"-Präfix auf kommerziellem/Promo-Betreff — Engagement-Manipulation');
+        }
       }
     }
 
@@ -1007,14 +1172,16 @@ class SpamAnalyzer {
     // A global /https?:\/\//g match on the whole HTML also hits originalsrc values,
     // img src, CSS backgrounds, etc. — inflating the count (e.g. 4 Safe-Links hrefs
     // would report 11 because each href/originalsrc pair is matched separately).
-    const hrefRe   = /\bhref="(https?:\/\/[^"]+)"/gi;
+    // Match href with both double and single quotes — many ESP templates use href='...'
+    // and the single-quote variant was silently ignored before this fix (v2.2.13).
+    const hrefRe   = /\bhref=["'](https?:\/\/[^"'\s>]+)["']/gi;
     const rawLinks = [];
     let hlm;
     while ((hlm = hrefRe.exec(bodyHtml || '')) !== null) rawLinks.push(hlm[1]);
 
     // Separately extract Microsoft Safe Links originalsrc — the real destination URL.
     // Used only for TLD / shortener checks, not for link counting.
-    const origSrcRe = /originalsrc="([^"]+)"/gi;
+    const origSrcRe = /originalsrc=["']([^"']+)["']/gi;
     const origSrcs  = [];
     let osm;
     while ((osm = origSrcRe.exec(bodyHtml || '')) !== null) origSrcs.push(osm[1]);
@@ -1060,7 +1227,11 @@ class SpamAnalyzer {
     // ── Redirect-Funnel: all links point to same single foreign domain ──────────
     // Three identical links to healthyandthriving.com while subject is about flights
     // = click-farm cloaking through a single unrelated domain.
-    if (links.length >= 2) {
+    // For unauthenticated / suspicious senders even a single link is enough.
+    // Fully-authenticated, low-BCL senders keep the threshold at 2 to avoid FP on
+    // legitimate transactional emails with one external CTA.
+    const funnelMinLinks = (authFullyPasses && !highBcl) ? 2 : 1;
+    if (links.length >= funnelMinLinks) {
       const linkRoots = links
         .map(l => { const m = l.match(/^https?:\/\/([^/?#]+)/); return m ? this._extractRootDomain(m[1]) : null; })
         .filter(Boolean);
@@ -1713,7 +1884,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.12';
+const VERSION            = '2.2.13';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
