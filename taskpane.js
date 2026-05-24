@@ -438,9 +438,9 @@ class SpamAnalyzer {
     // Spam keywords in the From email's local part (e.g. "Casino-angebot_2026@…").
     // Legitimate senders never encode campaign names in their address.
     const fromLocalPart = fromEmail.split('@')[0] || '';
-    if (/^(casino|jackpot|lotto|freispiel|gluck|glueck|wett|winn|gewinn|slot[-_]?s?|roulette|blackjack)/i.test(fromLocalPart)) {
+    if (/(?:^|[-_.+])(?:casino|jackpot|lotto|freispiel|gl[üu]ck|wett(?:en?)?|gewinn|slot[-_]?s?|roulette|blackjack|spincastle|goldrausch|vegasbonus|casinobonus|betmaster|pokerstars)(?:[-_.+]|$)/i.test(fromLocalPart)) {
       score += 1.5;
-      reasons.push(`Spam-Keyword im Absender-Nutzernamen: "${fromLocalPart}"`);
+      reasons.push(`Casino/Gambling-Keyword im Absender-Local-Part: "${fromLocalPart}"`);
     }
 
     // ── Mass-list From local-part ──────────────────────────────────────────────
@@ -567,7 +567,7 @@ class SpamAnalyzer {
       // Skip if the display name is just the company name embedded in the domain
       const domainWord   = domainRoot.split('.')[0];
       if (!displayLower.includes(domainWord) &&
-          /detox|abnehm|gewicht\s*(verlier|verlor|abgenomm)|schlank|fettverbrenner|keto\b|nahrungsergänzung|supplement|casino|jackpot|gewinn(?!chein)|lotterie|crypto|bitcoin|kredit(?!karte)|darlehen|niedrigzins|pharma|viagra|glück.{0,10}spiel/i.test(fromDisplayNameClean)) {
+          /detox|abnehm|gewicht\s*(verlier|verlor|abgenomm)|schlank|fettverbrenner|keto\b|nahrungsergänzung|supplement|casino|jackpot|gewinn(?!chein)|lotterie|crypto|bitcoin|kredit(?!karte)|darlehen|niedrigzins|pharma|viagra|glück.{0,10}spiel|goldrausch\b|spincastle|casinobonus|freispiel[-\s]?team|bonus[-\s]?team\b/i.test(fromDisplayNameClean)) {
         score += 1.5;
         reasons.push(`Spam-Keyword im Absender-Anzeigename: "${fromDisplayNameClean}"`);
       }
@@ -679,6 +679,20 @@ class SpamAnalyzer {
       if (isGibberish(msgIdSld) && msgIdRoot !== msgIdSndRoot) {
         score += 1.2;
         reasons.push(`Gibberish-Message-ID-Domain "${msgIdDom}" — Spam-Pipeline-generierte Message-ID`);
+      }
+    }
+
+    // ── To: domain SLD gibberish (second-pass) ────────────────────────────────
+    // The first pass (line ~309) catches non-internet TLDs (internal routing labels).
+    // This second pass catches domains that DO have a valid TLD but whose SLD is
+    // gibberish (e.g. "usqysljq.xkg" would be caught by first pass, but
+    // "vxys.example.com"-style SLDs with a real TLD slip through).
+    if (toDomain && /\.[a-z]{2,6}$/i.test(toDomain)) {
+      const toParts3 = toDomain.split('.');
+      const toSld3   = toParts3.length >= 2 ? toParts3[toParts3.length - 2] : '';
+      if (toSld3 && isGibberish(toSld3)) {
+        score += 0.8;
+        reasons.push(`To:-Domain mit Gibberish-SLD "${toDomain}" — Bot-generierter Routing-Label (BCC-Massenversand)`);
       }
     }
 
@@ -813,8 +827,8 @@ class SpamAnalyzer {
       // %%firstname%%, __FIRSTNAME__, {{firstname}} — andere Syntax als unser
       // bestehender {Name}-Check (der nur den Betreff abdeckt). Ergänzt um
       // die im Body vorkommenden ESP-Template-Formate.
-      { re: /%%[A-Za-z_]{2,20}%%|__[A-Z_]{3,20}__|(?<!\{)\{\{[A-Za-z_]{2,20}\}\}(?!\})/,
-        w: 2.0, label: 'Nicht ersetzter ESP-Platzhalter (%%VAR%%, __VAR__, {{var}}) — Massen-E-Mail bestätigt' },
+      { re: /%%[A-Za-z_]{2,20}%%|__[A-Z][A-Za-z_]{1,19}(?:__|(?=[\s,!?.:]|$))|(?<!\{)\{\{[A-Za-z_]{2,20}\}\}(?!\})/,
+        w: 2.0, label: 'Nicht ersetzter ESP-Platzhalter (%%VAR%%, __VAR__, __Var, {{var}}) — Massen-E-Mail bestätigt' },
 
       // ── Krypto/Finanz-Konto-Alarm ──────────────────────────────────────────────
       // "Abhebung", "Auszahlung", "Withdrawal" allein sind legitim bei echten Banken.
@@ -822,6 +836,18 @@ class SpamAnalyzer {
       // Niedriges Gewicht — kombiniert mit brandMap-Check erst stark.
       { re: /\b(?:abhebung(?:s(?:anfrage|status|limit|best[äa]tigung))?|auszahlung(?:s(?:anfrage|status|limit|best[äa]tigung))?|withdrawal(?:\s+(?:request|status|limit|failed|pending|blocked))?|[üu]berweisung\s+(?:gesperrt|fehlgeschlagen|ausstehend)|konto\s+(?:eingeschr[äa]nkt|gesperrt|limitiert)|account\s+(?:restricted|suspended|action\s+required))\b/i,
         w: 0.7, label: 'Finanz-/Konto-Alarm-Begriff (Abhebung/Withdrawal/Account restricted — Phishing-Kontext)' },
+
+      // ── Billing/Payment-Phishing-Phrasen ──────────────────────────────────────
+      // Microsoft/PayPal/Apple-Template-Phrasen, die in echten Abrechnungs-E-Mails
+      // selten so formuliert sind — Phishing-Baukästen nutzen diese Formulierungen.
+      { re: /\b(?:billing\s+information\s+(?:requires?|needs?)\s+(?:your\s+)?attention\b|update\s+(?:your\s+)?(?:billing|payment)\s+(?:information|details?|method)\b|payment\s+(?:information\s+)?(?:is\s+)?not\s+up\s+to\s+date\b|scheduled\s+(?:payment|charge)\s+(?:failed|declined|could\s+not\s+be\s+processed)\b|account\s+(?:access\s+)?(?:will\s+be\s+suspended|has\s+been\s+(?:suspended|restricted))\s+(?:due\s+to\s+)?billing\b|update\s+billing\s+information\b|confirm\s+(?:your\s+)?(?:billing|payment)\s+details?\b)\b/i,
+        w: 1.5, label: 'Billing-/Zahlungs-Phishing-Phrase (Microsoft/PayPal/Apple-Template)' },
+
+      // ── Credential-Harvest-CTA ────────────────────────────────────────────────
+      // "Update billing information", "Verify your account now" — button labels in
+      // phishing templates. Very rarely appear in legitimate transactional email.
+      { re: /\b(?:update\s+(?:your\s+)?(?:billing|payment|card|credit\s+card|account)\s+(?:information|details?|now\b)|verify\s+(?:your\s+)?(?:account|identity|billing)\s+(?:now\b|information|details?)|confirm\s+(?:your\s+)?(?:account|billing|payment|identity)\s+(?:now\b|information|details?)|(?:click|tap)\s+(?:here\s+)?to\s+(?:update|verify|confirm)\s+(?:your\s+)?(?:billing|payment|account|information))\b/i,
+        w: 1.5, label: 'Credential-Harvest-CTA ("Update billing information", "Verify your account now") — Phishing-Button-Phrase' },
 
       { re: /\b(?:i\s+)?hope\s+(?:this|you|all)\s+(?:message\s+|email\s+|note\s+)?(?:finds?|are|is)\s+(?:you\s+)?(?:well|doing\s+well|good)\b/i,
         w: 0.4, label: 'Generische Cold-Pitch-Eröffnung ("hope this finds you well")' },
@@ -1006,6 +1032,35 @@ class SpamAnalyzer {
         }
       }
 
+      // ── Copyright-Footer-Impersonation ────────────────────────────────────────
+      // Phishing templates often copy a brand's footer verbatim (e.g. "© 2026 Microsoft")
+      // while sending from an unrelated domain. Scan the full plainText (no 800-char cutoff)
+      // so footer content is always covered.
+      {
+        const copyrightBrandRe = /©\s*20\d{2}\s+(microsoft|apple|google|amazon|paypal|netflix|spotify|facebook|meta)\b/i;
+        const officialCopyrightRoots = {
+          microsoft: ['microsoft.com', 'outlook.com', 'live.com', 'hotmail.com'],
+          apple:     ['apple.com', 'icloud.com'],
+          google:    ['google.com', 'google.de', 'gmail.com', 'googlemail.com'],
+          amazon:    ['amazon.de', 'amazon.com'],
+          paypal:    ['paypal.com', 'paypal.de'],
+          netflix:   ['netflix.com'],
+          spotify:   ['spotify.com'],
+          facebook:  ['facebook.com', 'meta.com'],
+          meta:      ['meta.com', 'facebook.com'],
+        };
+        const cpMatch = plainText.match(copyrightBrandRe);
+        if (cpMatch) {
+          const cpBrandKey  = cpMatch[1].toLowerCase();
+          const cpOfficial  = officialCopyrightRoots[cpBrandKey] || [];
+          const alreadyFlagged = reasons.some(r => r.includes('Marken-Impersonation'));
+          if (!cpOfficial.includes(fromRootForBrand) && !alreadyFlagged) {
+            score += 2.0;
+            reasons.push(`Copyright-Footer-Impersonation "© ${cpMatch[1]}" — Absender "${fromRootForBrand}" ist kein offizieller Anbieter`);
+          }
+        }
+      }
+
       // ── Display-Name-Brand-Impersonation ──────────────────────────────────────
       // Anzeigename nennt eine bekannte Marke (z. B. „Max von smava"), aber
       // Sender-Domain gehört nicht zur Marke. Ergänzt den obigen Subject/Body-
@@ -1126,10 +1181,10 @@ class SpamAnalyzer {
     }
 
     // ── Emoji cluster in subject ──────────────────────────────────────────────
-    // 3+ emojis in the subject line = aggressive promotional tactic.
+    // 2+ emojis in the subject line = aggressive promotional tactic.
     // ⚡️WILLKOMMENSBONUS 400%⚡️ is never used by legitimate senders.
     const subjectEmojiCount = ((subject || '').match(/[\u{1F300}-\u{1FFFF}\u{2600}-\u{27BF}\u{2300}-\u{23FF}]/gu) || []).length;
-    if (subjectEmojiCount >= 3) {
+    if (subjectEmojiCount >= 2) {
       score += 0.8;
       reasons.push(`${subjectEmojiCount} Emojis im Betreff — aggressives Promo-Spam-Muster`);
     }
@@ -1319,6 +1374,26 @@ class SpamAnalyzer {
       }
     }
 
+    // ── Unicode Tag characters U+E0000–U+E01EF ────────────────────────────────
+    // These invisible characters (Unicode "Tags" block) are used to smuggle hidden
+    // content past text-based spam filters while remaining invisible to the reader.
+    // They appear as surrogate pairs in JS: U+DB40 + U+DC00–U+DDFF.
+    // No legitimate marketing email ever uses these characters.
+    const unicodeTagCount = ((bodyHtml || '').match(/\uDB40[\uDC00-\uDDFF]/g) || []).length;
+    if (unicodeTagCount > 2) {
+      const tagScore = unicodeTagCount >= 50 ? 2.0 : unicodeTagCount >= 15 ? 1.5 : 1.0;
+      score += tagScore;
+      reasons.push(`Unicode-Tag-Zeichen (${unicodeTagCount} × U+E0xxx) — unsichtbare Filter-Umgehung`);
+      if (authFullyPasses) {
+        score += 0.5;
+        reasons.push('Compound: vollständige Auth + Unicode-Tag-Obfuskation — kompromittiertes Konto');
+      }
+      if (zwsCount > 2) {
+        score += 0.5;
+        reasons.push('Kombination: ZWSP + Unicode-Tags — doppelschichtige unsichtbare Obfuskation');
+      }
+    }
+
     // Image-only body — no visible text, just image links (common for image-spam evading text filters)
     const imgCount = ((bodyHtml || '').match(/<img\b/gi) || []).length;
     if (imgCount >= 2 && plainText.length < 60) {
@@ -1328,7 +1403,7 @@ class SpamAnalyzer {
 
     // Generic mass-mailing salutation — no recipient name, clearly impersonal bulk mail.
     // "Liebe Leserinnen und liebe Leser", "Sehr geehrte Damen und Herren", "Dear Customer" etc.
-    if (/^(liebe[rs]?\s+leser(innen)?(\s+und\s+(liebe\s+)?leser)?|sehr\s+geehrte[rs]?\s+(damen?\s+und\s+herren?|dame|herr[,.])|dear\s+(customer|subscriber|reader|member|valued\s+customer))/im.test(plainText)) {
+    if (/(?:^|\n)\s*(?:liebe[rs]?\s+leser(?:innen)?(?:\s+und\s+(?:liebe\s+)?leser)?|sehr\s+geehrte[rs]?\s+(?:damen?\s+und\s+herren?|dame|herr[,.])|dear\s+(?:customer|subscriber|reader|member|valued\s+customer|user))/im.test(plainText)) {
       score += 0.5;
       reasons.push('Generische Massen-Anrede (kein personalisierter Empfänger)');
     }
@@ -1672,7 +1747,7 @@ class SpamAnalyzer {
         content += 0.4;
         oppReasons.push('Generischer CTA — konkreter formulieren');
       }
-      if (/^(liebe[rs]?\s+leser|sehr\s+geehrte[rs]?\s+(damen|herren)|dear\s+(customer|subscriber))/im.test(plainText)) {
+      if (/(?:^|\n)\s*(?:liebe[rs]?\s+leser(?:innen)?(?:\s+und\s+(?:liebe\s+)?leser)?|sehr\s+geehrte[rs]?\s+(?:damen?\s+und\s+herren?|dame|herr[,.])|dear\s+(?:customer|subscriber|reader|member|valued\s+customer|user))/im.test(plainText)) {
         content += 0.3;
         oppReasons.push('Generische Massen-Anrede — Engagement durch Personalisierung verbessern');
       }
@@ -1884,7 +1959,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.13';
+const VERSION            = '2.2.14';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
