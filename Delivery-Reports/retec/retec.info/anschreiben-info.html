@@ -1,187 +1,96 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zustellbarkeitsbericht – RETEC Regenwassertechnik</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
-        }
-        .container {
-            max-width: 700px;
-            margin: 40px auto;
-            background-color: #ffffff;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        .header-info {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        .header-info a {
-            color: #0066cc;
-            text-decoration: none;
-        }
-        .header-info a:hover {
-            text-decoration: underline;
-        }
-        .datum {
-            font-size: 14px;
-            color: #999;
-            margin-bottom: 20px;
-        }
-        h1 {
-            font-size: 22px;
-            color: #222;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-        p {
-            margin-bottom: 16px;
-            text-align: justify;
-        }
-        .problem-box {
-            background-color: #fff3cd;
-            border-left: 4px solid #ff9800;
-            padding: 16px;
-            margin: 24px 0;
-            border-radius: 4px;
-            font-size: 15px;
-        }
-        .solution-box {
-            background-color: #e8f5e9;
-            border-left: 4px solid #4caf50;
-            padding: 16px;
-            margin: 24px 0;
-            border-radius: 4px;
-            font-size: 15px;
-        }
-        .offer-section {
-            margin: 28px 0;
-            padding: 20px;
-            background-color: #f9f9f9;
-            border-radius: 6px;
-        }
-        .offer-title {
-            font-weight: 600;
-            color: #222;
-            margin-bottom: 12px;
-            font-size: 16px;
-        }
-        .offer-text {
-            font-size: 15px;
-            color: #555;
-            line-height: 1.7;
-        }
-        .contact-section {
-            margin-top: 36px;
-            padding-top: 24px;
-            border-top: 1px solid #e0e0e0;
-            font-size: 15px;
-        }
-        .contact-section p {
-            margin-bottom: 12px;
-        }
-        .contact-link {
-            color: #0066cc;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .contact-link:hover {
-            text-decoration: underline;
-        }
-        .signature {
-            margin-top: 24px;
-            font-size: 15px;
-        }
-        .signature strong {
-            display: block;
-            margin-top: 16px;
-            color: #222;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Mail-Zustellbarkeit – retec.info</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 640px; margin: 0 auto; background: #fff; padding: 50px 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header-contact { margin-bottom: 30px; font-size: 14px; }
+    .header-contact a { color: #2e7d32; text-decoration: none; }
+    .header-contact a:hover { text-decoration: underline; }
+    .datum { margin-top: 8px; color: #666; font-size: 13px; }
+    .anrede { margin: 35px 0 20px 0; font-size: 15px; }
+    .body-text { margin-bottom: 16px; font-size: 15px; line-height: 1.7; }
+    .highlight { background: #f1f8e9; padding: 18px 20px; border-left: 4px solid #2e7d32; margin: 22px 0; border-radius: 4px; font-size: 14px; line-height: 1.7; }
+    .offer-section { margin: 28px 0; }
+    .offer-title { font-weight: 600; margin-bottom: 14px; font-size: 15px; color: #222; }
+    .option { margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-label { font-weight: 600; color: #2e7d32; margin-bottom: 4px; }
+    .option-scope { font-size: 12px; color: #888; margin-top: 3px; }
+    .no-risk { background: #1b5e20; color: #fff; padding: 14px 20px; border-radius: 6px; margin: 22px 0; font-size: 14px; line-height: 1.6; font-weight: 500; }
+    .no-risk strong { font-weight: 700; }
+    .option-premium { border: 1px solid #2e7d32; border-radius: 6px; padding: 14px 16px; margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-premium .option-label { color: #1b5e20; }
+    .closing { margin-top: 30px; margin-bottom: 22px; font-size: 15px; }
+    .signature { margin-top: 36px; padding-top: 18px; border-top: 1px solid #e0e0e0; font-size: 14px; line-height: 1.8; }
+    .signature-name { font-weight: 600; margin-bottom: 8px; }
+    .contact-info { margin-top: 10px; }
+    .contact-info a { color: #0066cc; text-decoration: none; display: block; margin-bottom: 3px; }
+    .contact-info a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header-info">
-            Empfänger: <a href="mailto:info@retec.info">info@retec.info</a>
-        </div>
+  <div class="container">
 
-        <div class="datum">
-            München, 15. Januar 2025
-        </div>
+    <div class="header-contact">
+      <a href="mailto:info@retec.info">info@retec.info</a>
+      <div class="datum">München, 15. Januar 2025</div>
+    </div>
 
-        <h1>Ihre E-Mails landen im Spam – und das ist kein Zufall</h1>
+    <div class="anrede">Sehr geehrte Damen und Herren,</div>
 
-        <p>
-            Liebe Damen und Herren,
-        </p>
+    <div class="body-text">
+      ich habe Ihre E-Mail-Bestellbestätigungen analysiert. Das Ergebnis: Obwohl Ihre Nachrichten legitim sind und korrekte Inhalte enthalten, werden sie von E-Mail-Anbietern systematisch als verdächtig eingestuft. Kundenbestätigungen landen im Spam-Ordner statt im Posteingang — ohne Fehlermeldung auf Ihrer Seite. Das lässt sich beheben.
+    </div>
 
-        <p>
-            ich habe Ihre E-Mail-Bestellbestätigungen analysiert und möchte Ihnen offen sagen, worum es geht: 
-            Obwohl Ihre Nachrichten legitim sind und korrekte Inhalte enthalten, werden sie von E-Mail-Anbietern 
-            systematisch als verdächtig eingestuft. Das führt dazu, dass Kundenbestätigungen im Spam-Ordner landen – 
-            statt im Posteingang.
-        </p>
+    <div class="highlight">
+      <strong>Konkretes Potenzial:</strong> Zwischen Ihrem Mailserver und der Absenderadresse gibt es Unstimmigkeiten, die von modernen E-Mail-Filtern als Warnsignal interpretiert werden. Das ist nicht selten bei Unternehmen mit Shared Hosting oder externen Mail-Relays. Das Ergebnis: Messbar bessere Zustellbarkeit, höheres Vertrauen bei Ihren Kunden, weniger verlorene Bestellungen durch fehlende Bestätigungen.
+    </div>
 
-        <div class="problem-box">
-            <strong>Das Kernproblem:</strong> Zwischen Ihrem Mailserver und der Absenderadresse gibt es 
-            Unstimmigkeiten, die von modernen E-Mail-Filtern als Warnsignal interpretiert werden. Das hat nichts 
-            mit dem Inhalt zu tun – es ist eine Vertrauensfrage auf technischer Ebene. Ihre Mail-Infrastruktur 
-            sendet „gemischte Signale" aus.
-        </div>
+    <div class="no-risk">
+      <strong>Kein Risiko:</strong> Bei Option A zahlen Sie erst, wenn Ihre E-Mails nachweislich besser ankommen — nicht vorher. Kein Ergebnis, keine Rechnung.
+    </div>
 
-        <p>
-            Das ist nicht selten bei Unternehmen mit Shared Hosting oder externen Mail-Relays der Fall. 
-            Die gute Nachricht: Es ist behoben.
-        </p>
+    <div class="offer-section">
+      <div class="offer-title">Drei Optionen:</div>
 
-        <h2 style="font-size: 18px; margin-top: 28px; margin-bottom: 16px; color: #222;">
-            Wie ich Ihnen helfen kann
-        </h2>
+      <div class="option">
+        <div class="option-label">Option A: Konfiguration der analysierten Sendedomain — € 550</div>
+        <div>Ich berechne Ihnen den Betrag erst nachdem die Verbesserung nachgewiesen ist. Ich analysiere Ihre komplette Mail-Konfiguration, identifiziere die Schwachstellen und helfe Ihnen, diese zu schließen. <strong>Festpreis, ausschließlich erfolgbasiert — fällig bei Abschluss.</strong></div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain. Weitere Sendingdomains auf Anfrage.</div>
+      </div>
 
-        <p>
-            Ich analysiere Ihre komplette Mail-Konfiguration, identifiziere die Schwachstellen und helfe Ihnen, 
-            diese zu schließen. Das Ziel: Ihre Bestellbestätigungen und Transaktions-E-Mails landen wieder zuverlässig 
-            im Kundenpostfach.
-        </p>
+      <div class="option">
+        <div class="option-label">Option B: Analyse-Report — € 200</div>
+        <div>Vollständiger Report mit priorisierten Handlungsempfehlungen — zur eigenständigen Umsetzung oder Weitergabe an Ihren IT-Dienstleister. Einmalig, fällig bei Übergabe.</div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain.</div>
+      </div>
 
-        <div class="solution-box">
-            <strong>Ergebnis:</strong> Messbar bessere Zustellbarkeit, höheres Vertrauen bei Ihren Kunden, 
-            weniger verlorene Bestellungen durch fehlende Bestätigungen.
-        </div>
+      <div class="option-premium">
+        <div class="option-label">Option C: E-Mail-Infrastruktur höchster Reputation — auf Anfrage</div>
+        <div>Für Unternehmen, die E-Mail als strategischen Kanal behandeln: Ich baue Ihre gesamte Versandinfrastruktur von Grund auf nach Best Practices auf — dedizierte Sending-IPs, vollständige DNS-Konfiguration (SPF, DKIM, DMARC, BIMI), Feedback-Loop-Registrierung bei allen großen Providern, Postmaster-Tools-Anbindung und ein Monitoring-Setup, das Reputationsprobleme erkennt bevor sie Zustellraten beeinflussen. Das Ergebnis: eine Absender-Infrastruktur, die auch bei steigendem Versandvolumen stabil in den Posteingang zugestellt wird.</div>
+      </div>
 
-        <div class="offer-section">
-            <div class="offer-title">Option A: Erfolgsbasiert (Mein Standard)</div>
-            <div class="offer-text">
-                Ich berechne Ihnen <strong>€ 550,–</strong> Gebühr, aber erst nachdem die Verbesserung 
-                nachgewiesen ist. Sie zahlen also nur, wenn es funktioniert. Das ist fair für beide Seiten.
-            </div>
-        </div>
+    </div>
 
-        <div class="offer-section">
-            <div class="offer-title">Option B: Festpreis-Analyse</div>
-            <div class="offer-text">Ich liefere eine umfassende schriftliche Analyse Ihrer E-Mail-Infrastruktur mit konkreten, priorisierten Handlungsempfehlungen — ohne Umsetzung. Die Behebung liegt dann bei Ihnen oder Ihrem Team. Honorar: <strong>€ 1.200</strong> (Festpreis, fällig bei Übergabe der Analyse).</div>
-        </div>
+    <div class="closing">
+      Haben Sie Interesse? Ich bin für ein kurzes Gespräch erreichbar.
+    </div>
 
-        <p style="margin-top: 24px;">
-            In beiden Fällen müssen Sie sich um nichts Technisches kümmern. Ich kümmere mich drum und erkläre Ihnen, 
-            was passiert ist.
-        </p>
+    <div style="margin-bottom: 8px;">Freundliche Grüße,</div>
 
-        <div class="contact-section">
-            <p><strong>Wie geht es weiter?</strong></p>
-            <p>
+    <div class="signature">
+      <div class="signature-name">Thomas Felber</div>
+      <div style="margin-top: 12px; color: #666;">E-Mail-Deliverability Spezialist</div>
+      <div class="contact-info">
+        <a href="mailto:felber@live.de?subject=E-Mail-Zustellbarkeit%20retec.info">felber@live.de</a>
+        <a href="tel:+491709064924">+49 170 9064924</a>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

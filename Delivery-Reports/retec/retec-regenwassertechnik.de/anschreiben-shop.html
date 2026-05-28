@@ -1,171 +1,96 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nachricht zur E-Mail-Zustellbarkeit</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            padding: 40px 20px;
-            line-height: 1.6;
-            color: #333;
-        }
-        .container {
-            max-width: 650px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            padding: 50px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .empfaenger-link {
-            display: block;
-            margin-bottom: 30px;
-            font-size: 14px;
-            color: #0066cc;
-            text-decoration: none;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 15px;
-        }
-        .empfaenger-link:hover {
-            color: #0052a3;
-        }
-        .datum {
-            text-align: right;
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 30px;
-        }
-        .anrede {
-            margin-bottom: 25px;
-            font-size: 16px;
-        }
-        .absatz {
-            margin-bottom: 20px;
-            text-align: justify;
-        }
-        .absatz-hervorgehoben {
-            background-color: #fffacd;
-            padding: 15px;
-            border-left: 4px solid #ffc107;
-            margin-bottom: 20px;
-            border-radius: 4px;
-        }
-        .angebot-section {
-            background-color: #f9f9f9;
-            padding: 25px;
-            border-radius: 6px;
-            margin: 25px 0;
-            border: 1px solid #e0e0e0;
-        }
-        .angebot-titel {
-            font-weight: bold;
-            color: #0066cc;
-            margin-bottom: 15px;
-            font-size: 15px;
-        }
-        .angebot-option {
-            margin-bottom: 18px;
-            padding: 12px;
-            background-color: #ffffff;
-            border-radius: 4px;
-            border-left: 3px solid #0066cc;
-        }
-        .angebot-option-titel {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 6px;
-        }
-        .angebot-option-text {
-            font-size: 14px;
-            color: #555;
-            line-height: 1.5;
-        }
-        .kontakt-section {
-            margin-top: 35px;
-            padding-top: 25px;
-            border-top: 2px solid #e0e0e0;
-        }
-        .kontakt-info {
-            font-size: 14px;
-            margin-bottom: 12px;
-        }
-        .kontakt-link {
-            color: #0066cc;
-            text-decoration: none;
-        }
-        .kontakt-link:hover {
-            text-decoration: underline;
-        }
-        .abschied {
-            margin-top: 30px;
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-        .unterschrift {
-            margin-top: 25px;
-            font-size: 15px;
-            color: #333;
-        }
-        .unterschrift-name {
-            font-weight: bold;
-            margin-top: 8px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Mail-Zustellbarkeit – RETEC Shop</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 640px; margin: 0 auto; background: #fff; padding: 50px 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header-contact { margin-bottom: 30px; font-size: 14px; }
+    .header-contact a { color: #2e7d32; text-decoration: none; }
+    .header-contact a:hover { text-decoration: underline; }
+    .datum { margin-top: 8px; color: #666; font-size: 13px; }
+    .anrede { margin: 35px 0 20px 0; font-size: 15px; }
+    .body-text { margin-bottom: 16px; font-size: 15px; line-height: 1.7; }
+    .highlight { background: #f1f8e9; padding: 18px 20px; border-left: 4px solid #2e7d32; margin: 22px 0; border-radius: 4px; font-size: 14px; line-height: 1.7; }
+    .offer-section { margin: 28px 0; }
+    .offer-title { font-weight: 600; margin-bottom: 14px; font-size: 15px; color: #222; }
+    .option { margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-label { font-weight: 600; color: #2e7d32; margin-bottom: 4px; }
+    .option-scope { font-size: 12px; color: #888; margin-top: 3px; }
+    .no-risk { background: #1b5e20; color: #fff; padding: 14px 20px; border-radius: 6px; margin: 22px 0; font-size: 14px; line-height: 1.6; font-weight: 500; }
+    .no-risk strong { font-weight: 700; }
+    .option-premium { border: 1px solid #2e7d32; border-radius: 6px; padding: 14px 16px; margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-premium .option-label { color: #1b5e20; }
+    .closing { margin-top: 30px; margin-bottom: 22px; font-size: 15px; }
+    .signature { margin-top: 36px; padding-top: 18px; border-top: 1px solid #e0e0e0; font-size: 14px; line-height: 1.8; }
+    .signature-name { font-weight: 600; margin-bottom: 8px; }
+    .contact-info { margin-top: 10px; }
+    .contact-info a { color: #0066cc; text-decoration: none; display: block; margin-bottom: 3px; }
+    .contact-info a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <a href="mailto:retec-shop@retec-regenwassertechnik.de" class="empfaenger-link">retec-shop@retec-regenwassertechnik.de</a>
+  <div class="container">
 
-        <div class="datum">
-            München, 15. Januar 2025
-        </div>
+    <div class="header-contact">
+      <a href="mailto:retec-shop@retec-regenwassertechnik.de">retec-shop@retec-regenwassertechnik.de</a>
+      <div class="datum">München, 15. Januar 2025</div>
+    </div>
 
-        <div class="anrede">
-            Liebe Damen und Herren,<br>
-            liebe Verantwortliche bei RETEC,
-        </div>
+    <div class="anrede">Sehr geehrte Damen und Herren,<br>liebe Verantwortliche bei RETEC,</div>
 
-        <div class="absatz">
-            ich bin spezialisiert auf E-Mail-Zustellbarkeit und habe mir Ihre E-Mail-Konfiguration angesehen. Bei einer Analyse Ihrer Bestellbestätigungen bin ich auf ein ernst zu nehmendes Problem gestoßen: <strong>Ihre Nachrichten werden derzeit mit hoher Wahrscheinlichkeit bei vielen Empfängern im Spam-Ordner landen</strong> — obwohl Ihre E-Mails völlig legitim und wertvoll für Ihre Kunden sind.
-        </div>
+    <div class="body-text">
+      ich habe Ihre Bestellbestätigungen analysiert. Kunden, die eine Bestellung aufgeben, sehen die Bestätigung nicht — Bestellbestätigungen landen im Spam statt im Posteingang. Das kostet Sie Vertrauen und beschädigt langfristig Ihre Domain-Reputation. Mit einer vollständigen Konfiguration der Shop-Versandinfrastruktur lässt sich das beheben.
+    </div>
 
-        <div class="absatz-hervorgehoben">
-            <strong>Die Ursache:</strong> Ihre Versand-Infrastruktur und Ihre Absender-Domain funktionieren derzeit nicht optimal zusammen. Das ist ein häufiges Problem bei Unternehmen, die ihre E-Mail-Systeme von Dienstleistern betreuen lassen — diese Dinge werden oft übersehen.
-        </div>
+    <div class="highlight">
+      <strong>Konkretes Potenzial:</strong> Die Bestellbestätigungen aus Ihrem Shopware-Shop haben ein fundamentales Konfigurationsproblem: SPF schlägt fehl, DKIM fehlt vollständig, DMARC ist nicht konfiguriert. Viele Empfänger-Systeme blockieren diese E-Mails aktiv. Das ist nicht das Verhalten eines einzelnen Filters — es ist der Normalfall, wenn alle drei Authentifizierungsschichten fehlen.
+    </div>
 
-        <div class="absatz">
-            Die Folgen sind erheblich: Bestellbestätigungen landen im Spam statt im Posteingang. Kunden zweifeln an der Echtheit ihrer Bestellung. Wichtige Geschäftskommunikation wird übersehen. Und Ihre Domain-Reputation wird langfristig beschädigt.
-        </div>
+    <div class="no-risk">
+      <strong>Kein Risiko:</strong> Bei Option A zahlen Sie erst, wenn Ihre E-Mails nachweislich besser ankommen — nicht vorher. Kein Ergebnis, keine Rechnung.
+    </div>
 
-        <div class="absatz">
-            <strong>Ich kann das beheben.</strong> Meine Aufgabe ist es, die Authentifizierung Ihrer E-Mails so einzustellen, dass sie korrekt erkannt werden und zuverlässig ankommen — ohne dass Sie technische Details verstehen oder viel Zeit investieren müssen.
-        </div>
+    <div class="offer-section">
+      <div class="offer-title">Drei Optionen:</div>
 
-        <div class="angebot-section">
-            <div class="angebot-titel">Wie ich Sie unterstützen kann:</div>
+      <div class="option">
+        <div class="option-label">Option A: Konfiguration der analysierten Sendedomain — € 550</div>
+        <div>Ich kümmere mich um die technische Behebung und stelle sicher, dass Ihre Bestellbestätigungen zuverlässig ankommen — SPF, DKIM, DMARC vollständig konfiguriert. <strong>Festpreis, ausschließlich erfolgbasiert — fällig bei Abschluss.</strong></div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain. Weitere Sendingdomains auf Anfrage.</div>
+      </div>
 
-            <div class="angebot-option">
-                <div class="angebot-option-titel">(A) Erfolgsbasiert</div>
-                <div class="angebot-option-text">
-                    Ich kümmere mich um die technische Behebung und stelle sicher, dass Ihre E-Mails zuverlässig ankommen. Sie zahlen <strong>€ 550,–</strong> erst <strong>nach nachgewiesener Verbesserung</strong>. Sie tragen kein Risiko.
-                </div>
-            </div>
+      <div class="option">
+        <div class="option-label">Option B: Analyse-Report — € 200</div>
+        <div>Vollständiger Report mit priorisierten Handlungsempfehlungen — zur eigenständigen Umsetzung oder Weitergabe an Ihren IT-Dienstleister. Einmalig, fällig bei Übergabe.</div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain.</div>
+      </div>
 
-            <div class="angebot-option">
-                <div class="angebot-option-titel">(B) Kollegial</div>
-                <div class="angebot-option-text">
-                    Oder wir besprechen ein Angebot auf informeller Basis, ganz nach Ihren Bedürfnissen — ohne Rechnung, auf Vertrauensbasis.
-                </div>
-            </div>
-        </div>
+      <div class="option-premium">
+        <div class="option-label">Option C: E-Mail-Infrastruktur höchster Reputation — auf Anfrage</div>
+        <div>Für Unternehmen, die E-Mail als strategischen Kanal behandeln: Ich baue Ihre gesamte Versandinfrastruktur von Grund auf nach Best Practices auf — dedizierte Sending-IPs, vollständige DNS-Konfiguration (SPF, DKIM, DMARC, BIMI), Feedback-Loop-Registrierung bei allen großen Providern, Postmaster-Tools-Anbindung und ein Monitoring-Setup, das Reputationsprobleme erkennt bevor sie Zustellraten beeinflussen. Das Ergebnis: eine Absender-Infrastruktur, die auch bei steigendem Versandvolumen stabil in den Posteingang zugestellt wird.</div>
+      </div>
 
-        <div class="absatz">
-            Ich lade Sie herzlich ein, mich zu kontaktieren. Ein kurzes Telefonat genügt, um die nächsten Schritte zu besprechen. Sie werden schnell merken, dass diese Behebung vollkommen machbar ist und einen großen Unterschied für Ihre Geschä
+    </div>
+
+    <div class="closing">
+      Haben Sie Interesse? Ich bin für ein kurzes Gespräch erreichbar.
+    </div>
+
+    <div style="margin-bottom: 8px;">Freundliche Grüße,</div>
+
+    <div class="signature">
+      <div class="signature-name">Thomas Felber</div>
+      <div style="margin-top: 12px; color: #666;">E-Mail-Deliverability Spezialist</div>
+      <div class="contact-info">
+        <a href="mailto:felber@live.de?subject=E-Mail-Zustellbarkeit%20RETEC%20Shop">felber@live.de</a>
+        <a href="tel:+491709064924">+49 170 9064924</a>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

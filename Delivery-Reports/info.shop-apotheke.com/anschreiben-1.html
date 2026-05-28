@@ -1,142 +1,96 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Beratungsangebot E-Mail-Zustellbarkeit</title>
-<style>
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
-  color: #333;
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 20px;
-  background-color: #f9f9f9;
-}
-.letter {
-  background-color: #ffffff;
-  padding: 40px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.recipient-email {
-  font-size: 14px;
-  color: #0066cc;
-  margin-bottom: 30px;
-  display: block;
-}
-.recipient-email a {
-  color: #0066cc;
-  text-decoration: none;
-}
-.recipient-email a:hover {
-  text-decoration: underline;
-}
-.date {
-  text-align: right;
-  margin-bottom: 30px;
-  color: #666;
-}
-.greeting {
-  margin-bottom: 20px;
-}
-p {
-  margin-bottom: 15px;
-  text-align: justify;
-}
-.options {
-  margin: 25px 0;
-  padding: 20px;
-  background-color: #f5f5f5;
-  border-left: 4px solid #0066cc;
-}
-.options h3 {
-  margin-top: 0;
-  color: #0066cc;
-}
-.option {
-  margin-bottom: 15px;
-}
-.option strong {
-  color: #333;
-}
-.closing {
-  margin-top: 30px;
-}
-.signature {
-  margin-top: 40px;
-}
-.contact {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #ddd;
-  font-size: 14px;
-}
-.contact a {
-  color: #0066cc;
-  text-decoration: none;
-}
-.contact a:hover {
-  text-decoration: underline;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Mail-Zustellbarkeit – shop-apotheke.com</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 640px; margin: 0 auto; background: #fff; padding: 50px 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header-contact { margin-bottom: 30px; font-size: 14px; }
+    .header-contact a { color: #0d47a1; text-decoration: none; }
+    .header-contact a:hover { text-decoration: underline; }
+    .datum { margin-top: 8px; color: #666; font-size: 13px; }
+    .anrede { margin: 35px 0 20px 0; font-size: 15px; }
+    .body-text { margin-bottom: 16px; font-size: 15px; line-height: 1.7; }
+    .highlight { background: #e3f2fd; padding: 18px 20px; border-left: 4px solid #0d47a1; margin: 22px 0; border-radius: 4px; font-size: 14px; line-height: 1.7; }
+    .offer-section { margin: 28px 0; }
+    .offer-title { font-weight: 600; margin-bottom: 14px; font-size: 15px; color: #222; }
+    .option { margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-label { font-weight: 600; color: #0d47a1; margin-bottom: 4px; }
+    .option-scope { font-size: 12px; color: #888; margin-top: 3px; }
+    .no-risk { background: #0a3572; color: #fff; padding: 14px 20px; border-radius: 6px; margin: 22px 0; font-size: 14px; line-height: 1.6; font-weight: 500; }
+    .no-risk strong { font-weight: 700; }
+    .option-premium { border: 1px solid #0d47a1; border-radius: 6px; padding: 14px 16px; margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-premium .option-label { color: #0a3572; }
+    .closing { margin-top: 30px; margin-bottom: 22px; font-size: 15px; }
+    .signature { margin-top: 36px; padding-top: 18px; border-top: 1px solid #e0e0e0; font-size: 14px; line-height: 1.8; }
+    .signature-name { font-weight: 600; margin-bottom: 8px; }
+    .contact-info { margin-top: 10px; }
+    .contact-info a { color: #0066cc; text-decoration: none; display: block; margin-bottom: 3px; }
+    .contact-info a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-<div class="letter">
-<div class="recipient-email">
-<a href="mailto:noreply-redpoints@info.shop-apotheke.com">noreply-redpoints@info.shop-apotheke.com</a>
-</div>
+  <div class="container">
 
-<div class="date">München, den 14. Januar 2025</div>
+    <div class="header-contact">
+      <a href="mailto:noreply-redpoints@info.shop-apotheke.com">noreply-redpoints@info.shop-apotheke.com</a>
+      <div class="datum">München, 14. Januar 2025</div>
+    </div>
 
-<div class="greeting">
-Sehr geehrte Damen und Herren,
-</div>
+    <div class="anrede">Sehr geehrte Damen und Herren,</div>
 
-<p>ich bin im Rahmen meiner Arbeit als E-Mail-Deliverability-Spezialist auf Ihre Nachricht mit dem Betreff „Aktualisierung der RedPoints Teilnahmebedingungen" gestoßen und habe mir erlaubt, diese technisch zu analysieren.</p>
+    <div class="body-text">
+      ich habe Ihre Nachricht zur Aktualisierung der RedPoints-Teilnahmebedingungen analysiert. Ihre E-Mails erreichen einen großen Empfängerkreis — aber ein erheblicher Teil Ihrer Kunden sieht sie nie. Mit gezielten Anpassungen in der technischen Konfiguration und im Aufbau Ihrer E-Mails lässt sich die Zustellbarkeit spürbar verbessern.
+    </div>
 
-<p>Dabei ist mir aufgefallen, dass diese E-Mail trotz ihrer offensichtlich legitimen Natur sowohl bei automatischen Prüfsystemen als auch bei intelligenten Spam-Filtern in einem Bereich liegt, der problematisch ist: Sie wird mit erhöhter Wahrscheinlichkeit als Spam eingestuft und landet damit nicht im Posteingang Ihrer Empfänger.</p>
+    <div class="highlight">
+      <strong>Konkretes Potenzial:</strong> Die E-Mail wird trotz ihrer offensichtlich legitimen Natur mit erhöhter Wahrscheinlichkeit als Spam eingestuft. Die Ursachen liegen in zwei Bereichen: der technischen Konfiguration Ihrer Versandinfrastruktur und bestimmten inhaltlichen Merkmalen der E-Mail selbst. Beide Faktoren zusammen führen dazu, dass Filter misstrauisch reagieren. Jede verbesserte Zustellrate bedeutet direkt mehr Kundenkontakte, die Ihre RedPoints-Kommunikation tatsächlich lesen.
+    </div>
 
-<p>Die Ursachen liegen dabei in zwei Bereichen: zum einen in der technischen Konfiguration Ihrer Versandinfrastruktur, zum anderen im Aufbau und in bestimmten inhaltlichen Merkmalen der E-Mail selbst. Beide Faktoren zusammen führen dazu, dass Filter misstrauisch reagieren – obwohl es sich erkennbar um eine regelkonforme Geschäftsmail handelt.</p>
+    <div class="no-risk">
+      <strong>Kein Risiko:</strong> Bei Option A zahlen Sie erst, wenn Ihre E-Mails nachweislich besser ankommen — nicht vorher. Kein Ergebnis, keine Rechnung.
+    </div>
 
-<p>Ich vermute, dass diese Zustellprobleme auch bei weiteren Newsletter- und Transaktions-E-Mails auftreten und Sie möglicherweise bereits Rückmeldungen von Kunden erhalten haben, die Ihre Nachrichten vermissen oder nur im Spam-Ordner finden.</p>
+    <div class="offer-section">
+      <div class="offer-title">Drei Optionen:</div>
 
-<p>Ich biete Ihnen gerne meine Unterstützung an, um diese Situation nachhaltig zu verbessern. Dafür stehen Ihnen drei Wege zur Verfügung:</p>
+      <div class="option">
+        <div class="option-label">Option A: Konfiguration der analysierten Sendedomain — € 600</div>
+        <div>Ich übernehme die vollständige Analyse, Optimierung und Implementierung aller notwendigen Anpassungen — technisch wie inhaltlich. <strong>Festpreis, ausschließlich erfolgbasiert — fällig bei Abschluss.</strong></div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain. Weitere Sendingdomains oder -systeme auf Anfrage.</div>
+      </div>
 
-<div class="options">
-<h3>Möglichkeiten der Zusammenarbeit</h3>
+      <div class="option">
+        <div class="option-label">Option B: Analyse-Report — € 200</div>
+        <div>Vollständiger Report mit priorisierten Handlungsempfehlungen — zur Umsetzung durch Ihr internes Team oder Ihren technischen Dienstleister. Einmalig, fällig bei Übergabe.</div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain.</div>
+      </div>
 
-<div class="option">
-<strong>(A) Umsetzung zum Festpreis:</strong> Ich übernehme die vollständige Analyse, Optimierung und Implementierung aller notwendigen Anpassungen – technisch wie inhaltlich. Sie erhalten am Ende eine zuverlässig zustellbare E-Mail-Infrastruktur. Das Honorar beträgt <strong>€ 600,–</strong> und wird nach Abschluss der Arbeiten fällig. Sie gehen kein Risiko ein.
-</div>
+      <div class="option-premium">
+        <div class="option-label">Option C: E-Mail-Infrastruktur höchster Reputation — auf Anfrage</div>
+        <div>Für Unternehmen, die E-Mail als strategischen Kanal behandeln: Ich baue Ihre gesamte Versandinfrastruktur von Grund auf nach Best Practices auf — dedizierte Sending-IPs, vollständige DNS-Konfiguration (SPF, DKIM, DMARC, BIMI), Feedback-Loop-Registrierung bei allen großen Providern, Postmaster-Tools-Anbindung und ein Monitoring-Setup, das Reputationsprobleme erkennt bevor sie Zustellraten beeinflussen. Das Ergebnis: eine Absender-Infrastruktur, die auch bei steigendem Versandvolumen stabil in den Posteingang zugestellt wird.</div>
+      </div>
 
-<div class="option">
-<strong>(B) Erstanalyse mit Handlungsempfehlungen:</strong> Ich liefere Ihnen einen detaillierten Analyse-Report, in dem alle identifizierten Probleme aufgeführt und priorisiert werden – inklusive konkreter Handlungsempfehlungen. Die Umsetzung liegt dann bei Ihnen oder Ihrem technischen Dienstleister. Honorar: <strong>€ 200,–</strong> (einmalig, fällig bei Übergabe des Reports).
-</div>
+    </div>
 
-<div class="option">
-<strong>(C) Kollegiale Lösung:</strong> Wir führen ein unverbindliches Gespräch, in dem ich Ihnen die wichtigsten Stellschrauben erkläre. Was daraus entsteht – ob Beratung, Umsetzung oder einfach ein hilfreicher Austausch – entscheiden wir gemeinsam.
-</div>
-</div>
+    <div class="closing">
+      Haben Sie Interesse? Ich bin für ein kurzes Gespräch erreichbar.
+    </div>
 
-<p>Alle drei Optionen führen zu einer spürbaren Verbesserung Ihrer Zustellbarkeit und damit zu mehr Reichweite bei Ihren Kunden.</p>
+    <div style="margin-bottom: 8px;">Freundliche Grüße,</div>
 
-<div class="closing">
-<p>Für jedwede Rückfragen stehe ich gerne zur Verfügung.</p>
-</div>
+    <div class="signature">
+      <div class="signature-name">Thomas Felber</div>
+      <div style="margin-top: 12px; color: #666;">E-Mail-Deliverability Spezialist</div>
+      <div class="contact-info">
+        <a href="mailto:felber@live.de?subject=E-Mail-Zustellbarkeit%20shop-apotheke.com">felber@live.de</a>
+        <a href="tel:+491709064924">+49 170 9064924</a>
+      </div>
+    </div>
 
-<div class="signature">
-<p>Mit freundlichen Grüßen</p>
-<p><strong>Thomas Felber</strong><br>
-E-Mail-Deliverability-Spezialist</p>
-</div>
-
-<div class="contact">
-<strong>Kontakt:</strong><br>
-E-Mail: <a href="mailto:felber@live.de?subject=Newsletter-Zustellbarkeit">felber@live.de</a><br>
-Telefon: <a href="tel:+491709064924">+49 170 9064924</a>
-</div>
-
-</div>
+  </div>
 </body>
 </html>

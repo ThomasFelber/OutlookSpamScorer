@@ -1,142 +1,96 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anschreiben – E-Mail-Zustellbarkeit</title>
-<style>
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
-  color: #333;
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 20px;
-  background-color: #f9f9f9;
-}
-.container {
-  background-color: #ffffff;
-  padding: 40px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-.recipient {
-  font-size: 16px;
-  margin-bottom: 30px;
-  color: #0066cc;
-}
-.recipient a {
-  color: #0066cc;
-  text-decoration: none;
-  font-weight: 600;
-}
-.recipient a:hover {
-  text-decoration: underline;
-}
-.date {
-  text-align: right;
-  margin-bottom: 30px;
-  color: #666;
-  font-size: 14px;
-}
-.salutation {
-  margin-bottom: 20px;
-}
-p {
-  margin-bottom: 16px;
-  text-align: justify;
-}
-.options {
-  margin: 30px 0;
-  padding: 20px;
-  background-color: #f5f8fa;
-  border-left: 4px solid #0066cc;
-  border-radius: 4px;
-}
-.options h3 {
-  margin-top: 0;
-  color: #0066cc;
-  font-size: 18px;
-}
-.option {
-  margin: 15px 0;
-  padding-left: 10px;
-}
-.option strong {
-  color: #0066cc;
-}
-.closing {
-  margin-top: 30px;
-  margin-bottom: 10px;
-}
-.signature {
-  margin-top: 30px;
-  border-top: 1px solid #e0e0e0;
-  padding-top: 20px;
-}
-.signature p {
-  margin: 5px 0;
-  text-align: left;
-}
-.signature a {
-  color: #0066cc;
-  text-decoration: none;
-}
-.signature a:hover {
-  text-decoration: underline;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Mail-Zustellbarkeit – notar-stadler.de</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 640px; margin: 0 auto; background: #fff; padding: 50px 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header-contact { margin-bottom: 30px; font-size: 14px; }
+    .header-contact a { color: #37474f; text-decoration: none; }
+    .header-contact a:hover { text-decoration: underline; }
+    .datum { margin-top: 8px; color: #666; font-size: 13px; }
+    .anrede { margin: 35px 0 20px 0; font-size: 15px; }
+    .body-text { margin-bottom: 16px; font-size: 15px; line-height: 1.7; }
+    .highlight { background: #eceff1; padding: 18px 20px; border-left: 4px solid #37474f; margin: 22px 0; border-radius: 4px; font-size: 14px; line-height: 1.7; }
+    .offer-section { margin: 28px 0; }
+    .offer-title { font-weight: 600; margin-bottom: 14px; font-size: 15px; color: #222; }
+    .option { margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-label { font-weight: 600; color: #37474f; margin-bottom: 4px; }
+    .option-scope { font-size: 12px; color: #888; margin-top: 3px; }
+    .no-risk { background: #263238; color: #fff; padding: 14px 20px; border-radius: 6px; margin: 22px 0; font-size: 14px; line-height: 1.6; font-weight: 500; }
+    .no-risk strong { font-weight: 700; }
+    .option-premium { border: 1px solid #37474f; border-radius: 6px; padding: 14px 16px; margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-premium .option-label { color: #263238; }
+    .closing { margin-top: 30px; margin-bottom: 22px; font-size: 15px; }
+    .signature { margin-top: 36px; padding-top: 18px; border-top: 1px solid #e0e0e0; font-size: 14px; line-height: 1.8; }
+    .signature-name { font-weight: 600; margin-bottom: 8px; }
+    .contact-info { margin-top: 10px; }
+    .contact-info a { color: #0066cc; text-decoration: none; display: block; margin-bottom: 3px; }
+    .contact-info a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-<div class="container">
-<div class="recipient">
-<a href="mailto:info@notar-stadler.de">info@notar-stadler.de</a>
-</div>
+  <div class="container">
 
-<div class="date">München, 15. Januar 2025</div>
+    <div class="header-contact">
+      <a href="mailto:info@notar-stadler.de">info@notar-stadler.de</a>
+      <div class="datum">München, 15. Januar 2025</div>
+    </div>
 
-<div class="salutation">Sehr geehrte Damen und Herren,</div>
+    <div class="anrede">Sehr geehrte Damen und Herren,</div>
 
-<p>ich habe mir Ihre E-Mail-Kommunikation genauer angesehen und möchte Sie auf ein Problem aufmerksam machen, das vermutlich bereits jetzt Ihre geschäftliche Korrespondenz beeinträchtigt: Ihre E-Mails landen mit hoher Wahrscheinlichkeit im Spam-Ordner Ihrer Empfänger.</p>
+    <div class="body-text">
+      ich habe Ihre E-Mail-Kommunikation analysiert. In Ihrer Branche ist zuverlässige Kommunikation existenziell — wenn wichtige Nachrichten zu Terminen, Urkunden oder Rückfragen nicht ankommen, entstehen Risiken und Vertrauensverluste. Mit zwei gezielten Konfigurationsanpassungen lässt sich das vollständig beheben.
+    </div>
 
-<p>Die Ursache liegt in der technischen Konfiguration Ihres E-Mail-Versands. Auch wenn Ihre Nachrichten absolut legitim sind – und das ist bei Ihnen eindeutig der Fall –, fehlen wichtige technische Nachweise, die E-Mail-Provider heute erwarten. Konkret fehlt eine digitale Signatur, die Ihre Identität zweifelsfrei bestätigt. Hinzu kommt, dass Ihre E-Mails über einen Server versendet werden, dessen technischer Name nicht mit Ihrer Domain übereinstimmt. Für automatische Prüfsysteme wirkt das verdächtig.</p>
+    <div class="highlight">
+      <strong>Konkretes Potenzial:</strong> Ihre E-Mails landen mit hoher Wahrscheinlichkeit im Spam-Ordner Ihrer Empfänger — nicht weil etwas offensichtlich falsch wäre, sondern weil eine digitale Signatur fehlt, die Ihre Identität zweifelsfrei bestätigt, und weil Ihre E-Mails über einen Server versendet werden, dessen technischer Name nicht mit Ihrer Domain übereinstimmt. Für automatische Prüfsysteme wirkt das verdächtig — obwohl Ihre Nachrichten absolut legitim sind.
+    </div>
 
-<p>In Ihrer Branche ist zuverlässige Kommunikation existenziell. Wenn wichtige Nachrichten – etwa zu Terminen, Urkunden oder Rückfragen – nicht ankommen oder erst verspätet gelesen werden, entstehen Risiken und Vertrauensverluste. Gerade bei notariellen Fristen kann das gravierende Folgen haben.</p>
+    <div class="no-risk">
+      <strong>Kein Risiko:</strong> Bei Option A zahlen Sie erst, wenn Ihre E-Mails nachweislich besser ankommen — nicht vorher. Kein Ergebnis, keine Rechnung.
+    </div>
 
-<p>Ich biete Ihnen an, das Problem vollständig zu beheben. Ich analysiere Ihre E-Mail-Infrastruktur, identifiziere alle Schwachstellen und setze die notwendigen Korrekturen um – so dass Ihre E-Mails künftig zuverlässig im Posteingang landen.</p>
+    <div class="offer-section">
+      <div class="offer-title">Drei Optionen:</div>
 
-<div class="options">
-<h3>Drei Wege, wie wir zusammenarbeiten können:</h3>
+      <div class="option">
+        <div class="option-label">Option A: Konfiguration der analysierten Sendedomain — € 900</div>
+        <div>Ich übernehme die vollständige Behebung für <strong>info@notar-stadler.de</strong>: Konfiguration der fehlenden Authentifizierungsmechanismen, Tests und Dokumentation. <strong>Festpreis, ausschließlich erfolgbasiert — fällig bei Abschluss.</strong></div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain. Weitere Sendingdomains oder -systeme auf Anfrage.</div>
+      </div>
 
-<div class="option">
-<strong>(A) Festpreis-Umsetzung – € 900,–</strong><br>
-Ich übernehme die vollständige Behebung aller Zustellbarkeitsprobleme: Analyse, Konfiguration der fehlenden Authentifizierungsmechanismen, Tests und Dokumentation. Sie erhalten am Ende einen nachweislich funktionierenden E-Mail-Versand. Der Betrag wird fällig, sobald die Arbeiten abgeschlossen sind. Sie gehen kein Risiko ein.
-</div>
+      <div class="option">
+        <div class="option-label">Option B: Analyse-Report — € 200</div>
+        <div>Vollständiger Report mit priorisierten Handlungsempfehlungen — zur eigenständigen Umsetzung durch Ihren IT-Dienstleister. Einmalig, fällig bei Übergabe.</div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain.</div>
+      </div>
 
-<div class="option">
-<strong>(B) Analyse-Report – € 200,–</strong><br>
-Ich erstelle einen vollständigen Bericht mit allen identifizierten Problemen und konkreten, priorisierten Handlungsempfehlungen. Sie erhalten damit eine klare Grundlage, um die Probleme intern oder durch Ihren IT-Dienstleister beheben zu lassen. Honorar fällig bei Übergabe des Reports.
-</div>
+      <div class="option-premium">
+        <div class="option-label">Option C: E-Mail-Infrastruktur höchster Reputation — auf Anfrage</div>
+        <div>Für Unternehmen, die E-Mail als strategischen Kanal behandeln: Ich baue Ihre gesamte Versandinfrastruktur von Grund auf nach Best Practices auf — dedizierte Sending-IPs, vollständige DNS-Konfiguration (SPF, DKIM, DMARC, BIMI), Feedback-Loop-Registrierung bei allen großen Providern, Postmaster-Tools-Anbindung und ein Monitoring-Setup, das Reputationsprobleme erkennt bevor sie Zustellraten beeinflussen. Das Ergebnis: eine Absender-Infrastruktur, die auch bei steigendem Versandvolumen stabil in den Posteingang zugestellt wird.</div>
+      </div>
 
-<div class="option">
-<strong>(C) Kollegiales Gespräch</strong><br>
-Wir sprechen zunächst unverbindlich über Ihre Situation. Ich gebe Ihnen eine erste Einschätzung, und wir entscheiden gemeinsam, welcher Weg für Sie der richtige ist.
-</div>
-</div>
+    </div>
 
-<p>Ich arbeite seit Jahren im Bereich E-Mail-Zustellbarkeit und habe vergleichbare Probleme bereits für zahlreiche Unternehmen gelöst. Die technischen Anpassungen sind in der Regel innerhalb weniger Tage umgesetzt, und die Wirkung ist sofort messbar.</p>
+    <div class="closing">
+      Haben Sie Interesse? Ich bin für ein kurzes Gespräch erreichbar.
+    </div>
 
-<p class="closing">Für jedwede Rückfragen stehe ich gerne zur Verfügung.</p>
+    <div style="margin-bottom: 8px;">Freundliche Grüße,</div>
 
-<p>Mit freundlichen Grüßen</p>
+    <div class="signature">
+      <div class="signature-name">Thomas Felber</div>
+      <div style="margin-top: 12px; color: #666;">E-Mail-Deliverability Spezialist</div>
+      <div class="contact-info">
+        <a href="mailto:felber@live.de?subject=E-Mail-Zustellbarkeit%20notar-stadler.de">felber@live.de</a>
+        <a href="tel:+491709064924">+49 170 9064924</a>
+      </div>
+    </div>
 
-<div class="signature">
-<p><strong>Thomas Felber</strong></p>
-<p>E-Mail-Deliverability-Spezialist</p>
-<p>E-Mail: <a href="mailto:felber@live.de?subject=Newsletter-Zustellbarkeit">felber@live.de</a></p>
-<p>Telefon: <a href="tel:+491709064924">+49 170 9064924</a></p>
-</div>
-
-</div>
+  </div>
 </body>
 </html>

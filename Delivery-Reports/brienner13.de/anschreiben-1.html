@@ -1,180 +1,96 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hinweis zur E-Mail-Zustellbarkeit</title>
-<style>
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
-  color: #333;
-  max-width: 750px;
-  margin: 40px auto;
-  padding: 20px;
-  background-color: #f9f9f9;
-}
-.container {
-  background-color: #ffffff;
-  padding: 40px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.recipient {
-  font-size: 0.95em;
-  color: #0066cc;
-  margin-bottom: 30px;
-  font-weight: 500;
-}
-.recipient a {
-  color: #0066cc;
-  text-decoration: none;
-}
-.recipient a:hover {
-  text-decoration: underline;
-}
-.date {
-  text-align: right;
-  font-size: 0.95em;
-  color: #666;
-  margin-bottom: 30px;
-}
-h1 {
-  font-size: 1.4em;
-  color: #2c3e50;
-  margin-bottom: 25px;
-  border-bottom: 2px solid #0066cc;
-  padding-bottom: 10px;
-}
-p {
-  margin-bottom: 16px;
-  text-align: justify;
-}
-.problem-box {
-  background-color: #fff3cd;
-  border-left: 4px solid #ffc107;
-  padding: 15px 20px;
-  margin: 25px 0;
-  border-radius: 4px;
-}
-.options {
-  margin-top: 30px;
-  background-color: #f8f9fa;
-  padding: 25px;
-  border-radius: 6px;
-  border: 1px solid #dee2e6;
-}
-.options h2 {
-  font-size: 1.15em;
-  color: #2c3e50;
-  margin-top: 0;
-  margin-bottom: 20px;
-}
-.option {
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #dee2e6;
-}
-.option:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-  margin-bottom: 0;
-}
-.option-title {
-  font-weight: 600;
-  color: #0066cc;
-  margin-bottom: 8px;
-}
-.price {
-  font-weight: 600;
-  color: #28a745;
-}
-.closing {
-  margin-top: 35px;
-  font-style: italic;
-  color: #555;
-}
-.signature {
-  margin-top: 40px;
-  line-height: 1.8;
-}
-.signature-name {
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 5px;
-}
-.contact {
-  font-size: 0.95em;
-  color: #666;
-}
-.contact a {
-  color: #0066cc;
-  text-decoration: none;
-}
-.contact a:hover {
-  text-decoration: underline;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Mail-Zustellbarkeit – brienner13.de</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 640px; margin: 0 auto; background: #fff; padding: 50px 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header-contact { margin-bottom: 30px; font-size: 14px; }
+    .header-contact a { color: #37474f; text-decoration: none; }
+    .header-contact a:hover { text-decoration: underline; }
+    .datum { margin-top: 8px; color: #666; font-size: 13px; }
+    .anrede { margin: 35px 0 20px 0; font-size: 15px; }
+    .body-text { margin-bottom: 16px; font-size: 15px; line-height: 1.7; }
+    .highlight { background: #eceff1; padding: 18px 20px; border-left: 4px solid #37474f; margin: 22px 0; border-radius: 4px; font-size: 14px; line-height: 1.7; }
+    .offer-section { margin: 28px 0; }
+    .offer-title { font-weight: 600; margin-bottom: 14px; font-size: 15px; color: #222; }
+    .option { margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-label { font-weight: 600; color: #37474f; margin-bottom: 4px; }
+    .option-scope { font-size: 12px; color: #888; margin-top: 3px; }
+    .no-risk { background: #263238; color: #fff; padding: 14px 20px; border-radius: 6px; margin: 22px 0; font-size: 14px; line-height: 1.6; font-weight: 500; }
+    .no-risk strong { font-weight: 700; }
+    .option-premium { border: 1px solid #37474f; border-radius: 6px; padding: 14px 16px; margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-premium .option-label { color: #263238; }
+    .closing { margin-top: 30px; margin-bottom: 22px; font-size: 15px; }
+    .signature { margin-top: 36px; padding-top: 18px; border-top: 1px solid #e0e0e0; font-size: 14px; line-height: 1.8; }
+    .signature-name { font-weight: 600; margin-bottom: 8px; }
+    .contact-info { margin-top: 10px; }
+    .contact-info a { color: #0066cc; text-decoration: none; display: block; margin-bottom: 3px; }
+    .contact-info a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-<div class="container">
-  <div class="recipient">
-    An: <a href="mailto:Rager@brienner13.de">Rager@brienner13.de</a>
-  </div>
-  
-  <div class="date">
-    München, 19. Januar 2025
-  </div>
-  
-  <h1>Ihre geschäftlichen E-Mails landen wahrscheinlich im Spam</h1>
-  
-  <p>Sehr geehrte Damen und Herren,</p>
-  
-  <p>ich habe eine Ihrer E-Mails zum Thema Terminvereinbarung analysiert und dabei festgestellt, dass Ihre Nachrichten bei vielen Empfängern höchstwahrscheinlich nicht im Posteingang ankommen.</p>
-  
-  <div class="problem-box">
-    <strong>Was ich konkret festgestellt habe:</strong><br>
-    Ihre E-Mail wurde sowohl von einer automatischen Prüfung als auch von einem KI-System mit extrem niedrigen Vertrauenswerten bewertet (2/10 bzw. 1/10). Zusätzlich wurde sie fälschlicherweise mit problematischen Inhalten in Verbindung gebracht. Das bedeutet: Selbst wenn Sie seriöse Geschäftspost versenden, wird diese von vielen E-Mail-Systemen automatisch aussortiert.
-  </div>
-  
-  <p>Das liegt an zwei Bereichen: Zum einen an der technischen Konfiguration Ihres E-Mail-Versands, zum anderen am Aufbau und der Struktur Ihrer Nachrichten. Beide Faktoren zusammen führen dazu, dass Ihre Kommunikation Ihre Geschäftspartner häufig gar nicht erreicht – oder erst mit erheblicher Verzögerung aus dem Spam-Ordner gefischt wird.</p>
-  
-  <p>Gerade für eine Notarskanzlei, bei der termingerechte Kommunikation geschäftskritisch ist, kann das erhebliche Folgen haben: verpasste Termine, verzögerte Beurkundungen, Frustration bei Mandanten.</p>
-  
-  <p>Ich bin spezialisiert auf E-Mail-Zustellbarkeit und habe bereits zahlreichen Unternehmen geholfen, ihre Kommunikation wieder zuverlässig an ihre Geschäftspartner zu bringen. Ich biete Ihnen drei Möglichkeiten an, wie wir das Problem lösen können:</p>
-  
-  <div class="options">
-    <h2>Meine Angebote für Sie</h2>
-    
-    <div class="option">
-      <div class="option-title">Option A: Vollständige Umsetzung zum Festpreis</div>
-      <p>Ich übernehme die komplette technische und inhaltliche Optimierung Ihrer E-Mail-Zustellung. Sie erhalten eine zuverlässige, professionelle Lösung – und müssen sich um nichts kümmern. Sie gehen kein Risiko ein: Das Honorar wird erst bei Abschluss der Arbeiten fällig.</p>
-      <p class="price">Festpreis: € 950,–</p>
+  <div class="container">
+
+    <div class="header-contact">
+      <a href="mailto:Rager@brienner13.de">Rager@brienner13.de</a>
+      <div class="datum">München, 19. Januar 2025</div>
     </div>
-    
-    <div class="option">
-      <div class="option-title">Option B: Analyse-Report mit Handlungsempfehlungen</div>
-      <p>Ich erstelle einen vollständigen Analyse-Report, in dem alle erkannten Probleme dokumentiert und priorisierte Handlungsempfehlungen ausgesprochen werden. Die Umsetzung liegt dann bei Ihnen oder Ihrem IT-Dienstleister.</p>
-      <p class="price">Honorar: € 200,– (einmalig, fällig bei Übergabe des Reports)</p>
+
+    <div class="anrede">Sehr geehrte Damen und Herren,</div>
+
+    <div class="body-text">
+      ich habe eine Ihrer E-Mails analysiert und möchte Ihnen eine ehrliche Rückmeldung geben. Für eine Notarskanzlei, bei der termingerechte Kommunikation geschäftskritisch ist, ist eine zuverlässige E-Mail-Zustellung kein Nice-to-have — sie ist existenziell. Mit zwei gezielten Konfigurationsanpassungen vermeiden Sie verpasste Termine, verzögerte Beurkundungen und Vertrauensverluste bei Mandanten.
     </div>
-    
-    <div class="option">
-      <div class="option-title">Option C: Kollegiales Gespräch</div>
-      <p>Wir sprechen offen über Ihre Situation, und ich gebe Ihnen eine erste Einschätzung. Was daraus entsteht, entscheiden wir gemeinsam – ohne formales Mandat, ohne Verpflichtung.</p>
-      <p class="price">Kostenlos, unverbindlich</p>
+
+    <div class="highlight">
+      <strong>Konkretes Potenzial:</strong> Ihre E-Mail wurde mit extrem niedrigen Vertrauenswerten bewertet (2/10 bzw. 1/10) und fälschlicherweise mit problematischen Inhalten in Verbindung gebracht. Die Ursachen liegen in der technischen Konfiguration des E-Mail-Versands sowie im Aufbau der Nachrichten — beide Faktoren zusammen führen dazu, dass Ihre Korrespondenz bei Geschäftspartnern und Mandanten häufig gar nicht ankommt.
     </div>
+
+    <div class="no-risk">
+      <strong>Kein Risiko:</strong> Bei Option A zahlen Sie erst, wenn Ihre E-Mails nachweislich besser ankommen — nicht vorher. Kein Ergebnis, keine Rechnung.
+    </div>
+
+    <div class="offer-section">
+      <div class="offer-title">Drei Optionen:</div>
+
+      <div class="option">
+        <div class="option-label">Option A: Konfiguration der analysierten Sendedomain — € 950</div>
+        <div>Ich behebe alle identifizierten Schwachstellen für <strong>Rager@brienner13.de</strong> und begleite die Umsetzung bis zur nachweislich verbesserten Zustellrate. <strong>Festpreis, ausschließlich erfolgbasiert — fällig bei Abschluss.</strong></div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain. Weitere Sendingdomains oder -systeme auf Anfrage.</div>
+      </div>
+
+      <div class="option">
+        <div class="option-label">Option B: Analyse-Report — € 200</div>
+        <div>Vollständiger Report mit priorisierten Handlungsempfehlungen — zur eigenständigen Umsetzung oder Weitergabe an Ihren IT-Dienstleister. Einmalig, fällig bei Übergabe.</div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain.</div>
+      </div>
+
+      <div class="option-premium">
+        <div class="option-label">Option C: E-Mail-Infrastruktur höchster Reputation — auf Anfrage</div>
+        <div>Für Unternehmen, die E-Mail als strategischen Kanal behandeln: Ich baue Ihre gesamte Versandinfrastruktur von Grund auf nach Best Practices auf — dedizierte Sending-IPs, vollständige DNS-Konfiguration (SPF, DKIM, DMARC, BIMI), Feedback-Loop-Registrierung bei allen großen Providern, Postmaster-Tools-Anbindung und ein Monitoring-Setup, das Reputationsprobleme erkennt bevor sie Zustellraten beeinflussen. Das Ergebnis: eine Absender-Infrastruktur, die auch bei steigendem Versandvolumen stabil in den Posteingang zugestellt wird.</div>
+      </div>
+
+    </div>
+
+    <div class="closing">
+      Haben Sie Interesse? Ich bin für ein kurzes Gespräch erreichbar.
+    </div>
+
+    <div style="margin-bottom: 8px;">Freundliche Grüße,</div>
+
+    <div class="signature">
+      <div class="signature-name">Thomas Felber</div>
+      <div style="margin-top: 12px; color: #666;">E-Mail-Deliverability Spezialist</div>
+      <div class="contact-info">
+        <a href="mailto:felber@live.de?subject=E-Mail-Zustellbarkeit%20brienner13.de">felber@live.de</a>
+        <a href="tel:+491709064924">+49 170 9064924</a>
+      </div>
+    </div>
+
   </div>
-  
-  <p class="closing">Für jedwede Rückfragen stehe ich gerne zur Verfügung.</p>
-  
-  <div class="signature">
-    <div class="signature-name">Mit freundlichen Grüßen</div>
-    <div class="signature-name">Thomas Felber</div>
-    <div class="contact">
-      E-Mail: <a href="mailto:felber@live.de?subject=Newsletter-Zustellbarkeit">felber@live.de</a><br>
-      Telefon: <a href="tel:+491709064924">+49 170 9064924</a>
-    </div>
-  </div>
-</div>
 </body>
 </html>

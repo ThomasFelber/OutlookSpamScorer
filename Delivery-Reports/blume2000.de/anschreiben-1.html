@@ -1,173 +1,96 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anschreiben – E-Mail-Zustellbarkeit · BLUME2000</title>
-<style>
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
-  color: #333;
-  max-width: 750px;
-  margin: 40px auto;
-  padding: 20px;
-  background-color: #f9f9f9;
-}
-.container {
-  background-color: #ffffff;
-  padding: 40px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.recipient {
-  font-size: 0.95em;
-  color: #0066cc;
-  margin-bottom: 30px;
-  font-weight: 500;
-}
-.date {
-  font-size: 0.9em;
-  color: #666;
-  margin-bottom: 25px;
-}
-.salutation {
-  margin-bottom: 20px;
-}
-p {
-  margin-bottom: 16px;
-  text-align: justify;
-}
-.section-title {
-  font-weight: 600;
-  margin-top: 28px;
-  margin-bottom: 12px;
-  color: #222;
-}
-.finding-block {
-  margin-bottom: 24px;
-  padding: 16px 20px;
-  background: #f8fafc;
-  border-left: 4px solid #0066cc;
-  border-radius: 0 6px 6px 0;
-}
-.finding-block h4 {
-  margin: 0 0 8px 0;
-  font-size: 0.95em;
-  color: #0066cc;
-}
-.finding-block p {
-  margin: 0;
-  font-size: 0.92em;
-  color: #444;
-  text-align: left;
-}
-.stream-label {
-  font-size: 0.8em;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #888;
-  margin-bottom: 6px;
-}
-.offer-item {
-  margin-bottom: 20px;
-  padding-left: 20px;
-}
-.offer-item strong {
-  color: #0066cc;
-}
-.closing {
-  margin-top: 30px;
-  margin-bottom: 8px;
-}
-.signature {
-  margin-top: 30px;
-  line-height: 1.5;
-}
-.contact {
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 1px solid #e0e0e0;
-  font-size: 0.95em;
-}
-.contact a {
-  color: #0066cc;
-  text-decoration: none;
-}
-.contact a:hover {
-  text-decoration: underline;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Mail-Zustellbarkeit – BLUME2000</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 640px; margin: 0 auto; background: #fff; padding: 50px 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header-contact { margin-bottom: 30px; font-size: 14px; }
+    .header-contact a { color: #0d47a1; text-decoration: none; }
+    .header-contact a:hover { text-decoration: underline; }
+    .datum { margin-top: 8px; color: #666; font-size: 13px; }
+    .anrede { margin: 35px 0 20px 0; font-size: 15px; }
+    .body-text { margin-bottom: 16px; font-size: 15px; line-height: 1.7; }
+    .highlight { background: #e3f2fd; padding: 18px 20px; border-left: 4px solid #0d47a1; margin: 22px 0; border-radius: 4px; font-size: 14px; line-height: 1.7; }
+    .offer-section { margin: 28px 0; }
+    .offer-title { font-weight: 600; margin-bottom: 14px; font-size: 15px; color: #222; }
+    .option { margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-label { font-weight: 600; color: #0d47a1; margin-bottom: 4px; }
+    .option-scope { font-size: 12px; color: #888; margin-top: 3px; }
+    .no-risk { background: #0a3572; color: #fff; padding: 14px 20px; border-radius: 6px; margin: 22px 0; font-size: 14px; line-height: 1.6; font-weight: 500; }
+    .no-risk strong { font-weight: 700; }
+    .option-premium { border: 1px solid #0d47a1; border-radius: 6px; padding: 14px 16px; margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-premium .option-label { color: #0a3572; }
+    .closing { margin-top: 30px; margin-bottom: 22px; font-size: 15px; }
+    .signature { margin-top: 36px; padding-top: 18px; border-top: 1px solid #e0e0e0; font-size: 14px; line-height: 1.8; }
+    .signature-name { font-weight: 600; margin-bottom: 8px; }
+    .contact-info { margin-top: 10px; }
+    .contact-info a { color: #0066cc; text-decoration: none; display: block; margin-bottom: 3px; }
+    .contact-info a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-<div class="container">
-  <div class="recipient">
-    An: BLUME2000 SE · E-Mail-Zustellbarkeit
+  <div class="container">
+
+    <div class="header-contact">
+      <a href="mailto:service@blume2000.de">service@blume2000.de</a>
+      <div class="datum">München, 9. Mai 2026</div>
+    </div>
+
+    <div class="anrede">Sehr geehrte Damen und Herren,</div>
+
+    <div class="body-text">
+      ich habe fünf E-Mails aus zwei Ihrer Versandsysteme analysiert — transaktionale Nachrichten über Mailjet sowie Newsletter über Emarsys. BLUME2000 ist technisch gut aufgestellt: SPF, DKIM und DMARC sind auf beiden Kanälen konfiguriert. Dennoch gibt es zwei gezielte Anpassungen, die die Zustellbarkeit spürbar verbessern — eine davon ist ein Template-Fehler, der systemisch alle transaktionalen Sendungen betrifft und sich mit einem einzigen Eingriff in Mailjet beheben lässt.
+    </div>
+
+    <div class="highlight">
+      <strong>Konkretes Potenzial:</strong> In allen analysierten Bestell- und Versandbestätigungen steckt ein CSS-Block mit rund 15.800 Zeichen direkt im HTML-Body — als unsichtbarer Text. Moderne Spam-Filter werten das als Obfuskationssignal. Das ist das stärkste Einzelsignal, das mir in allen analysierten E-Mails begegnet ist. Dazu fehlt ein sauberer Return-Path-Alignment auf blume2000.de. Beides liegt im Mailjet-Konfigurationsbereich — keine Code-Entwicklung nötig. Die hohe Linkdichte in der Emarsys-Welcome-Mail lässt sich auf Template-Ebene optimieren.
+    </div>
+
+    <div class="no-risk">
+      <strong>Kein Risiko:</strong> Bei Option A zahlen Sie erst, wenn Ihre E-Mails nachweislich besser ankommen — nicht vorher. Kein Ergebnis, keine Rechnung.
+    </div>
+
+    <div class="offer-section">
+      <div class="offer-title">Drei Optionen:</div>
+
+      <div class="option">
+        <div class="option-label">Option A: Konfiguration der analysierten Sendedomain — € 950</div>
+        <div>Ich koordiniere mit Mailjet/Sinch und Emarsys die vollständige Behebung: Template-Bereinigung, Custom Bounce-Domain, Link-Dichte-Optimierung, DMARC-Überprüfung beider Kanäle. <strong>Festpreis, ausschließlich erfolgbasiert — fällig bei Abschluss.</strong></div>
+        <div class="option-scope">Gilt ausschließlich für die analysierten Sendingdomains (service@blume2000.de, shipping@blume2000.de, newsletter@mailing.blume2000.de). Weitere Sendingdomains auf Anfrage.</div>
+      </div>
+
+      <div class="option">
+        <div class="option-label">Option B: Analyse-Report — € 200</div>
+        <div>Vollständiger Report mit priorisierten Handlungsempfehlungen und konkreten Konfigurationsanweisungen für Mailjet und Emarsys — zur Umsetzung durch Ihr internes Team oder Ihren Dienstleister. Einmalig, fällig bei Übergabe.</div>
+        <div class="option-scope">Gilt ausschließlich für die analysierten Sendingdomains.</div>
+      </div>
+
+      <div class="option-premium">
+        <div class="option-label">Option C: E-Mail-Infrastruktur höchster Reputation — auf Anfrage</div>
+        <div>Für Unternehmen, die E-Mail als strategischen Kanal behandeln: Ich baue Ihre gesamte Versandinfrastruktur von Grund auf nach Best Practices auf — dedizierte Sending-IPs, vollständige DNS-Konfiguration (SPF, DKIM, DMARC, BIMI), Feedback-Loop-Registrierung bei allen großen Providern, Postmaster-Tools-Anbindung und ein Monitoring-Setup, das Reputationsprobleme erkennt bevor sie Zustellraten beeinflussen. Das Ergebnis: eine Absender-Infrastruktur, die auch bei steigendem Versandvolumen stabil in den Posteingang zugestellt wird.</div>
+      </div>
+
+    </div>
+
+    <div class="closing">
+      Haben Sie Interesse? Ich bin für ein kurzes Gespräch erreichbar.
+    </div>
+
+    <div style="margin-bottom: 8px;">Freundliche Grüße,</div>
+
+    <div class="signature">
+      <div class="signature-name">Thomas Felber</div>
+      <div style="margin-top: 12px; color: #666;">E-Mail-Deliverability Spezialist</div>
+      <div class="contact-info">
+        <a href="mailto:felber@live.de?subject=E-Mail-Zustellbarkeit%20BLUME2000">felber@live.de</a>
+        <a href="tel:+491709064924">+49 170 9064924</a>
+      </div>
+    </div>
+
   </div>
-
-  <div class="date">München, 9. Mai 2026</div>
-
-  <div class="salutation">Sehr geehrte Damen und Herren,</div>
-
-  <p>ich habe in den vergangenen Tagen fünf E-Mails aus zwei Ihrer Versandsysteme analysiert – transaktionale Nachrichten (Bestell- und Versandbestätigungen) über Mailjet sowie Newsletter-Kommunikation über Emarsys. Erlauben Sie mir, meine Beobachtungen direkt und konkret zu schildern.</p>
-
-  <p>Grundsätzlich ist BLUME2000 technisch gut aufgestellt: Authentifizierungsprotokolle (SPF, DKIM, DMARC) sind auf beiden Kanälen konfiguriert, und die Infrastruktur professioneller Dienstleister wird sinnvoll genutzt. Das ist keine Selbstverständlichkeit. Dennoch gibt es zwei Bereiche, in denen gezielte Anpassungen die Zustellbarkeit spürbar verbessern würden – einer davon ist ein klarer Fehler in Ihren Templates, den Sie mit einem einzigen Eingriff in Mailjet für alle zukünftigen Sendungen beheben können.</p>
-
-  <div class="section-title">Was ich konkret gefunden habe:</div>
-
-  <div class="finding-block">
-    <div class="stream-label">Mailjet — service@blume2000.de · shipping@blume2000.de</div>
-    <h4>Template-Fehler: ~16.000 Zeichen unsichtbarer Text in jeder transaktionalen E-Mail</h4>
-    <p>In allen analysierten Bestell- und Versandbestätigungen steckt ein CSS-Media-Query-Block mit rund 15.800–15.900 Zeichen direkt im HTML-Body – als HTML-Kommentar. Das ist ein Template-Authoring-Fehler: Diese CSS-Deklarationen gehören in den &lt;head&gt;, sind im Body aber schlicht toter, unsichtbarer Text. Moderne Spam-Filter werten exakt das als Obfuskationssignal – der Block ist für den Empfänger nicht sichtbar, aber groß genug, um automatisch als verdächtig eingestuft zu werden. Das ist das stärkste Einzelsignal, das mir in allen fünf analysierten E-Mails begegnet ist. Es betrifft systemisch alle Ihre transaktionalen Sendungen über Mailjet.</p>
-  </div>
-
-  <div class="finding-block">
-    <div class="stream-label">Mailjet — service@blume2000.de · shipping@blume2000.de</div>
-    <h4>Return-Path: Ausrichtung auf blume2000.de als direkter Quick Win</h4>
-    <p>Die transaktionalen E-Mails senden aktuell mit einem Return-Path über <code>bnc3.mailjet.com</code>. Das ist bei Mailjet-Nutzern üblich und kein harter Fehler – DMARC-Alignment ist trotzdem gegeben. Es wäre jedoch ein sauberer, einfacher Verbesserungsschritt: Mit einer eigenen Bounce-Domain (z.&nbsp;B. <code>bounce.blume2000.de</code>) signalisiert jede ausgehende E-Mail, dass Infrastruktur und Marke aus einem Guss sind. Mailjet unterstützt das nativ. Der Aufwand ist gering; der Effekt auf Domain-Kohärenz und Reputations-Signale nachhaltig.</p>
-  </div>
-
-  <div class="finding-block">
-    <div class="stream-label">Emarsys — newsletter@mailing.blume2000.de</div>
-    <h4>Link-Dichte in der Willkommens-E-Mail: 30 Links</h4>
-    <p>Die Welcome-Mail enthält 30 verlinkte Elemente. Das ist für eine einzelne E-Mail sehr hoch – Spam-Filter werten eine solche Dichte als Indiz für aggressive Kommunikation. Dabei ist der Emarsys-Kanal technisch gut konfiguriert: DMARC p=reject mit striktem Alignment ist die stärkste mögliche Policy. Diese Stärke lässt sich voll ausspielen, wenn der Inhalt mitspielt. Eine Reduktion auf das Wesentliche – ein bis zwei klare Calls-to-Action – verbessert die Zustellbarkeit, ohne den Inhalt inhaltlich zu beschneiden.</p>
-  </div>
-
-  <p>Kurz zusammengefasst: Der Template-Fehler in Mailjet ist behebbar, indem der CSS-Block aus dem Body der Bestätigungs-Templates herausgenommen wird – ein Eingriff direkt in Mailjet/Sinch, keine Code-Entwicklung. Der Return-Path lässt sich ebenfalls dort konfigurieren. Die Link-Dichte ist eine Entscheidung auf Template-Ebene in Emarsys. Alle drei Punkte liegen im ESP-Konfigurationsbereich, nicht in Ihrer eigenen technischen Infrastruktur.</p>
-
-  <p>Ich bin spezialisiert auf E-Mail-Zustellbarkeit und unterstütze Unternehmen dabei, genau diese Art von Problemen zu identifizieren und zu beheben – auf technischer wie auf Template-Ebene. Gerade vor umsatzstarken Phasen wie Muttertag und Valentinstag lohnt es sich, sicherzustellen, dass transaktionale Nachrichten zuverlässig im Posteingang ankommen.</p>
-
-  <div class="section-title">Mein Angebot an Sie:</div>
-
-  <div class="offer-item">
-    <strong>(A) Umsetzung im Festpreis</strong><br>
-    Ich koordiniere mit Mailjet/Sinch und Emarsys die vollständige Behebung der identifizierten Schwachstellen: Template-Bereinigung, Custom Bounce-Domain (bounce.blume2000.de), Link-Dichte-Optimierung sowie eine Überprüfung beider DMARC-Konfigurationen. Sie erhalten eine Dokumentation aller durchgeführten Maßnahmen. Honorar: <strong>€ 950,–</strong>, fällig nach Abschluss. Kein Risiko vorab.
-  </div>
-
-  <div class="offer-item">
-    <strong>(B) Analyse-Report</strong><br>
-    Ich erstelle Ihnen einen vollständigen schriftlichen Bericht mit allen Befunden, priorisierten Handlungsempfehlungen und konkreten Konfigurationsanweisungen für Mailjet und Emarsys – zur Umsetzung durch Ihr internes Team oder Ihren Dienstleister. Honorar: <strong>€ 200,–</strong> (einmalig, fällig bei Übergabe).
-  </div>
-
-  <div class="offer-item">
-    <strong>(C) Kollegiales Gespräch</strong><br>
-    Wir sprechen zunächst unverbindlich über die Situation. Gerne erkläre ich Ihnen den Template-Fehler im Detail und zeige, wie er sich mit Bordmitteln in Mailjet/Sinch beheben lässt – ohne Formalität, auf Augenhöhe.
-  </div>
-
-  <p class="closing">Für jedwede Rückfragen stehe ich gerne zur Verfügung.</p>
-
-  <div class="signature">
-    Mit freundlichen Grüßen<br>
-    <strong>Thomas Felber</strong><br>
-    Spezialist für E-Mail-Zustellbarkeit
-  </div>
-
-  <div class="contact">
-    <strong>Kontakt:</strong><br>
-    E-Mail: <a href="mailto:felber@live.de?subject=BLUME2000-Zustellbarkeit">felber@live.de</a><br>
-    Telefon: <a href="tel:+491709064924">+49 170 9064924</a>
-  </div>
-</div>
 </body>
 </html>

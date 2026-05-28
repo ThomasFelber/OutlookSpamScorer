@@ -1,180 +1,96 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Mail-Zustellbarkeit – Cylex</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: #f5f5f5;
-            padding: 20px;
-        }
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-            background: #ffffff;
-            padding: 50px 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        .header-contact {
-            margin-bottom: 30px;
-            text-align: left;
-            font-size: 14px;
-        }
-        .header-contact a {
-            color: #0066cc;
-            text-decoration: none;
-        }
-        .header-contact a:hover {
-            text-decoration: underline;
-        }
-        .datum {
-            margin-top: 8px;
-            color: #666;
-            font-size: 13px;
-        }
-        .anrede {
-            margin: 35px 0 25px 0;
-            font-size: 15px;
-        }
-        .body-text {
-            margin-bottom: 18px;
-            text-align: justify;
-            font-size: 15px;
-            line-height: 1.7;
-        }
-        .highlight {
-            background: #fffbea;
-            padding: 20px;
-            border-left: 4px solid #ff9800;
-            margin: 25px 0;
-            border-radius: 4px;
-            font-size: 14px;
-            line-height: 1.7;
-        }
-        .offer-section {
-            margin: 30px 0;
-            padding: 0;
-        }
-        .offer-title {
-            font-weight: 600;
-            margin-bottom: 15px;
-            font-size: 15px;
-            color: #222;
-        }
-        .option {
-            margin-bottom: 18px;
-            padding-left: 0;
-            font-size: 14px;
-            line-height: 1.7;
-        }
-        .option-label {
-            font-weight: 600;
-            color: #0066cc;
-            margin-bottom: 5px;
-        }
-        .closing {
-            margin-top: 35px;
-            margin-bottom: 25px;
-            font-size: 15px;
-            line-height: 1.7;
-        }
-        .signature {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e0e0e0;
-            font-size: 14px;
-            line-height: 1.8;
-        }
-        .signature-name {
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-        .contact-info {
-            margin-top: 12px;
-        }
-        .contact-info a {
-            color: #0066cc;
-            text-decoration: none;
-            display: block;
-            margin-bottom: 4px;
-        }
-        .contact-info a:hover {
-            text-decoration: underline;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Mail-Zustellbarkeit – Cylex</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 640px; margin: 0 auto; background: #fff; padding: 50px 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header-contact { margin-bottom: 30px; font-size: 14px; }
+    .header-contact a { color: #0d47a1; text-decoration: none; }
+    .header-contact a:hover { text-decoration: underline; }
+    .datum { margin-top: 8px; color: #666; font-size: 13px; }
+    .anrede { margin: 35px 0 20px 0; font-size: 15px; }
+    .body-text { margin-bottom: 16px; font-size: 15px; line-height: 1.7; }
+    .highlight { background: #e3f2fd; padding: 18px 20px; border-left: 4px solid #0d47a1; margin: 22px 0; border-radius: 4px; font-size: 14px; line-height: 1.7; }
+    .offer-section { margin: 28px 0; }
+    .offer-title { font-weight: 600; margin-bottom: 14px; font-size: 15px; color: #222; }
+    .option { margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-label { font-weight: 600; color: #0d47a1; margin-bottom: 4px; }
+    .option-scope { font-size: 12px; color: #888; margin-top: 3px; }
+    .no-risk { background: #0a3572; color: #fff; padding: 14px 20px; border-radius: 6px; margin: 22px 0; font-size: 14px; line-height: 1.6; font-weight: 500; }
+    .no-risk strong { font-weight: 700; }
+    .option-premium { border: 1px solid #0d47a1; border-radius: 6px; padding: 14px 16px; margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-premium .option-label { color: #0a3572; }
+    .closing { margin-top: 30px; margin-bottom: 22px; font-size: 15px; }
+    .signature { margin-top: 36px; padding-top: 18px; border-top: 1px solid #e0e0e0; font-size: 14px; line-height: 1.8; }
+    .signature-name { font-weight: 600; margin-bottom: 8px; }
+    .contact-info { margin-top: 10px; }
+    .contact-info a { color: #0066cc; text-decoration: none; display: block; margin-bottom: 3px; }
+    .contact-info a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-    <div class="container">
+  <div class="container">
 
-        <div class="header-contact">
-            <a href="mailto:info@cylex.de">info@cylex.de</a>
-            <div class="datum">München, 7. Mai 2026</div>
-        </div>
+    <div class="header-contact">
+      <a href="mailto:info@cylex.de">info@cylex.de</a>
+      <div class="datum">München, 7. Mai 2026</div>
+    </div>
 
-        <div class="anrede">
-            Liebe Damen und Herren,
-        </div>
+    <div class="anrede">Sehr geehrte Damen und Herren,</div>
 
-        <div class="body-text">
-            ich habe mir Ihre ausgehenden E-Mails genauer angesehen und dabei etwas festgestellt, das Sie wahrscheinlich nicht wissen: Ein erheblicher Teil Ihrer Nachrichten erreicht Ihre Empfänger nie — sie landen im Spam, bevor jemand auch nur die Möglichkeit hatte, sie zu lesen.
-        </div>
+    <div class="body-text">
+      ich habe mir Ihre ausgehenden E-Mails genauer angesehen. Cylex ist ein etablierter Dienst mit einem relevanten Empfängerkreis — aber ein erheblicher Teil Ihrer Nachrichten erreicht die Empfänger nie, weil sie im Spam landen, bevor jemand auch nur die Möglichkeit hatte, sie zu lesen. Mit gezielten Konfigurationsanpassungen lässt sich das ohne Systemwechsel beheben.
+    </div>
 
-        <div class="highlight">
-            <strong>Was mich daran besonders beschäftigt:</strong> Das Problem liegt nicht an Ihren Inhalten, und es liegt auch nicht daran, dass etwas offensichtlich falsch wäre. Ihre E-Mails sehen auf den ersten Blick einwandfrei aus. Das macht es schwieriger zu erkennen — und umso wichtiger, es zu verstehen.
-        </div>
+    <div class="highlight">
+      <strong>Konkretes Potenzial:</strong> Die Analyse zeigt konkrete Muster, die erklären, warum Löschbestätigungen, Profiländerungen und Transaktionsmails systematisch abgefangen werden — bei Microsoft besonders ausgeprägt. Es sind mehrere Faktoren, die zusammenwirken. Keiner davon ist unlösbar. Ihre Nutzer bekommen keine Fehlermeldung. Sie auch nicht. Die E-Mail verschwindet einfach.
+    </div>
 
-        <div class="body-text">
-            Ich habe analysiert, wie Ihre E-Mail-Infrastruktur von großen Empfänger-Systemen — insbesondere Microsoft — wahrgenommen wird. Dabei sind mir konkrete Muster aufgefallen, die erklären, warum Ihre Nachrichten systematisch abgefangen werden. Es sind mehrere Faktoren, die zusammenwirken. Keiner davon ist unlösbar.
-        </div>
+    <div class="no-risk">
+      <strong>Kein Risiko:</strong> Bei Option A zahlen Sie erst, wenn Ihre E-Mails nachweislich besser ankommen — nicht vorher. Kein Ergebnis, keine Rechnung.
+    </div>
 
-        <div class="body-text">
-            Im Alltag bedeutet das: Löschbestätigungen, Profiländerungen und Transaktionsmails kommen nicht dort an, wo sie ankommen sollen. Ihre Nutzer bekommen keine Fehlermeldung. Sie auch nicht. Die E-Mail verschwindet einfach.
-        </div>
+    <div class="offer-section">
+      <div class="offer-title">Drei Optionen:</div>
 
-                <div class="offer-section">
-            <div class="offer-title">Wie können wir zusammenarbeiten?</div>
+      <div class="option">
+        <div class="option-label">Option A: Konfiguration der analysierten Sendedomain — € 750</div>
+        <div>Ich analysiere Ihre E-Mail-Infrastruktur vollständig, identifiziere alle Ursachen und setze die Korrekturen gemeinsam mit Ihnen um. <strong>Festpreis, ausschließlich erfolgbasiert — fällig bei Abschluss.</strong></div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain. Weitere Sendingdomains oder -systeme auf Anfrage.</div>
+      </div>
 
-            <div class="option">
-                <div class="option-label">Option A: Festpreis</div>
-                <div>Ich analysiere Ihre E-Mail-Infrastruktur vollständig, identifiziere alle Ursachen und setze die Korrekturen gemeinsam mit Ihnen um. Honorar: <strong>€ 750</strong> (Festpreis, fällig bei Abschluss). Sie gehen kein Risiko ein.</div>
-            </div>
+      <div class="option">
+        <div class="option-label">Option B: Analyse-Report — € 200</div>
+        <div>Vollständiger Report mit priorisierten Handlungsempfehlungen — zur eigenständigen Umsetzung oder Weitergabe an Ihren IT-Dienstleister. Einmalig, fällig bei Übergabe.</div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain.</div>
+      </div>
 
-            <div class="option">
-                <div class="option-label">Option B: Erstanalyse</div>
-                <div>Ich überbringe Ihnen den vollständigen Analyse-Report mit allen identifizierten Problemen und priorisierten Handlungsempfehlungen. Die Umsetzung liegt dann bei Ihnen. Honorar: <strong>€ 200</strong> (einmalig, fällig bei Übergabe).</div>
-            </div>
-
-            <div class="option">
-                <div class="option-label">Option C: Kollegial</div>
-                <div>Ich glaube daran, dass Fachleute sich gegenseitig helfen. Wenn Sie lieber ohne formales Mandat beginnen möchten, sprechen Sie mich an — ich bin offen für ein Gespräch. Was daraus entsteht, entscheiden wir gemeinsam.</div>
-            </div>
-        </div>
-
-        <div class="closing">
-            Für jedwede Rückfragen stehe ich gerne zur Verfügung.
-        </div>
-
-        <div style="margin-bottom: 8px;">Viele Grüße,</div>
-
-        <div class="signature">
-            <div class="signature-name">Thomas Felber</div>
-            <div style="margin-top: 15px; color: #666;">E-Mail-Deliverability Spezialist</div>
-            <div class="contact-info">
-                <a href="mailto:felber@live.de?subject=E-Mail-Zustellbarkeit%20Cylex">felber@live.de</a>
-                <a href="tel:+491709064924">+49 170 9064924</a>
-            </div>
-        </div>
+      <div class="option-premium">
+        <div class="option-label">Option C: E-Mail-Infrastruktur höchster Reputation — auf Anfrage</div>
+        <div>Für Unternehmen, die E-Mail als strategischen Kanal behandeln: Ich baue Ihre gesamte Versandinfrastruktur von Grund auf nach Best Practices auf — dedizierte Sending-IPs, vollständige DNS-Konfiguration (SPF, DKIM, DMARC, BIMI), Feedback-Loop-Registrierung bei allen großen Providern, Postmaster-Tools-Anbindung und ein Monitoring-Setup, das Reputationsprobleme erkennt bevor sie Zustellraten beeinflussen. Das Ergebnis: eine Absender-Infrastruktur, die auch bei steigendem Versandvolumen stabil in den Posteingang zugestellt wird.</div>
+      </div>
 
     </div>
+
+    <div class="closing">
+      Haben Sie Interesse? Ich bin für ein kurzes Gespräch erreichbar.
+    </div>
+
+    <div style="margin-bottom: 8px;">Freundliche Grüße,</div>
+
+    <div class="signature">
+      <div class="signature-name">Thomas Felber</div>
+      <div style="margin-top: 12px; color: #666;">E-Mail-Deliverability Spezialist</div>
+      <div class="contact-info">
+        <a href="mailto:felber@live.de?subject=E-Mail-Zustellbarkeit%20Cylex">felber@live.de</a>
+        <a href="tel:+491709064924">+49 170 9064924</a>
+      </div>
+    </div>
+
+  </div>
 </body>
 </html>

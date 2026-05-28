@@ -1,188 +1,96 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Mail-Zustellbarkeit – Professionelle Beratung</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f9f9f9;
-            padding: 20px;
-        }
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        .email-header {
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-        .email-header a {
-            color: #0066cc;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .email-header a:hover {
-            text-decoration: underline;
-        }
-        .date {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 30px;
-        }
-        .greeting {
-            margin-bottom: 25px;
-            font-size: 16px;
-        }
-        .content p {
-            margin-bottom: 20px;
-            text-align: justify;
-        }
-        .highlight-box {
-            background-color: #f0f5ff;
-            border-left: 4px solid #0066cc;
-            padding: 18px;
-            margin: 25px 0;
-            border-radius: 4px;
-        }
-        .highlight-box strong {
-            color: #0066cc;
-        }
-        .problem-section {
-            margin: 30px 0;
-        }
-        .problem-section h3 {
-            color: #d32f2f;
-            font-size: 16px;
-            margin-bottom: 12px;
-        }
-        .problem-section p {
-            color: #555;
-        }
-        .offer-section {
-            margin: 35px 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-            border-radius: 6px;
-        }
-        .offer-section h3 {
-            color: #1a73e8;
-            font-size: 16px;
-            margin-bottom: 15px;
-        }
-        .offer-option {
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-        }
-        .offer-option:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-            margin-bottom: 0;
-        }
-        .offer-option strong {
-            color: #1a73e8;
-            display: block;
-            margin-bottom: 8px;
-        }
-        .offer-option p {
-            margin: 0;
-            color: #555;
-            font-size: 15px;
-        }
-        .closing {
-            margin: 30px 0 25px 0;
-        }
-        .signature {
-            margin-top: 35px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-        }
-        .signature p {
-            margin-bottom: 8px;
-            font-size: 15px;
-        }
-        .signature a {
-            color: #0066cc;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .signature a:hover {
-            text-decoration: underline;
-        }
-        .contact-line {
-            margin-top: 12px;
-            font-size: 14px;
-            color: #666;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Mail-Zustellbarkeit – RETEC / T-Online</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 640px; margin: 0 auto; background: #fff; padding: 50px 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header-contact { margin-bottom: 30px; font-size: 14px; }
+    .header-contact a { color: #2e7d32; text-decoration: none; }
+    .header-contact a:hover { text-decoration: underline; }
+    .datum { margin-top: 8px; color: #666; font-size: 13px; }
+    .anrede { margin: 35px 0 20px 0; font-size: 15px; }
+    .body-text { margin-bottom: 16px; font-size: 15px; line-height: 1.7; }
+    .highlight { background: #f1f8e9; padding: 18px 20px; border-left: 4px solid #2e7d32; margin: 22px 0; border-radius: 4px; font-size: 14px; line-height: 1.7; }
+    .offer-section { margin: 28px 0; }
+    .offer-title { font-weight: 600; margin-bottom: 14px; font-size: 15px; color: #222; }
+    .option { margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-label { font-weight: 600; color: #2e7d32; margin-bottom: 4px; }
+    .option-scope { font-size: 12px; color: #888; margin-top: 3px; }
+    .no-risk { background: #1b5e20; color: #fff; padding: 14px 20px; border-radius: 6px; margin: 22px 0; font-size: 14px; line-height: 1.6; font-weight: 500; }
+    .no-risk strong { font-weight: 700; }
+    .option-premium { border: 1px solid #2e7d32; border-radius: 6px; padding: 14px 16px; margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-premium .option-label { color: #1b5e20; }
+    .closing { margin-top: 30px; margin-bottom: 22px; font-size: 15px; }
+    .signature { margin-top: 36px; padding-top: 18px; border-top: 1px solid #e0e0e0; font-size: 14px; line-height: 1.8; }
+    .signature-name { font-weight: 600; margin-bottom: 8px; }
+    .contact-info { margin-top: 10px; }
+    .contact-info a { color: #0066cc; text-decoration: none; display: block; margin-bottom: 3px; }
+    .contact-info a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="email-header">
-            <a href="mailto:retec-water-technology@t-online.de">retec-water-technology@t-online.de</a>
-        </div>
+  <div class="container">
 
-        <div class="date">
-            München, 28. Januar 2025
-        </div>
+    <div class="header-contact">
+      <a href="mailto:retec-water-technology@t-online.de">retec-water-technology@t-online.de</a>
+      <div class="datum">München, 28. Januar 2025</div>
+    </div>
 
-        <div class="greeting">
-            Liebe Damen und Herren,
-        </div>
+    <div class="anrede">Sehr geehrte Damen und Herren,</div>
 
-        <div class="content">
-            <p>
-                ich habe Ihre E-Mail zum Abo-Service analysiert und möchte Sie auf ein strukturelles Problem hinweisen, das derzeit dazu führt, dass Ihre Nachrichten bei vielen Empfängern (insbesondere bei Microsoft-Nutzern) im Spam-Ordner landen — obwohl der Inhalt völlig legitim ist.
-            </p>
+    <div class="body-text">
+      ich habe Ihre E-Mail zum Abo-Service analysiert und möchte Sie auf ein strukturelles Problem hinweisen. Viele Ihrer Kunden erhalten die Abo-Bestätigungen gar nicht oder müssen sie manuell aus dem Spam-Ordner holen. Das kostet Sie Vertrauen und möglicherweise Umsatz. Mit einer Infrastrukturanpassung lässt sich das dauerhaft beheben.
+    </div>
 
-            <div class="highlight-box">
-                <strong>Das Kernproblem:</strong> Ihre E-Mails werden von Microsoft Exchange als verdächtig eingestuft und automatisch in den Junk-Ordner verschoben, bevor der Empfänger sie überhaupt sieht.
-            </div>
+    <div class="highlight">
+      <strong>Konkretes Potenzial:</strong> Ihre E-Mails werden über einen Consumer-E-Mail-Anbieter (T-Online) mit einer Shared-IP-Adresse versendet, die von Hunderten anderen Unternehmen genutzt wird. DKIM ist nicht aktiviert — Microsoft erkennt das als Warnsignal. Zusätzlich werden Links verwendet, die von Outlook als Marken-Impersonation interpretiert werden. Das Ergebnis: SCL 6 und OFR-Override — Junk-Zustellung bei Microsoft-Empfängern.
+    </div>
 
-            <div class="problem-section">
-                <h3>Warum passiert das?</h3>
-                <p>
-                    Ihre Absender-Adresse verwendet eine Shared-IP-Adresse Ihres E-Mail-Providers, die von Hunderten anderen Unternehmen ebenfalls genutzt wird. Dadurch entsteht ein Reputationsproblem: Wenn auch nur ein anderer Nutzer auf dieser Adresse Spam verschickt, leiden alle mit. Hinzu kommt, dass ein wichtiger Authentifizierungsmechanismus (DKIM) nicht aktiviert ist. Microsoft erkennt dies als Warnsignal.
-                </p>
-                <p>
-                    Ein weiterer Faktor: In Ihren E-Mails werden Links verwendet, die von Outlook automatisch umgeschrieben werden. Das wird fälschlicherweise als Marken-Impersonation interpretiert — was die Junk-Einstufung verstärkt.
-                </p>
-            </div>
+    <div class="no-risk">
+      <strong>Kein Risiko:</strong> Bei Option A zahlen Sie erst, wenn Ihre E-Mails nachweislich besser ankommen — nicht vorher. Kein Ergebnis, keine Rechnung.
+    </div>
 
-            <p>
-                Das Ergebnis: Viele Ihrer Kunden erhalten die Abo-Bestätigungen gar nicht oder müssen sie manuell aus dem Spam-Ordner holen. Das kostet Sie Vertrauen und möglicherweise Umsatz.
-            </p>
+    <div class="offer-section">
+      <div class="offer-title">Drei Optionen:</div>
 
-            <div class="offer-section">
-                <h3>Wie ich Ihnen helfen kann</h3>
-                
-                <div class="offer-option">
-                    <strong>Option A – Erfolgsbasiert</strong>
-                    <p>
-                        Ich optimiere Ihre E-Mail-Infrastruktur, konfiguriere alle notwendigen technischen Systeme und stelle sicher, dass Ihre Nachrichten zuverlässig im Posteingang ankommen. Sie zahlen <strong>€ 550,–</strong>, aber nur, wenn die Zustellung messbar besser wird. Der Preis ist erst nach nachgewiesener Verbesserung fällig.
-                    </p>
-                </div>
+      <div class="option">
+        <div class="option-label">Option A: Konfiguration der analysierten Sendedomain — € 550</div>
+        <div>Ich optimiere Ihre E-Mail-Infrastruktur, konfiguriere alle notwendigen technischen Systeme und stelle sicher, dass Ihre Nachrichten zuverlässig im Posteingang ankommen. <strong>Festpreis, ausschließlich erfolgbasiert — fällig bei Abschluss.</strong></div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain. Weitere Sendingdomains auf Anfrage.</div>
+      </div>
 
-                <div class="offer-option">
-                    <strong>Option B – Festpreis-Analyse</strong>
-                    <p>
-                        Ich liefere eine umfassende schriftliche Analyse Ihrer E-Mail-Infrastruktur mit konkreten, priorisierten Handlungsempfehlungen — ohne Umsetzung. Die Behebung liegt dann bei Ihnen oder Ihrem Team. Honorar: <strong>€ 1.200</strong> (Festpreis, fällig bei Übergabe der Analyse).
-                    </p>
-                </div>
-            </div>
+      <div class="option">
+        <div class="option-label">Option B: Analyse-Report — € 200</div>
+        <div>Vollständiger Report mit priorisierten Handlungsempfehlungen — zur eigenständigen Umsetzung oder Weitergabe an Ihren IT-Dienstleister. Einmalig, fällig bei Übergabe.</div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain.</div>
+      </div>
 
-            <div class="closing">
-                <p>
+      <div class="option-premium">
+        <div class="option-label">Option C: E-Mail-Infrastruktur höchster Reputation — auf Anfrage</div>
+        <div>Für Unternehmen, die E-Mail als strategischen Kanal behandeln: Ich baue Ihre gesamte Versandinfrastruktur von Grund auf nach Best Practices auf — dedizierte Sending-IPs, vollständige DNS-Konfiguration (SPF, DKIM, DMARC, BIMI), Feedback-Loop-Registrierung bei allen großen Providern, Postmaster-Tools-Anbindung und ein Monitoring-Setup, das Reputationsprobleme erkennt bevor sie Zustellraten beeinflussen. Das Ergebnis: eine Absender-Infrastruktur, die auch bei steigendem Versandvolumen stabil in den Posteingang zugestellt wird.</div>
+      </div>
+
+    </div>
+
+    <div class="closing">
+      Haben Sie Interesse? Ich bin für ein kurzes Gespräch erreichbar.
+    </div>
+
+    <div style="margin-bottom: 8px;">Freundliche Grüße,</div>
+
+    <div class="signature">
+      <div class="signature-name">Thomas Felber</div>
+      <div style="margin-top: 12px; color: #666;">E-Mail-Deliverability Spezialist</div>
+      <div class="contact-info">
+        <a href="mailto:felber@live.de?subject=E-Mail-Zustellbarkeit%20RETEC%20T-Online">felber@live.de</a>
+        <a href="tel:+491709064924">+49 170 9064924</a>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

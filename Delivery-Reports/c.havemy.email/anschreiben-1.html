@@ -1,151 +1,96 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Angebot: Verbesserung der E-Mail-Zustellbarkeit</title>
-<style>
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
-  color: #333;
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 20px;
-  background-color: #f9f9f9;
-}
-.container {
-  background-color: #ffffff;
-  padding: 40px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-.recipient {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 30px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #e0e0e0;
-}
-.recipient a {
-  color: #0066cc;
-  text-decoration: none;
-}
-.recipient a:hover {
-  text-decoration: underline;
-}
-h1 {
-  font-size: 20px;
-  color: #2c3e50;
-  margin-bottom: 25px;
-  font-weight: 600;
-}
-p {
-  margin-bottom: 15px;
-  text-align: justify;
-}
-.options {
-  background-color: #f8f9fa;
-  padding: 20px;
-  border-left: 4px solid #0066cc;
-  margin: 25px 0;
-}
-.options h2 {
-  font-size: 16px;
-  color: #2c3e50;
-  margin-top: 0;
-  margin-bottom: 15px;
-}
-.option {
-  margin-bottom: 15px;
-  padding-left: 10px;
-}
-.option strong {
-  color: #0066cc;
-}
-.price {
-  font-weight: 600;
-  color: #2c3e50;
-}
-.signature {
-  margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid #e0e0e0;
-}
-.contact {
-  margin-top: 20px;
-  font-size: 14px;
-  line-height: 1.8;
-}
-.contact a {
-  color: #0066cc;
-  text-decoration: none;
-}
-.contact a:hover {
-  text-decoration: underline;
-}
-.date {
-  color: #666;
-  font-size: 14px;
-  margin-bottom: 30px;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Mail-Zustellbarkeit – Ivario / c.havemy.email</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 640px; margin: 0 auto; background: #fff; padding: 50px 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header-contact { margin-bottom: 30px; font-size: 14px; }
+    .header-contact a { color: #0d47a1; text-decoration: none; }
+    .header-contact a:hover { text-decoration: underline; }
+    .datum { margin-top: 8px; color: #666; font-size: 13px; }
+    .anrede { margin: 35px 0 20px 0; font-size: 15px; }
+    .body-text { margin-bottom: 16px; font-size: 15px; line-height: 1.7; }
+    .highlight { background: #e3f2fd; padding: 18px 20px; border-left: 4px solid #0d47a1; margin: 22px 0; border-radius: 4px; font-size: 14px; line-height: 1.7; }
+    .offer-section { margin: 28px 0; }
+    .offer-title { font-weight: 600; margin-bottom: 14px; font-size: 15px; color: #222; }
+    .option { margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-label { font-weight: 600; color: #0d47a1; margin-bottom: 4px; }
+    .option-scope { font-size: 12px; color: #888; margin-top: 3px; }
+    .no-risk { background: #0a3572; color: #fff; padding: 14px 20px; border-radius: 6px; margin: 22px 0; font-size: 14px; line-height: 1.6; font-weight: 500; }
+    .no-risk strong { font-weight: 700; }
+    .option-premium { border: 1px solid #0d47a1; border-radius: 6px; padding: 14px 16px; margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-premium .option-label { color: #0a3572; }
+    .closing { margin-top: 30px; margin-bottom: 22px; font-size: 15px; }
+    .signature { margin-top: 36px; padding-top: 18px; border-top: 1px solid #e0e0e0; font-size: 14px; line-height: 1.8; }
+    .signature-name { font-weight: 600; margin-bottom: 8px; }
+    .contact-info { margin-top: 10px; }
+    .contact-info a { color: #0066cc; text-decoration: none; display: block; margin-bottom: 3px; }
+    .contact-info a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-<div class="container">
+  <div class="container">
 
-<div class="recipient">
-An: <a href="mailto:noreply=ivario.com@c.havemy.email">noreply=ivario.com@c.havemy.email</a>
-</div>
+    <div class="header-contact">
+      <a href="mailto:noreply=ivario.com@c.havemy.email">noreply=ivario.com@c.havemy.email</a>
+      <div class="datum">München, 19. Januar 2025</div>
+    </div>
 
-<div class="date">München, 19. Januar 2025</div>
+    <div class="anrede">Sehr geehrte Damen und Herren,</div>
 
-<h1>Betreff: Ihre Marketing-E-Mails landen wahrscheinlich im Spam – ich kann helfen</h1>
+    <div class="body-text">
+      ich habe Ihre Marketing-Kampagne zur Asbest-Analyse analysiert. Ihre Nachricht ist professionell aufgebaut und Ihr Angebot seriös — aber ein Großteil Ihrer Zielgruppe sieht sie nie. Sie investieren Zeit und Budget in den Versand, aber die Wirkung bleibt weit unter den Möglichkeiten. Das lässt sich beheben.
+    </div>
 
-<p>Sehr geehrte Damen und Herren,</p>
+    <div class="highlight">
+      <strong>Konkretes Potenzial:</strong> Die E-Mail landet mit hoher Wahrscheinlichkeit bei vielen Empfängern im Spam-Ordner, statt im Posteingang. Die Ursachen liegen in der technischen Konfiguration Ihres E-Mail-Versands sowie in bestimmten Elementen im Inhalt und Aufbau Ihrer E-Mails. Beide Bereiche zusammen sorgen dafür, dass Spam-Filter Ihre Nachrichten kritisch bewerten — obwohl die Absicht dahinter völlig legitim ist.
+    </div>
 
-<p>ich habe kürzlich eine Ihrer Marketing-E-Mails analysiert – die Kampagne mit dem Betreff „Letzte Chance: Erhalten Sie 10% Rabatt auf Ihre Asbest-Analyse". Die Nachricht selbst ist professionell aufgebaut und Ihr Angebot seriös, doch leider gibt es ein Problem: Ihre E-Mails landen mit hoher Wahrscheinlichkeit bei vielen Empfängern im Spam-Ordner, statt im Posteingang.</p>
+    <div class="no-risk">
+      <strong>Kein Risiko:</strong> Bei Option A zahlen Sie erst, wenn Ihre E-Mails nachweislich besser ankommen — nicht vorher. Kein Ergebnis, keine Rechnung.
+    </div>
 
-<p>Das bedeutet konkret: Ein Großteil Ihrer Zielgruppe sieht Ihre Angebote vermutlich gar nicht. Das ist ärgerlich, weil Sie Zeit und Budget in den Versand investieren, aber die Wirkung deutlich unter den Möglichkeiten bleibt.</p>
+    <div class="offer-section">
+      <div class="offer-title">Drei Optionen:</div>
 
-<p>Bei meiner Analyse sind mir zwei Hauptbereiche aufgefallen, die das verursachen: zum einen die technische Konfiguration Ihres E-Mail-Versands, zum anderen bestimmte Elemente im Inhalt und Aufbau Ihrer E-Mails. Beide Bereiche zusammen sorgen dafür, dass Spam-Filter Ihre Nachrichten kritisch bewerten – obwohl die Absicht dahinter völlig legitim ist.</p>
+      <div class="option">
+        <div class="option-label">Option A: Konfiguration der analysierten Sendedomain — € 650</div>
+        <div>Ich übernehme die komplette Optimierung — von der technischen Konfiguration über die Anpassung Ihrer E-Mail-Inhalte bis zur Nachkontrolle der Zustellbarkeit. <strong>Festpreis, ausschließlich erfolgbasiert — fällig bei Abschluss.</strong></div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain. Weitere Sendingdomains oder -systeme auf Anfrage.</div>
+      </div>
 
-<p>Ich arbeite seit Jahren als Spezialist für E-Mail-Zustellbarkeit und helfe Unternehmen dabei, genau solche Probleme zu beheben. Meine Erfahrung zeigt: Mit gezielten Anpassungen lässt sich die Zustellrate spürbar verbessern – oft innerhalb kurzer Zeit.</p>
+      <div class="option">
+        <div class="option-label">Option B: Analyse-Report — € 200</div>
+        <div>Vollständiger Report mit priorisierten Handlungsempfehlungen — zur Umsetzung durch Sie selbst oder Ihren Dienstleister. Einmalig, fällig bei Übergabe.</div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain.</div>
+      </div>
 
-<div class="options">
-<h2>Ich biete Ihnen drei Wege der Zusammenarbeit an:</h2>
+      <div class="option-premium">
+        <div class="option-label">Option C: E-Mail-Infrastruktur höchster Reputation — auf Anfrage</div>
+        <div>Für Unternehmen, die E-Mail als strategischen Kanal behandeln: Ich baue Ihre gesamte Versandinfrastruktur von Grund auf nach Best Practices auf — dedizierte Sending-IPs, vollständige DNS-Konfiguration (SPF, DKIM, DMARC, BIMI), Feedback-Loop-Registrierung bei allen großen Providern, Postmaster-Tools-Anbindung und ein Monitoring-Setup, das Reputationsprobleme erkennt bevor sie Zustellraten beeinflussen. Das Ergebnis: eine Absender-Infrastruktur, die auch bei steigendem Versandvolumen stabil in den Posteingang zugestellt wird.</div>
+      </div>
 
-<div class="option">
-<strong>(A) Vollständige Umsetzung zum Festpreis:</strong><br>
-Ich übernehme die komplette Optimierung – von der technischen Konfiguration über die Anpassung Ihrer E-Mail-Inhalte bis zur Nachkontrolle der Zustellbarkeit. Sie erhalten einen einsatzbereiten, verbesserten E-Mail-Versand. Das Honorar beträgt <span class="price">€ 650,–</span> und wird bei Abschluss der Arbeiten fällig. Sie gehen kein Risiko ein.
-</div>
+    </div>
 
-<div class="option">
-<strong>(B) Erstanalyse mit Handlungsempfehlungen:</strong><br>
-Ich erstelle einen vollständigen Analyse-Report mit allen identifizierten Problemen und priorisierten Handlungsempfehlungen. Die Umsetzung bleibt bei Ihnen oder Ihrem Dienstleister. Honorar: <span class="price">€ 200,–</span> (einmalig, fällig bei Übergabe des Reports).
-</div>
+    <div class="closing">
+      Haben Sie Interesse? Ich bin für ein kurzes Gespräch erreichbar.
+    </div>
 
-<div class="option">
-<strong>(C) Kollegialer Austausch:</strong><br>
-Wir sprechen zunächst unverbindlich darüber, was bei Ihrem Versand passiert und wo die größten Hebel liegen. Was daraus entsteht, entscheiden wir gemeinsam – ohne formales Mandat, einfach auf Augenhöhe.
-</div>
-</div>
+    <div style="margin-bottom: 8px;">Freundliche Grüße,</div>
 
-<p>Ich bin überzeugt, dass sich Ihre Zustellrate deutlich verbessern lässt. Gerne bespreche ich mit Ihnen, welcher Weg für Ihre Situation am besten passt.</p>
+    <div class="signature">
+      <div class="signature-name">Thomas Felber</div>
+      <div style="margin-top: 12px; color: #666;">E-Mail-Deliverability Spezialist</div>
+      <div class="contact-info">
+        <a href="mailto:felber@live.de?subject=E-Mail-Zustellbarkeit%20Ivario">felber@live.de</a>
+        <a href="tel:+491709064924">+49 170 9064924</a>
+      </div>
+    </div>
 
-<p>Für jedwede Rückfragen stehe ich gerne zur Verfügung.</p>
-
-<div class="signature">
-<p>Mit freundlichen Grüßen</p>
-<p><strong>Thomas Felber</strong><br>
-Spezialist für E-Mail-Zustellbarkeit</p>
-
-<div class="contact">
-E-Mail: <a href="mailto:felber@live.de?subject=Newsletter-Zustellbarkeit">felber@live.de</a><br>
-Telefon: <a href="tel:+491709064924">+49 170 9064924</a>
-</div>
-</div>
-
-</div>
+  </div>
 </body>
 </html>

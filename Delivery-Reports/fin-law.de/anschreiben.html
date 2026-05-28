@@ -3,295 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anschreiben – E-Mail-Zustellbarkeit · FIN LAW</title>
+  <title>E-Mail-Zustellbarkeit – FIN LAW</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      background: #f4f6f8;
-      color: #1a1a2e;
-      font-size: 15px;
-      line-height: 1.65;
-    }
-
-    .page {
-      max-width: 720px;
-      margin: 48px auto;
-      background: #ffffff;
-      border-radius: 4px;
-      box-shadow: 0 2px 16px rgba(0,0,0,.08);
-      padding: 56px 64px 64px;
-    }
-
-    .back {
-      display: block;
-      max-width: 720px;
-      margin: 28px auto 0;
-      padding: 0 64px;
-      font-size: 13px;
-      color: #64748b;
-      text-decoration: none;
-    }
-    .back:hover { color: #334155; }
-
-    .sender-block {
-      margin-bottom: 40px;
-      padding-bottom: 28px;
-      border-bottom: 1px solid #e5e9ef;
-    }
-    .sender-name { font-size: 17px; font-weight: 700; color: #0f172a; }
-    .sender-meta { font-size: 13px; color: #64748b; margin-top: 3px; }
-
-    .recipient-block {
-      margin-bottom: 32px;
-    }
-    .recipient-block p { font-size: 14px; line-height: 1.7; color: #374151; }
-
-    .date { font-size: 13px; color: #64748b; margin-bottom: 32px; }
-
-    .subject-line {
-      font-size: 18px;
-      font-weight: 700;
-      color: #0f172a;
-      margin-bottom: 28px;
-      line-height: 1.3;
-    }
-
-    .body p {
-      margin-bottom: 18px;
-      color: #374151;
-      font-size: 15px;
-    }
-
-    .body p:last-child { margin-bottom: 0; }
-
-    .highlight-box {
-      background: #f8fafc;
-      border-left: 3px solid #94a3b8;
-      padding: 14px 18px;
-      border-radius: 0 6px 6px 0;
-      margin: 24px 0;
-      font-size: 14px;
-      color: #475569;
-      line-height: 1.6;
-    }
-
-    .options-section { margin: 32px 0; }
-
-    .options-section h2 {
-      font-size: 13px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      color: #64748b;
-      margin-bottom: 16px;
-    }
-
-    .option {
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 20px 22px;
-      margin-bottom: 12px;
-    }
-
-    .option-a { border-top: 3px solid #0f4c81; }
-    .option-b { border-top: 3px solid #475569; }
-
-    .option-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .07em;
-      color: #64748b;
-      margin-bottom: 6px;
-    }
-    .option-a .option-label { color: #0f4c81; }
-
-    .option-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #0f172a;
-      margin-bottom: 10px;
-    }
-
-    .option-body {
-      font-size: 14px;
-      color: #475569;
-      line-height: 1.65;
-    }
-
-    .option-price {
-      display: inline-block;
-      margin-top: 10px;
-      font-size: 15px;
-      font-weight: 700;
-      color: #0f172a;
-    }
-
-    .closing-block { margin-top: 36px; }
-    .closing-block p { font-size: 15px; color: #374151; margin-bottom: 6px; }
-    .sig-name { font-size: 15px; font-weight: 600; color: #0f172a; margin-top: 20px; }
-    .sig-meta { font-size: 13px; color: #64748b; margin-top: 3px; }
-
-    .ps {
-      margin-top: 36px;
-      padding-top: 24px;
-      border-top: 1px solid #e5e9ef;
-      font-size: 13px;
-      color: #64748b;
-      line-height: 1.6;
-    }
-
-    @media print {
-      body { background: #fff; }
-      .page { box-shadow: none; margin: 0; padding: 40px 48px; }
-      .back { display: none; }
-    }
-
-    @media (max-width: 760px) {
-      .page { padding: 36px 28px 48px; margin: 0; border-radius: 0; }
-      .back { padding: 0 28px; }
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; padding: 20px; }
+    .container { max-width: 640px; margin: 0 auto; background: #fff; padding: 50px 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header-contact { margin-bottom: 30px; font-size: 14px; }
+    .header-contact a { color: #37474f; text-decoration: none; }
+    .header-contact a:hover { text-decoration: underline; }
+    .datum { margin-top: 8px; color: #666; font-size: 13px; }
+    .anrede { margin: 35px 0 20px 0; font-size: 15px; }
+    .body-text { margin-bottom: 16px; font-size: 15px; line-height: 1.7; }
+    .highlight { background: #eceff1; padding: 18px 20px; border-left: 4px solid #37474f; margin: 22px 0; border-radius: 4px; font-size: 14px; line-height: 1.7; }
+    .offer-section { margin: 28px 0; }
+    .offer-title { font-weight: 600; margin-bottom: 14px; font-size: 15px; color: #222; }
+    .option { margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-label { font-weight: 600; color: #37474f; margin-bottom: 4px; }
+    .option-scope { font-size: 12px; color: #888; margin-top: 3px; }
+    .no-risk { background: #263238; color: #fff; padding: 14px 20px; border-radius: 6px; margin: 22px 0; font-size: 14px; line-height: 1.6; font-weight: 500; }
+    .no-risk strong { font-weight: 700; }
+    .option-premium { border: 1px solid #37474f; border-radius: 6px; padding: 14px 16px; margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
+    .option-premium .option-label { color: #263238; }
+    .closing { margin-top: 30px; margin-bottom: 22px; font-size: 15px; }
+    .signature { margin-top: 36px; padding-top: 18px; border-top: 1px solid #e0e0e0; font-size: 14px; line-height: 1.8; }
+    .signature-name { font-weight: 600; margin-bottom: 8px; }
+    .contact-info { margin-top: 10px; }
+    .contact-info a { color: #0066cc; text-decoration: none; display: block; margin-bottom: 3px; }
+    .contact-info a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
+  <div class="container">
 
-  <a href="../" class="back">← Delivery Reports</a>
-
-  <div class="page">
-
-    <div class="sender-block">
-      <div class="sender-name">Thomas Felber</div>
-      <div class="sender-meta">E-Mail-Deliverability &amp; Web · thomas@felber.dev</div>
+    <div class="header-contact">
+      <a href="mailto:newsletter@fin-law.de">newsletter@fin-law.de</a>
+      <div class="datum">München, 7. Mai 2026</div>
     </div>
 
-    <div class="recipient-block">
-      <p>
-        FIN LAW – Legal Financial Advisory<br>
-        z. Hd. Rechtsanwalt Lutz Auffenberg, LL.M.<br>
-        z. Hd. Rechtsanwalt Dr. Konrad Uhink
-      </p>
+    <div class="anrede">Sehr geehrter Herr Auffenberg, sehr geehrter Herr Dr. Uhink,</div>
+
+    <div class="body-text">
+      ich habe Ihren Newsletter analysiert. Als Kanzlei, die Ihre Sichtbarkeit gegenüber Compliance-Verantwortlichen und Finanzdienstleistern über redaktionellen Inhalt aufbaut, ist ein zuverlässig zugestellter Newsletter ein messbarer Wettbewerbsvorteil — jede verbesserte Zustellrate ist direkt mehr Reichweite bei Ihrer Zielgruppe, ohne einen einzigen neuen Abonnenten gewinnen zu müssen.
     </div>
 
-    <div class="date">München, 7. Mai 2026</div>
-
-    <div class="subject-line">
-      Ihr Newsletter landet im Junk-Ordner —<br>ich weiß warum, und ich kann helfen.
+    <div class="highlight">
+      <strong>Konkretes Potenzial:</strong> Ihr Newsletter landet bei Outlook- und Hotmail-Empfängern nachweislich im Junk-Ordner. Die Ursachen haben zwei Schichten: fehlende technische Vertrauenssignale auf Versandkonfigurationsebene sowie Template-Auffälligkeiten, die Spam-Filter aktiv bestrafen. Beide Ursachen betreffen nicht eine Ausgabe, sondern jeden Versand — vergangene wie künftige.
     </div>
 
-    <div class="body">
+    <div class="no-risk">
+      <strong>Kein Risiko:</strong> Bei Option A zahlen Sie erst, wenn Ihre E-Mails nachweislich besser ankommen — nicht vorher. Kein Ergebnis, keine Rechnung.
+    </div>
 
-      <p>Sehr geehrter Herr Auffenberg, sehr geehrter Herr Dr. Uhink,</p>
+    <div class="offer-section">
+      <div class="offer-title">Drei Optionen:</div>
 
-      <p>
-        ich wende mich an Sie mit einer Beobachtung, die Ihren Newsletter betrifft — nicht
-        eine einzelne Ausgabe, sondern strukturell jeden Versand. Als Abonnent und als jemand,
-        der sich beruflich mit E-Mail-Zustellbarkeit befasst, habe ich Ihren Newsletter analysiert.
-        Das Ergebnis: Er landet bei Outlook- und Hotmail-Empfängern nachweislich im Junk-Ordner.
-        Und der Grund dafür ist, offen gesagt, nicht einer — es sind mehrere, die zusammenwirken.
-      </p>
-
-      <p>
-        Wer Ihren Newsletter nicht im Posteingang sieht, liest ihn nicht. Bei einer Kanzlei, die
-        ihre Sichtbarkeit gegenüber Mandanten aus dem Finanz- und Aufsichtsrechtsbereich über
-        redaktionellen Inhalt aufbaut, ist das ein stiller Verlust — bei jedem einzelnen Versand,
-        seit vermutlich längerer Zeit, ohne dass es von außen auffällt.
-      </p>
-
-      <div class="highlight-box">
-        <strong>Was die Analyse zeigt:</strong> Das Problem hat zwei Schichten.
-        <br><br>
-        Die erste betrifft die Versandkonfiguration: Es fehlen technische Vertrauenssignale,
-        die moderne E-Mail-Provider heute als selbstverständlich voraussetzen. Vereinfacht:
-        Der Brief kommt ohne vollständigen Absender-Briefkopf an — und wird deshalb aussortiert,
-        obwohl sein Inhalt legitim ist.
-        <br><br>
-        Die zweite Schicht ist das Newsletter-Template selbst. Es enthält mehrere Arten
-        technischer Auffälligkeiten, die Spam-Filter aktiv bestrafen und die sich über die
-        Jahre angesammelt haben. Das ist kein Vorwurf — es passiert, wenn ein Template lange
-        im Einsatz ist, ohne dass jemand mit dem Blick eines Zustellbarkeits-Spezialisten
-        draufgeschaut hat.
-        <br><br>
-        Beide Ursachen betreffen nicht eine Ausgabe, sondern jeden Versand — vergangene wie künftige.
-        Und sie beschränken sich wahrscheinlich nicht auf Outlook: Die Grundursachen wirken
-        providerunabhängig, was bedeutet, dass auch Gmail-Empfänger betroffen sein dürften —
-        nur lässt sich das ohne zusätzliches Monitoring von außen nicht so leicht erkennen.
+      <div class="option">
+        <div class="option-label">Option A: Konfiguration der analysierten Sendedomain — € 1.200</div>
+        <div>Ich behebe alle identifizierten Schwachstellen und begleite die Umsetzung bis zur nachweislich verbesserten Inbox-Zustellung — inklusive Abstimmung mit Ihrem Newsletter-Anbieter und Bereinigung des Templates. <strong>Festpreis, ausschließlich erfolgbasiert — fällig bei Abschluss.</strong></div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain. Weitere Sendingdomains oder -systeme auf Anfrage.</div>
       </div>
 
-      <p>
-        Das Gute: Alles davon ist behebbar. Es braucht eine Kombination aus gezielten
-        Konfigurationsänderungen auf DNS-Ebene, Abstimmung mit Ihrem Newsletter-Anbieter und
-        einer sauberen Neuaufstellung des Templates. Ich habe die Analyse bereits gemacht,
-        eine bereinigte Referenzversion erstellt und weiß, was konkret zu tun ist.
-      </p>
-
-            <div class="options-section">
-        <h2>Drei Wege, wie wir das angehen könnten</h2>
-
-        <div class="option option-a">
-          <div class="option-label">Option A</div>
-          <div class="option-title">Festpreis — vollständige Umsetzung</div>
-          <div class="option-body">
-            Ich analysiere Ihre E-Mail-Infrastruktur, koordiniere die nötigen Schritte
-            mit Ihrem Newsletter-Anbieter und begleite den Prozess bis zur nachgewiesenen
-            Inbox-Zustellung. Für eine Kanzlei, deren Leserschaft aus Compliance-Verantwortlichen
-            und Finanzdienstleistern besteht, hat ein zuverlässig zugestellter Newsletter
-            einen messbaren Wert.
-            <br><br>
-            <span class="option-price">€ 1.200 · Festpreis · fällig bei Abschluss</span>
-          </div>
-        </div>
-
-        <div class="option option-b">
-          <div class="option-label">Option B</div>
-          <div class="option-title">Erstanalyse — Sie setzen selbst um</div>
-          <div class="option-body">
-            Ich überbringe Ihnen den vollständigen Analyse-Report mit allen identifizierten
-            Problemen und priorisierten Handlungsempfehlungen. Die Umsetzung liegt dann
-            bei Ihnen oder Ihrem Team.
-            <br><br>
-            <span class="option-price">€ 200 · einmalig · fällig bei Übergabe</span>
-          </div>
-        </div>
-
-        <div class="option option-c">
-          <div class="option-label">Option C</div>
-          <div class="option-title">Kollegial</div>
-          <div class="option-body">Ich glaube daran, dass Fachleute sich gegenseitig helfen. Wenn Sie lieber ohne formales Mandat beginnen möchten, sprechen Sie mich an — ich bin offen für ein Gespräch. Was daraus entsteht, entscheiden wir gemeinsam.</div>
-        </div>
+      <div class="option">
+        <div class="option-label">Option B: Analyse-Report — € 200</div>
+        <div>Vollständiger Report mit priorisierten Handlungsempfehlungen — zur eigenständigen Umsetzung oder Weitergabe an Ihren IT-Dienstleister. Einmalig, fällig bei Übergabe.</div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain.</div>
       </div>
 
-
-        <div class="option option-b">
-          <div class="option-label">Option B</div>
-          <div class="option-title">Festpreis-Analyse — € 1.200</div>
-            <div class="option-body">Ich liefere eine umfassende schriftliche Analyse Ihrer E-Mail-Infrastruktur mit konkreten, priorisierten Handlungsempfehlungen — ohne Umsetzung. Die Behebung liegt dann bei Ihnen oder Ihrem Team. Honorar: <strong>€ 1.200</strong> (Festpreis, fällig bei Übergabe der Analyse).</div>
-        </div>
+      <div class="option-premium">
+        <div class="option-label">Option C: E-Mail-Infrastruktur höchster Reputation — auf Anfrage</div>
+        <div>Für Unternehmen, die E-Mail als strategischen Kanal behandeln: Ich baue Ihre gesamte Versandinfrastruktur von Grund auf nach Best Practices auf — dedizierte Sending-IPs, vollständige DNS-Konfiguration (SPF, DKIM, DMARC, BIMI), Feedback-Loop-Registrierung bei allen großen Providern, Postmaster-Tools-Anbindung und ein Monitoring-Setup, das Reputationsprobleme erkennt bevor sie Zustellraten beeinflussen. Das Ergebnis: eine Absender-Infrastruktur, die auch bei steigendem Versandvolumen stabil in den Posteingang zugestellt wird.</div>
       </div>
-
-      <p>
-        Alle drei Optionen gelten ohne Vorleistung Ihrerseits und ohne Vertragsbindung.
-        Wenn Sie möchten, schicke ich Ihnen eine kurze technische Zusammenfassung
-        des Problems vorab zu — oder wir tauschen uns kurz per Telefon aus.
-        Ich bin unkompliziert erreichbar.
-      </p>
 
     </div>
 
-    <div class="closing-block">
-      <p>Mit freundlichen Grüßen</p>
-      <div class="sig-name">Thomas Felber</div>
-      <div class="sig-meta"><a href="mailto:thomas@felber.dev?subject=Ihr%20Newsletter%20%E2%80%94%20Zustellbarkeit" style="color:inherit;text-decoration:none;">thomas@felber.dev</a></div>
+    <div class="closing">
+      Haben Sie Interesse? Ich bin für ein kurzes Gespräch erreichbar.
     </div>
 
-    <div class="ps">
-      <strong>P.S.</strong> — Falls Sie die technischen Details interessieren: Ich habe eine
-      vollständige Analyse Ihres April-Newsletters erstellt, die die konkreten Probleme
-      dokumentiert. Die sende ich gerne auf Anfrage zu.
+    <div style="margin-bottom: 8px;">Freundliche Grüße,</div>
+
+    <div class="signature">
+      <div class="signature-name">Thomas Felber</div>
+      <div style="margin-top: 12px; color: #666;">E-Mail-Deliverability Spezialist</div>
+      <div class="contact-info">
+        <a href="mailto:felber@live.de?subject=E-Mail-Zustellbarkeit%20FIN%20LAW">felber@live.de</a>
+        <a href="tel:+491709064924">+49 170 9064924</a>
+      </div>
     </div>
 
   </div>
-
 </body>
 </html>
