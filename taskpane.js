@@ -329,6 +329,25 @@ class SpamAnalyzer {
       }
     }
 
+    // ── HELO-Infrastruktur-Anomalien ──────────────────────────────────────────
+    // Two specific HELO patterns that go beyond the generic mismatch note:
+    // 1. HELO with ".test." subdomain → rented/compromised test infrastructure
+    // 2. HELO with a .gov TLD while sender is not a government domain → hijacked server
+    {
+      const receivedSpfH = this._getHeader(headers, 'Received-SPF') || '';
+      const heloHM       = receivedSpfH.match(/helo=([\w.-]+)/i);
+      if (heloHM) {
+        const heloVal = heloHM[1].toLowerCase();
+        if (/(?:^|\.)test\./i.test(heloVal)) {
+          score += 1.5;
+          reasons.push(`HELO-Test-Infrastruktur "${heloVal}" — Versand über Test-Server deutet auf kompromittierte/gemietete Infrastruktur`);
+        } else if (/\.gov\.[a-z]{2}$/.test(heloVal) && !/\.gov(\.[a-z]{2})?$/.test(fromDomain || '')) {
+          score += 2.0;
+          reasons.push(`HELO-Domain "${heloVal}" ist staatliche .gov-Infrastruktur — Absender-Domain "${fromDomain}" ist keine Behörden-Domain`);
+        }
+      }
+    }
+
     // HELO-Domain-Mismatch wird nicht mehr als Spam-Indikator gewertet — siehe
     // _calculateOpportunityScore() für die Behandlung als Verbesserungspotenzial.
 
@@ -749,7 +768,7 @@ class SpamAnalyzer {
 
     // Spam keyword patterns (German + English)
     const patterns = [
-      { re: /gewinn(en|er|t|chance)|ihre?\s+gewinnchance|lotterie|jackpot|millionen?\s*euro|preis\s*gewonnen|haben\s+(sie\s+)?gewonnen/i, w: 2, label: 'Gewinnversprechen' },
+      { re: /gewinn(en|er|t|chance)|ihre?\s+gewinnchance|lotterie|jackpot|millionen?\s*euro|preis\s*gewonnen|haben\s+(sie\s+)?gewonnen|(?:haben|hat)\s+(?:[A-Za-zÄÖÜäöüß0-9-]+\s+){0,6}gewonnen\b/i, w: 2, label: 'Gewinnversprechen' },
       { re: /\b(?:nigeria|ghana|uganda|central\s+bank\s+of|next[\s-]?of[\s-]?kin|beneficiary\s+(?:of|fund)|atm\s+(?:card|release)|inheritance\s+(?:fund|claim|transfer)|unclaimed\s+(?:fund|deposit)|diplomat(?:ic)?\s+(?:box|trunk)|anti[\s-]?terrorism\s+clearance|fund\s+(?:transfer|release)|\$\s*\d[\d.,]*\s*(?:m(?:illion)?|b(?:illion)?)\b|millions?\s+(?:usd|us\$|\$)|billions?\s+(?:usd|us\$|\$)|prince\b|erbschaft|million[s]?\s*dollar)\b/i, w: 2.5, label: 'Nigeria-419-/Vorschussbetrug' },
       { re: /\b(?:western\s+union|moneygram|ria\s+(?:money|transfer)|wire\s+(?:the\s+)?(?:transfer|fee|charge)|transaction\s+pin\b|secret\s+(?:pin|code)\s+(?:to|for)|pay\s+(?:the\s+)?(?:clearance|delivery|release|insurance|legal)\s+fee)\b/i, w: 1.5, label: 'Überweisungs-Kanal (Western Union/MoneyGram) — Vorschussbetrug-Signal' },
       { re: /\b(?:central\s+bank\s+of\s+(?:nigeria|ghana|uganda|kenya|africa)|uba\s+(?:plc|bank|nigeria)|first\s+bank\s+(?:of\s+)?nigeria|zenith\s+bank|access\s+bank\s+nigeria|union\s+bank\s+of\s+nigeria|polaris\s+bank)\b/i, w: 1.5, label: 'West-Afrikanische Bankbehörde im Text — 419-Fraud-Signal' },
@@ -779,6 +798,24 @@ class SpamAnalyzer {
       // Crypto-wallet credential theft — no legitimate service ever asks for a seed phrase
       { re: /\b(?:seed\s+phrase|recovery\s+phrase|secret\s+(?:phrase|words?)|(?:12|24)[-\s]?(?:word|wort)s?\s+(?:phrase|key|seed)|mnemonic(?:\s+phrase)?|private\s+key\s+(?:backup|recovery|export)|enter\s+your\s+(?:wallet\s+)?(?:phrase|passphrase)|regain\s+(?:access|control)\s+(?:to\s+)?(?:your\s+)?wallet|wallet\s+(?:verification|verify)\s+required)\b/i,
         w: 2.5, label: 'Krypto-Wallet-Phishing: Seed-/Recovery-Phrase angefordert — nie legitim' },
+      // Firmware/software update for hardware wallets — most frequent Ledger/Trezor phishing vector.
+      // Score compounds: brandMap adds +2.5 (subject) or +1.7 (body), this adds +2.0 on top.
+      // No auth guard — legitimate Ledger/Trezor emails come from ledger.com/trezor.io only.
+      { re: /\b(?:firmware|software)\s+(?:update|release|upgrade|version)\b/i,
+        w: 2.0, label: 'Firmware/Software-Update-Betreff — häufigster Phishing-Vektor für Hardware-Wallets (Ledger/Trezor)' },
+      // Fear-based quantum computing threats — used in sophisticated wallet phishing
+      { re: /\b(?:quantum\s+(?:computing|computer|threat|attack|risk|hack)|post[-\s]?quantum\s+(?:security|cryptography|threat)|quantum[-\s]?resistant|your\s+(?:funds?|assets?|wallet|coins?)\s+(?:at\s+risk|are\s+vulnerable|could\s+be\s+lost|may\s+be\s+compromised))\b/i,
+        w: 1.5, label: 'Quantum-Computing-Bedrohungs-Rhetorik — Angst-basiertes Phishing für Krypto-Wallets' },
+      // Scarcity countdowns with explicit numbers — "limitiert auf 200 Codes", "nur noch 50 Stück"
+      { re: /\blimitiert\s+auf\s+\d+\b|nur\s+noch\s+\d+\s+(?:code|platz|stück|exemplar|vorrat|artikel|verfügbar)|limited\s+to\s+\d+\s+(?:spots?|codes?|pieces?|places?)|only\s+\d+\s+(?:left|remaining|available)\b/i,
+        w: 1.2, label: 'Künstliche Verknappung mit Mengenangabe ("limitiert auf 200 Codes", "Nur noch X Vorräte")' },
+      // Masked personal data — phishing emails use partial data (****5024, XXX-XX71) to appear legitimate
+      { re: /\*{3,}[\d]{2,6}\b|\+[\d][\s.-]?\([\d]{3}\)\s*[Xx*]{2,}[-\s]?[Xx*]{2,}[\d]{2,4}/,
+        w: 1.0, label: 'Maskierte persönliche Daten (***XXXX, +1 (628) XXX-XX71) — Phishing-Legitimierungstechnik' },
+      // Generic account sign-in / view-account CTAs — used in account-takeover phishing
+      // Low weight: some legitimate transactional emails use similar phrasing.
+      { re: /\bsign\s+in\s+to\s+(?:your\s+)?(?:account|profile|wallet|portal|dashboard)\b|\bview\s+my\s+account\b|\baccess\s+(?:your\s+)?(?:account|wallet|profile)\s+(?:now|here|below)\b|\bsecure\s+(?:your\s+)?(?:account|wallet|funds?)\s+now\b/i,
+        w: 0.8, label: 'Account-Sign-in / View-Account-CTA — generischer Phishing-Handlungsaufruf' },
       // Fake mandatory/security subject prefix — fires on fullLower which starts with subject
       { re: /^mandatory\s*:\s*(?:regain|verify|update|confirm|restore|secure|unlock|action)\b/i,
         w: 1.0, label: 'Imperatives Security-Subject-Prefix ("Mandatory: regain/verify…") — Fake-Dringlichkeit' },
@@ -840,7 +877,7 @@ class SpamAnalyzer {
       // ── Billing/Payment-Phishing-Phrasen ──────────────────────────────────────
       // Microsoft/PayPal/Apple-Template-Phrasen, die in echten Abrechnungs-E-Mails
       // selten so formuliert sind — Phishing-Baukästen nutzen diese Formulierungen.
-      { re: /\b(?:billing\s+information\s+(?:requires?|needs?)\s+(?:your\s+)?attention\b|update\s+(?:your\s+)?(?:billing|payment)\s+(?:information|details?|method)\b|payment\s+(?:information\s+)?(?:is\s+)?not\s+up\s+to\s+date\b|scheduled\s+(?:payment|charge)\s+(?:failed|declined|could\s+not\s+be\s+processed)\b|account\s+(?:access\s+)?(?:will\s+be\s+suspended|has\s+been\s+(?:suspended|restricted))\s+(?:due\s+to\s+)?billing\b|update\s+billing\s+information\b|confirm\s+(?:your\s+)?(?:billing|payment)\s+details?\b)\b/i,
+      { re: /\b(?:billing\s+information\s+(?:requires?|needs?)\s+(?:your\s+)?attention\b|(?:please\s+)?update\s+(?:your\s+)?billing(?:\s+(?:information|details?|method|on\s+file))?\b|update\s+(?:your\s+)?(?:billing|payment)\s+(?:information|details?|method)\b|payment\s+(?:information\s+)?(?:is\s+)?not\s+up\s+to\s+date\b|scheduled\s+(?:payment|charge)\s+(?:failed|declined|could\s+not\s+be\s+processed)\b|account\s+(?:access\s+)?(?:will\s+be\s+suspended|has\s+been\s+(?:suspended|restricted))\s+(?:due\s+to\s+)?billing\b|confirm\s+(?:your\s+)?(?:billing|payment)\s+details?\b)\b/i,
         w: 1.5, label: 'Billing-/Zahlungs-Phishing-Phrase (Microsoft/PayPal/Apple-Template)' },
 
       // ── Credential-Harvest-CTA ────────────────────────────────────────────────
@@ -986,11 +1023,13 @@ class SpamAnalyzer {
         { re: /\badidas\b/i,                         roots: ['adidas.com', 'adidas.de'] },
         { re: /\blinkedin\b/i,                       roots: ['linkedin.com'] },
         { re: /\btiktok\b/i,                         roots: ['tiktok.com'] },
-        // Crypto wallets — frequent phishing impersonation targets
+        // Crypto wallets & hardware devices — frequent phishing impersonation targets
         { re: /\bexodus\b(?!\s*(?:road|movie|music|album|band))/i, roots: ['exodus.com'] },
         { re: /\bmeta\s*mask\b/i,                                   roots: ['metamask.io'] },
         { re: /\btrezor\b/i,                                        roots: ['trezor.io', 'trezor.com'] },
-        { re: /\bphantom\s+wallet\b/i,                              roots: ['phantom.app'] },
+        { re: /\bphantom\s+wallet\b|\bphantom\b(?=.{0,40}\bwallet\b)/i, roots: ['phantom.app'] },
+        { re: /\bledger\b(?!\s*(?:paper|note|book|account|entry|entries|balance|line|debit|credit))/i, roots: ['ledger.com'] },
+        { re: /\btractor\s+supply\b/i,                              roots: ['tractorsupply.com'] },
         // Travel / hospitality — common gift-card and flight-comp phishing lures
         { re: /\bbooking\.com\b/i,  roots: ['booking.com'] },
         { re: /\bexpedia\b/i,       roots: ['expedia.com', 'expedia.de'] },
@@ -1187,6 +1226,19 @@ class SpamAnalyzer {
     if (subjectEmojiCount >= 2) {
       score += 0.8;
       reasons.push(`${subjectEmojiCount} Emojis im Betreff — aggressives Promo-Spam-Muster`);
+    }
+
+    // ── Date in subject line ───────────────────────────────────────────────────
+    // Legitimate senders embed dates in the subject to fake delivery urgency
+    // (e.g. "Tractor Supply Order - Confirmation 01/03/2025").
+    // Only fires when auth does not fully pass (to avoid flagging CRM-style newsletters
+    // that legitimately include dates, which tend to come from properly configured ESPs).
+    if (!authFullyPasses && subject) {
+      const dateInSubjectRe = /\b\d{2}[-./]\d{2}[-./]\d{4}\b|\b\d{4}[-./]\d{2}[-./]\d{2}\b/;
+      if (dateInSubjectRe.test(subject)) {
+        score += 1.5;
+        reasons.push(`Datum im Betreff: "${subject.slice(0, 60)}" — Fake-Dringlichkeit bei nicht vollständig authentifizierter E-Mail`);
+      }
     }
 
     // Exclamation mark analysis — density + subject + consecutive (not raw count)
@@ -1406,6 +1458,20 @@ class SpamAnalyzer {
     if (/(?:^|\n)\s*(?:liebe[rs]?\s+leser(?:innen)?(?:\s+und\s+(?:liebe\s+)?leser)?|sehr\s+geehrte[rs]?\s+(?:damen?\s+und\s+herren?|dame|herr[,.])|dear\s+(?:customer|subscriber|reader|member|valued\s+customer|user))/im.test(plainText)) {
       score += 0.5;
       reasons.push('Generische Massen-Anrede (kein personalisierter Empfänger)');
+    }
+
+    // ── Government / institutional impersonation in body ──────────────────────
+    // Phishing campaigns regularly impersonate tax authorities, housing departments,
+    // social security, or financial regulators. Legitimate agencies do NOT cold-email
+    // recipients — they use postal mail or secure portals.
+    // Guard: only fire when the sender is not from an official .gov domain.
+    {
+      const govAgencyRe = /\b(?:department\s+of\s+(?:housing|finance|health|labor|education|justice|homeland\s+security)|internal\s+revenue\s+service|\birs\b(?!\s*(?:irisch|irishman))|social\s+security\s+administration|hpd\s+portal|housing\s+preservation\s+(?:and|&)\s+development|bundesfinanzamt|bundesnetzagentur|bafin\b|finanzamt\s+[a-zäöü]{3,}|amt\s+für\s+(?:soziale\s+)?wohnraumversorgung)\b/i;
+      const senderDomainGov = this._lastFromDomain || fromDomain || '';
+      if (govAgencyRe.test(plainText) && !/\.(gov|gv\.at|bund\.de|bundesfinanzamt\.de)$/.test(senderDomainGov)) {
+        score += 2.0;
+        reasons.push('Regierungsbehörden-Impersonation im E-Mail-Inhalt (IRS/HPD/Finanzamt/BaFin) — Sender-Domain ist keine offizielle Behörden-Domain');
+      }
     }
 
     // Unsubstituted merge tag in subject, e.g. {Name}, {Felber} — bulk mailer didn't replace placeholder
@@ -1959,7 +2025,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.14';
+const VERSION            = '2.2.15';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
