@@ -14,14 +14,17 @@
     .datum { margin-top: 8px; color: #666; font-size: 13px; }
     .anrede { margin: 35px 0 20px 0; font-size: 15px; }
     .body-text { margin-bottom: 16px; font-size: 15px; line-height: 1.7; }
-    .highlight { background: #f1f8e9; padding: 18px 20px; border-left: 4px solid #2e7d32; margin: 22px 0; border-radius: 4px; font-size: 14px; line-height: 1.7; }
+    .warning { background: #fffbeb; padding: 18px 20px; border-left: 4px solid #d97706; margin: 22px 0; border-radius: 4px; font-size: 14px; line-height: 1.8; }
+    .warning strong { color: #92400e; }
+    .warning ul { margin: 10px 0 0 18px; }
+    .warning li { margin-bottom: 5px; }
+    .no-risk { background: #1b5e20; color: #fff; padding: 14px 20px; border-radius: 6px; margin: 22px 0; font-size: 14px; line-height: 1.6; font-weight: 500; }
+    .no-risk strong { font-weight: 700; }
     .offer-section { margin: 28px 0; }
     .offer-title { font-weight: 600; margin-bottom: 14px; font-size: 15px; color: #222; }
     .option { margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
     .option-label { font-weight: 600; color: #2e7d32; margin-bottom: 4px; }
     .option-scope { font-size: 12px; color: #888; margin-top: 3px; }
-    .no-risk { background: #1b5e20; color: #fff; padding: 14px 20px; border-radius: 6px; margin: 22px 0; font-size: 14px; line-height: 1.6; font-weight: 500; }
-    .no-risk strong { font-weight: 700; }
     .option-premium { border: 1px solid #2e7d32; border-radius: 6px; padding: 14px 16px; margin-bottom: 18px; font-size: 14px; line-height: 1.7; }
     .option-premium .option-label { color: #1b5e20; }
     .closing { margin-top: 30px; margin-bottom: 22px; font-size: 15px; }
@@ -43,11 +46,20 @@
     <div class="anrede">Sehr geehrte Damen und Herren,</div>
 
     <div class="body-text">
-      ich habe Ihren Newsletter zu den Wohnungs-Fördermodellen analysiert. Die technische Basis ist solide — aber nicht ausgeschöpft. Mit zwei gezielten Konfigurationsanpassungen erreichen Ihre E-Mails messbar mehr Empfänger, die sich bereits aktiv angemeldet haben.
+      Ihr Newsletter zu den Wohnungs-Fördermodellen ist inhaltlich stark aufgestellt — relevante Themen, professionell aufbereitet, klarer Mehrwert für Interessenten und Bestandskunden. Genau deshalb ist es schade: Ein Teil Ihrer Abonnenten empfängt diese E-Mails nicht zuverlässig. Microsoft- und GMX-Filter stufen sie als Junk ein — lautlos, ohne Fehlermeldung auf Ihrer Seite.
     </div>
 
-    <div class="highlight">
-      <strong>Konkretes Potenzial:</strong> Aktuell stufen Microsoft- und GMX-Filter einen Teil Ihrer Zustellungen als Junk ein — nicht wegen des Inhalts, sondern weil die Absender-Domain nicht vollständig mit Ihrem Newsletter-Dienstleister verknüpft ist. Wer Ihre E-Mail nicht sieht, kann nicht reagieren. Jede verbesserte Zustellrate ist direkt mehr Reichweite für Ihre Fördermodell-Kommunikation — ohne einen einzigen neuen Abonnenten gewinnen zu müssen.
+    <div class="warning">
+      <strong>⚠ Technischer Befund (Report #0089):</strong>
+      <ul>
+        <li><strong>DMARC-Eintrag fehlt oder ist fehlerhaft</strong> — Empfänger-Mailserver können keine Policy anwenden; Microsoft-Filter kompensieren das aktuell, aber das ist fragil.</li>
+        <li><strong>DKIM-Alignment nicht eigenständig</strong> — die primäre DKIM-Signatur läuft über <code>crsend.com</code> (CleverReach), nicht über <code>kirschgaerten.de</code>. Ohne Custom-DKIM hängt die Zustellbarkeit vollständig am Goodwill Ihres ESPs.</li>
+        <li><strong>Return-Path-Domain abweichend</strong> — Bounce-Adressen laufen über <code>bounce-eu2.crsend.com</code>; SPF-Alignment schlägt für Ihre Domain fehl.</li>
+      </ul>
+    </div>
+
+    <div class="body-text">
+      Alle drei Punkte sind behebbar — ohne Wechsel von CleverReach, ohne Unterbrechung laufender Kampagnen.
     </div>
 
     <div class="no-risk">
@@ -58,14 +70,14 @@
       <div class="offer-title">Drei Optionen:</div>
 
       <div class="option">
-        <div class="option-label">Option A: Konfiguration der analysierten Sendedomain — € 750</div>
-        <div>Ich behebe alle identifizierten Schwachstellen für <strong>news@kirschgaerten.de</strong> und begleite die Umsetzung bis zur nachweislich verbesserten Zustellrate. <strong>Festpreis, ausschließlich erfolgbasiert — fällig bei Abschluss.</strong></div>
-        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain. Weitere Sendingdomains oder -systeme auf Anfrage.</div>
+        <div class="option-label">Option A: Vollständige Konfiguration — € 750</div>
+        <div>Ich behebe DMARC, DKIM-Custom-Signing und Return-Path-Alignment für <strong>kirschgaerten.de</strong> — koordiniert mit CleverReach, nachweislich getestet. <strong>Ausschließlich erfolgbasiert — fällig bei Abschluss.</strong></div>
+        <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain. Weitere Sendingdomains auf Anfrage.</div>
       </div>
 
       <div class="option">
-        <div class="option-label">Option B: Analyse-Report — € 200</div>
-        <div>Vollständiger Report mit priorisierten Handlungsempfehlungen — zur eigenständigen Umsetzung oder Weitergabe an Ihren IT-Dienstleister. Einmalig, fällig bei Übergabe.</div>
+        <div class="option-label">Option B: Analyse-Report mit Übergabe — € 200</div>
+        <div>Vollständiger Report mit Schritt-für-Schritt-Anleitung für Ihre IT oder Ihren CleverReach-Betreuer. Einmalig, fällig bei Übergabe.</div>
         <div class="option-scope">Gilt ausschließlich für die analysierte Sendedomain.</div>
       </div>
 
@@ -73,7 +85,6 @@
         <div class="option-label">Option C: E-Mail-Infrastruktur höchster Reputation — auf Anfrage</div>
         <div>Für Unternehmen, die E-Mail als strategischen Kanal behandeln: Ich baue Ihre gesamte Versandinfrastruktur von Grund auf nach Best Practices auf — dedizierte Sending-IPs, vollständige DNS-Konfiguration (SPF, DKIM, DMARC, BIMI), Feedback-Loop-Registrierung bei allen großen Providern, Postmaster-Tools-Anbindung und ein Monitoring-Setup, das Reputationsprobleme erkennt bevor sie Zustellraten beeinflussen. Das Ergebnis: eine Absender-Infrastruktur, die auch bei steigendem Versandvolumen stabil in den Posteingang zugestellt wird.</div>
       </div>
-
     </div>
 
     <div class="closing">
