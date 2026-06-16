@@ -1653,25 +1653,33 @@ class SpamAnalyzer {
       }
 
       // DMARC enforcement level.
-      // Microsoft Authentication-Results reports "action=none/quarantine/reject"
-      // (what Exchange did) rather than "p=none/quarantine/reject" (the DNS record).
-      // When dmarc=fail + action=none it always means p=none — check both forms.
+      // Microsoft Authentication-Results includes both p= and sp= when present:
+      //   "dmarc=pass (p=NONE sp=REJECT dis=NONE) header.from=sub.example.com"
+      // For subdomain senders, sp= is the applicable policy — p= only governs
+      // the organisational domain itself. Parse both and pick the effective one.
       const dmarcSeg = (authLine.match(/dmarc=[^;]+/i) || [''])[0];
-      let dPolicy = null;
-      const pM = dmarcSeg.match(/\bp=(none|quarantine|reject)\b/i);
-      if (pM) {
-        dPolicy = pM[1].toUpperCase();
-      } else if (/dmarc=fail/i.test(dmarcSeg)) {
-        // action=none on a fail → p=none; action=quarantine → p=quarantine etc.
+      let dPolicy  = null;
+      let spPolicy = null;
+      const pM  = dmarcSeg.match(/\bp=(none|quarantine|reject)\b/i);
+      const spM = dmarcSeg.match(/\bsp=(none|quarantine|reject)\b/i);
+      if (pM)  dPolicy  = pM[1].toUpperCase();
+      if (spM) spPolicy = spM[1].toUpperCase();
+      // Fallback: Microsoft sometimes uses action= instead of p= on fail
+      if (!dPolicy && /dmarc=fail/i.test(dmarcSeg)) {
         const aM = dmarcSeg.match(/\baction=(none|quarantine|reject)\b/i);
         if (aM) dPolicy = aM[1].toUpperCase();
       }
-      if (dPolicy === 'NONE') {
+      // Is the From domain a subdomain? (e.g. juh-mitglieder.johanniter.de = 3 labels)
+      const fromForDmarc  = this._extractDomain(this._getHeader(headers, 'From') || '');
+      const isSdSender    = (fromForDmarc || '').split('.').length > 2;
+      // Effective policy: subdomain senders are governed by sp=, not p=
+      const effectivePolicy = (isSdSender && spPolicy) ? spPolicy : dPolicy;
+      if (effectivePolicy === 'NONE') {
         tech += 1.5;
-        oppReasons.push('DMARC p=NONE — keine Durchsetzung; auf REJECT anheben');
-      } else if (dPolicy === 'QUARANTINE') {
+        oppReasons.push(`DMARC ${isSdSender ? 'sp' : 'p'}=NONE — keine Durchsetzung${isSdSender ? ' für Subdomains' : ''}; auf REJECT anheben`);
+      } else if (effectivePolicy === 'QUARANTINE') {
         tech += 0.8;
-        oppReasons.push('DMARC p=QUARANTINE — noch nicht auf REJECT gesetzt');
+        oppReasons.push(`DMARC ${isSdSender ? 'sp' : 'p'}=QUARANTINE — noch nicht auf REJECT gesetzt`);
       }
 
       // Return-Path domain mismatch
@@ -1682,7 +1690,11 @@ class SpamAnalyzer {
         const rpRoot   = this._extractRootDomain(this._extractDomain(returnPath));
         if (fromRoot && rpRoot && fromRoot !== rpRoot) {
           tech += 0.8;
-          oppReasons.push('Return-Path-Domain abweichend — ESP-Konfiguration anpassen');
+          // Return-Path on ESP domain = SPF alignment fails for DMARC. DMARC can
+          // still pass via DKIM, but SPF is no longer a second pass path.
+          // Fix: configure a custom bounce subdomain (e.g. bounce.yourdomain.com)
+          // as a CNAME to the ESP's bounce domain.
+          oppReasons.push(`Return-Path via fremder Domain (${rpRoot}) — SPF-Alignment nicht erfüllt; DMARC-Pass läuft nur über DKIM; Custom Bounce-Subdomain beim ESP einrichten für Redundanz`);
         }
       }
 
@@ -1715,10 +1727,13 @@ class SpamAnalyzer {
       }
 
       // Auth fragility: DMARC passes but only via SPF alignment; DKIM alignment
-      // is a second, independent factor — if the SPF record changes, DMARC fails.
+      // is an independent second factor — if the SPF record or Return-Path changes, DMARC fails.
+      // For subdomain senders: sp= enforcement is still in effect, but the single-path
+      // fragility remains. Suppress only if effectivePolicy is already REJECT (well-protected).
       if (dkimSig && !dkimAligned && /dmarc=pass/i.test(authLine)) {
-        tech += 1.0;
-        oppReasons.push('DMARC-Pass nur über SPF — DKIM-Alignment als zweiten Auth-Pfad einrichten');
+        const weight = (effectivePolicy === 'REJECT') ? 0.6 : 1.0;
+        tech += weight;
+        oppReasons.push('DMARC-Pass nur über SPF-Alignment — DKIM-Signatur der eigenen Domain einrichten (Custom DKIM beim ESP) für zweiten unabhängigen DMARC-Pass-Pfad');
       }
 
       // HELO/EHLO domain mismatch — sending host announces a name unrelated to the
@@ -2053,7 +2068,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.16';
+const VERSION            = '2.2.17';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
