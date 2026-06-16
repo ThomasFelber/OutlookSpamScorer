@@ -880,6 +880,15 @@ class SpamAnalyzer {
       { re: /\b(?:billing\s+information\s+(?:requires?|needs?)\s+(?:your\s+)?attention\b|(?:please\s+)?update\s+(?:your\s+)?billing(?:\s+(?:information|details?|method|on\s+file))?\b|update\s+(?:your\s+)?(?:billing|payment)\s+(?:information|details?|method)\b|payment\s+(?:information\s+)?(?:is\s+)?not\s+up\s+to\s+date\b|scheduled\s+(?:payment|charge)\s+(?:failed|declined|could\s+not\s+be\s+processed)\b|account\s+(?:access\s+)?(?:will\s+be\s+suspended|has\s+been\s+(?:suspended|restricted))\s+(?:due\s+to\s+)?billing\b|confirm\s+(?:your\s+)?(?:billing|payment)\s+details?\b)\b/i,
         w: 1.5, label: 'Billing-/Zahlungs-Phishing-Phrase (Microsoft/PayPal/Apple-Template)' },
 
+      // Fake document completion / signing request — DocuSign/HelloSign/AdobeSign phishing template.
+      // Legitimate services send these from their own domain; brandMap fires alongside for +2.5/+2.0.
+      { re: /\b(?:your\s+)?document\s+(?:has\s+been\s+)?(?:completed?|signed|sent\s+for\s+signing|awaits?\s+your\s+signature)\b|\b(?:please\s+)?(?:review\s+and\s+)?sign\s+(?:your\s+)?document\s+now\b|\byou\s+have\s+(?:a\s+)?(?:new\s+)?(?:pending\s+)?document\s+(?:to\s+(?:review|sign)|waiting)\b|\blegal\s+(?:document|contract)\s+(?:ready|pending|completed?)\b/i,
+        w: 1.5, label: 'Fake-Dokumentenabschluss-Benachrichtigung (DocuSign/HelloSign-Phishing-Template)' },
+      // Fake security/authentication code in email body — legitimate e-signature services never
+      // embed raw auth tokens in body text; this is a phishing legitimization technique.
+      { re: /\b(?:security|access|authentication|verification|secure\s+access|authorization)\s+code\s*[:\-]?\s*[A-Z0-9]{16,}\b/i,
+        w: 2.0, label: 'Gefälschter Security-/Auth-Code im E-Mail-Body (≥16 Zeichen) — legitime Dienste betten niemals rohe Auth-Tokens direkt ein' },
+
       // ── Credential-Harvest-CTA ────────────────────────────────────────────────
       // "Update billing information", "Verify your account now" — button labels in
       // phishing templates. Very rarely appear in legitimate transactional email.
@@ -1051,6 +1060,12 @@ class SpamAnalyzer {
         { re: /\bnexo\b(?!\s*(?:science|lab))/i,  roots: ['nexo.io', 'nexo.com'] },
         { re: /\bkucoin\b/i,                      roots: ['kucoin.com'] },
         { re: /\bokx\b/i,                         roots: ['okx.com'] },
+        // Document-signing services — frequent impersonation targets for fake-document phishing
+        { re: /\bdocu[-\s]?sign\b/i,           roots: ['docusign.com', 'docusign.net'] },
+        { re: /\bhello[-\s]?sign\b/i,          roots: ['hellosign.com', 'dropboxsign.com'] },
+        { re: /\badobe\s*(?:sign|acrobat)\b/i, roots: ['adobe.com', 'adobesign.com', 'echosign.com'] },
+        { re: /\bpandadoc\b/i,                 roots: ['pandadoc.com'] },
+        { re: /\bsign\s*now\b|\bsignnow\b/i,   roots: ['signnow.com', 'airslate.com'] },
       ];
       // Check subject first (high confidence, weight 2.5).
       // If the subject is clean, fall back to the first 800 chars of body text (weight 1.5)
@@ -1238,6 +1253,19 @@ class SpamAnalyzer {
       if (dateInSubjectRe.test(subject)) {
         score += 1.5;
         reasons.push(`Datum im Betreff: "${subject.slice(0, 60)}" — Fake-Dringlichkeit bei nicht vollständig authentifizierter E-Mail`);
+      }
+    }
+
+    // ── Obfuscated filename in subject ────────────────────────────────────────
+    // Phishers inject a random 4–8-char alphanumeric string between the filename
+    // and its extension to bypass exact-match subject filters:
+    //   "Legal Contract.gNQBp.PDF", "Invoice.xK7mZ.docx"
+    // Real filenames never have a random mixed-case string before the extension.
+    if (subject) {
+      const obfFilenameRe = /\b\w{3,20}\.[A-Za-z0-9]{4,8}\.(?:pdf|docx?|xlsx?|zip)\b/i;
+      if (obfFilenameRe.test(subject)) {
+        score += 1.5;
+        reasons.push(`Obfuskierter Dateiname im Betreff: "${subject.slice(0, 70)}" — zufälliger String vor Dateiendung ist ein Spam-Filter-Bypass`);
       }
     }
 
@@ -2025,7 +2053,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.15';
+const VERSION            = '2.2.16';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
