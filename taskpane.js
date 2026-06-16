@@ -221,10 +221,11 @@ class SpamAnalyzer {
       score += 1.2;
       reasons.push(`BCL=${bclVal} — erhöhte Microsoft-Beschwerderate (Spam-Schwelle erreicht)`);
     } else if (bclVal >= 5) {
-      // BCL 5–6 = leicht erhöhte Beschwerderate — unter Microsoft-Spam-Schwelle (7),
-      // aber über dem Erwartungswert seriöser Absender (≤3). Kleines Gewicht.
-      score += 0.4;
-      reasons.push(`BCL=${bclVal} — leicht erhöhte Microsoft-Beschwerderate (unter Spam-Schwelle, für seriöse Absender auffällig)`);
+      // BCL 5–6 = erhöhte Beschwerderate — unter Microsoft-Spam-Schwelle (7),
+      // aber deutlich über Erwartungswert seriöser Absender (≤3).
+      // Legitimate commercial senders (banks, retailers) are always ≤3.
+      score += 0.8;
+      reasons.push(`BCL=${bclVal} — Microsoft-Beschwerderate über Seriösitätsschwelle (seriöse Absender ≤3)`);
     }
 
     // Reply-To domain differs from From domain — classic phishing pattern.
@@ -822,6 +823,24 @@ class SpamAnalyzer {
       { re: /lions?\s*(mane|spray)|körper\s*reset|nahrungsergänzung|supplement\b|fettverbrenner|schlank(heits)?|kräuter.{0,25}(spray|tropfen|kapsel)|testosteron.{0,20}boost|abnehm|\bdetox\b|keto\s*(diät|plan|programm|rezept|\b)|\d+\s*kg\s*(verloren?|abgenommen)|gewicht\s*(verloren?|verlier|abgenomm)|bauchfett|taille\s*(reduzier|weg|schmaler)/i, w: 1.5, label: 'Supplement/Gewichtsabnahme-Spam' },
       { re: /\b(?:vita[-\s]?glp|gluco[-\s]?pro|sugar[-\s]?defender|ozempic[-_]?(?:alternative|natural|generic)|GLP[-\s]?1\s+(?:natural|alternative|generic)|abnehmspritze\s+(?:ohne\s+rezept|alternative|generic)|mounjaslim|mounjaro(?:\s*(?:alternative|effekt|slim|wirkung|preis|kaufen))?|diät[-\s]?spray\b|schlank[-\s]?spray\b)\b/i, w: 1.5, label: 'GLP-1-/Ozempic-/Diät-Spray-Klon-Spam (Supplement)' },
       { re: /wechat|微信|t\.me\/\S|telegram\.me\/\S|telegram\s*(?:channel|contact|group|id|username|handle)|whatsapp\s*(?:contact|number|group)|line\s*id\s*:/i, w: 1.5, label: 'Messenger-Kontakt-Solicitation (WeChat/Telegram t.me/WhatsApp)' },
+      // Unsolicited consumer loan / Kleinkredit spam — authenticates perfectly (UBE, not phishing).
+      // Legitimate financial institutions (ING, Commerzbank etc.) are in brandMap and
+      // have BCL ≤ 3; this fires correctly for "Florin+", "flinkversandt.de"-type lead-gen spam.
+      { re: /\b(?:klein[-\s]?kredit|mikro[-\s]?kredit|raten[-\s]?kredit|sofort[-\s]?kredit|blitz[-\s]?kredit|schnell[-\s]?kredit|express[-\s]?kredit|privat[-\s]?kredit\s+ohne|kredit\s+(?:ohne\s+schufa|sofort|digital|online)\b|darlehen\s+(?:ohne|sofort|schnell)|schufa[-\s]?freie?\s+(?:kredit|darlehen)|bürgschafts[-\s]?frei(?:er\s+kredit)?\b)\b/i,
+        w: 1.5, label: 'Unaufgefordertes Kredit-/Kleinkredit-Angebot — typisches deutsches UBE-Finanzprodukt (Florin+, Sofortkredit-Netzwerke)' },
+      // "ohne Vorleistung / ohne Schufa / ohne Eigenkapital / ohne Bürgschaft"
+      // Near-exclusive to German financial spam; legitimate lenders don't advertise this way.
+      { re: /\bohne\s+(?:vor(?:leistung|kosten)|eigenkapital|sicherheit(?:en)?|bürgschaft|schufa[-\s]?abfrage|bonitätsprüfung|risiko\s+für\s+sie)\b/i,
+        w: 1.0, label: '"Ohne Vorleistung/Schufa/Eigenkapital" — No-Risk-Bait in Finanzkontext; nahezu ausschließlich in Kredit-UBE' },
+      // "Hey du / Hallo du" — informal mass-mail salutation without real personalisation.
+      // Low weight: also used by legitimate youth brands (Spotify, Nike campaigns).
+      // Compounds well with BCL ≥ 5 and financial content.
+      { re: /^(?:hey|hallo|hi)\s+(?:du|ihr)\b/i,
+        w: 0.5, label: '"Hey/Hallo du" — informelle Massenmail-Anrede ohne Personalisierung; typisch für gekaufte Lead-Listen' },
+      // "Partnerunternehmen" in disclaimer → bought/shared lead list data broker network.
+      // Appears almost exclusively in mass-mailing GDPR disclaimers of lead-gen spam.
+      { re: /\bpartner(?:unternehmen|firmen|netzwerk)\b|\bunsere\s+partner(?:unternehmen)?\b|\bausgewählte\s+partner\b/i,
+        w: 0.5, label: '"Partnerunternehmen"-Disclaimer — deutet auf getauschte/gekaufte Interessentenliste hin (Datenmakler-Netzwerk)' },
       { re: /bundeszentralamt|finanzamt\b|bundeszoll|steuerpr[üu]fung.*krypto|amtliche?\s+(mahnung|aufforderung|mitteilung).*steuer/i, w: 2.5, label: 'Behörden-Impersonation (Finanzamt/BZSt)' },
       { re: /\b(UPS|DHL|FedEx|Hermes|DPD|GLS|Yodel|Evri)\b.{0,40}(paket|lieferung|sendung|delivery|tracking|notification|nicht\s*zugestellt)/i, w: 1.5, label: 'Kurierdienst-Erwähnung (auf Domain-Mismatch prüfen)' },
       // Delivery-address confirmation scam — the most common German DHL/courier
@@ -938,6 +957,30 @@ class SpamAnalyzer {
           reasons.push(`Themen-Domain-Mismatch: Domain deutet auf "${this._lastSmallBizDomain}", Inhalt ist Thema "${topic}" — wahrscheinlich missbrauchter Absender`);
           break;
         }
+      }
+    }
+
+    // ── BCL ≥ 5 × Finanzprodukt-Inhalt (Compound) ────────────────────────────────
+    // BCL ≥ 5 alone is low-confidence. Combined with unsolicited loan/financial product
+    // content it's a strong signal: legitimate financial institutions (ING, Commerzbank)
+    // always have BCL ≤ 3 and are in brandMap. This compound catches "Florin+"-type
+    // lead-gen spam networks that authenticate perfectly but have elevated complaints.
+    if (bclVal >= 5 && !highBcl) {
+      const loanCtx = /\b(?:kredit|darlehen|finanzier|leasing|ratenplan|umschuld|zinssatz|effektiver\s+jahreszins|til\b|repräsentatives\s+beispiel)\b/i;
+      if (loanCtx.test((subject || '') + ' ' + plainText.slice(0, 800))) {
+        score += 1.5;
+        reasons.push(`BCL=${bclVal} + Kredit-/Finanzprodukt-Inhalt — Kredit-UBE über Bulk-Mail-Netzwerk; seriöse Finanzinstitute haben BCL ≤ 3`);
+      }
+    }
+
+    // ── "bis zu X €" in subject + Kredit-/Darlehenskontext im Body ───────────────
+    // "bis zu 1.500 €" in the subject is bait-subject; fires only when body also
+    // contains loan context to avoid false-positives on discount/cashback emails.
+    if (subject && /\bbis\s+zu\s+[\d.,]+\s*(?:€|EUR|euro)\b/i.test(subject)) {
+      const loanBodyCtx = /\b(?:kredit|darlehen|finanzier|leihen|raten|anleihe|leihst|leihen)\b/i;
+      if (loanBodyCtx.test(plainText.slice(0, 800))) {
+        score += 1.2;
+        reasons.push('"bis zu X €" im Betreff + Kredit-/Darlehenskontext im Body — typisches Köder-Betreffmuster für Kredit-UBE');
       }
     }
 
@@ -2068,7 +2111,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.17';
+const VERSION            = '2.2.18';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
