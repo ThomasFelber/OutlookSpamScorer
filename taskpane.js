@@ -238,7 +238,13 @@ class SpamAnalyzer {
       const replyToDomain = this._extractDomain(replyToHeader);
       const fromRoot      = this._extractRootDomain(fromDomain);
       const replyToRoot   = this._extractRootDomain(replyToDomain);
-      if (fromRoot && replyToRoot && fromRoot !== replyToRoot) {
+
+      // Malformed Reply-To domain — no TLD (single label, e.g. "techdevelop").
+      // Caused by header truncation in phishing kits; never appears in legitimate mail.
+      if (replyToDomain && !replyToDomain.includes('.')) {
+        score += 1.5;
+        reasons.push(`Reply-To-Adresse mit ungültiger Domain "${replyToDomain}" (kein TLD) — abgeschnittener/malformierter Header; nie bei legitimen Absendern`);
+      } else if (fromRoot && replyToRoot && fromRoot !== replyToRoot) {
         score += 1.2;
         reasons.push(`Reply-To-Domain abweichend (${replyToDomain} ≠ ${fromDomain})`);
       }
@@ -892,6 +898,12 @@ class SpamAnalyzer {
       // Niedriges Gewicht — kombiniert mit brandMap-Check erst stark.
       { re: /\b(?:abhebung(?:s(?:anfrage|status|limit|best[äa]tigung))?|auszahlung(?:s(?:anfrage|status|limit|best[äa]tigung))?|withdrawal(?:\s+(?:request|status|limit|failed|pending|blocked))?|[üu]berweisung\s+(?:gesperrt|fehlgeschlagen|ausstehend)|konto\s+(?:eingeschr[äa]nkt|gesperrt|limitiert)|account\s+(?:restricted|suspended|action\s+required))\b/i,
         w: 0.7, label: 'Finanz-/Konto-Alarm-Begriff (Abhebung/Withdrawal/Account restricted — Phishing-Kontext)' },
+
+      // "Do Not Share This Email" / confidentiality urgency in fake document notifications.
+      // Phishing kits add this to make fake DocuSign/HelloSign emails seem sensitive.
+      // Legitimate e-signature services don't embed such warnings in the email body.
+      { re: /\bdo\s+not\s+share\s+this\s+(?:email|message|document|link)\b|\bthis\s+(?:email|message|document)\s+(?:is|contains?)\s+(?:confidential|private|sensitive)\s+information\b|\bkeep\s+this\s+(?:code|email|document|link)\s+(?:confidential|private|secure|secret)\b/i,
+        w: 1.0, label: '"Do Not Share This Email"/Vertraulichkeits-Urgency — Social-Engineering-Phrase in Phishing-Dokumenten-Template (DocuSign/HelloSign-Imitation)' },
 
       // ── Billing/Payment-Phishing-Phrasen ──────────────────────────────────────
       // Microsoft/PayPal/Apple-Template-Phrasen, die in echten Abrechnungs-E-Mails
@@ -2111,7 +2123,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.18';
+const VERSION            = '2.2.19';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
