@@ -175,10 +175,15 @@ class SpamAnalyzer {
       // temperror = DNS timeout during auth lookup — legitimate senders have stable DNS
       const spfTemperror  = /spf=temperror/i.test(authLine);
       const dkimTemperror = /dkim=temperror/i.test(authLine);
+      const dmarcTemperror = /dmarc=temperror/i.test(authLine);
       if (spfTemperror || dkimTemperror) {
         const which = [spfTemperror && 'SPF', dkimTemperror && 'DKIM'].filter(Boolean).join('+');
         score += 1.0;
         reasons.push(`${which}-Temperror: DNS-Timeout bei Auth-Prüfung — instabile Versand-Infrastruktur`);
+      }
+      if (dmarcTemperror) {
+        score += 0.8;
+        reasons.push('DMARC-Temperror: DNS-Timeout bei DMARC-Auswertung — Durchsetzung ausgesetzt; typisch für Throwaway-Domains mit instabilem DNS');
       }
 
       // compauth=fail — Microsoft Composite Auth failed despite individual checks
@@ -397,6 +402,20 @@ class SpamAnalyzer {
       if (dkimDomains.size > 1 && foreignDoms.length > 0 && !anyAligned) {
         score += 1.5;
         reasons.push(`Mehrere DKIM-Signaturen aus verschiedenen Domains: ${[...dkimDomains].join(', ')}`);
+      }
+    }
+
+    // ── Multiple Resent- headers ──────────────────────────────────────────────
+    // Resent- headers are added when an email is forwarded/resent programmatically.
+    // 2+ Resent- headers = email bounced through multiple accounts before delivery;
+    // a hallmark of cold-outreach spam networks that chain-forward through
+    // recruited accounts to make the email appear more personal.
+    {
+      const resentHeaders = (headers.match(/^Resent-[^:]+:/gim) || []);
+      const resentCount = new Set(resentHeaders.map(h => h.toLowerCase())).size;
+      if (resentCount >= 2) {
+        score += 0.8;
+        reasons.push(`${resentCount}× Resent-Header — E-Mail mehrfach programmatisch weitergeleitet; typisch für Kalt-Outreach-Netzwerke die durch mehrere Konten kettenleiten`);
       }
     }
 
@@ -1243,6 +1262,17 @@ class SpamAnalyzer {
       reasons.push(`${cyrillicChars} kyrillische Zeichen im Body — Fremdsprache passt nicht zum Empfänger-Kontext`);
     }
 
+    // ── Greeting-only subject line ────────────────────────────────────────────
+    // "Hi,", "Hello", "Hey" as the entire subject — deliberate filter bypass:
+    // subject-keyword filters find nothing to match. Legitimate B2B outreach
+    // always has a descriptive subject. Personal emails with "Hi" as subject
+    // don't combine with WhatsApp solicitations, DKIM mismatches, or Return-Path
+    // mismatches — so the compound score is self-correcting.
+    if (subject && /^(?:hi|hey|hello|hallo|guten\s+(?:tag|morgen)|dear|liebe[rs]?)\s*[,!.]?\s*$/i.test(subject.trim())) {
+      score += 1.0;
+      reasons.push(`Minimal-Betreff "${subject.trim()}" — nur ein Grußwort; gezielter Keyword-Filter-Bypass; legitime B2B-Absender haben immer einen inhaltlichen Betreff`);
+    }
+
     // ── Calendar-Invitation-Pretext ohne ICS-Payload ──────────────────────────
     // "Notification: You're invited to share this calendar" als Subject, aber
     // keine echte ICS-Payload im Mail-Body. Klassisches Spam-Pretext-Muster.
@@ -1383,7 +1413,8 @@ class SpamAnalyzer {
     // URL shorteners hide destination — always suspicious.
     // Bewusst NICHT enthalten: youtu.be (YouTube official), lnkd.in (LinkedIn),
     // fb.me (Facebook), amzn.to (Amazon) — sind legitime Plattform-Shortener.
-    const shortenerRe = /\b(?:bit\.ly|tinyurl\.com|t\.co|goo\.gl|ow\.ly|cutt\.ly|rb\.gy|is\.gd|short\.io|tiny\.cc|shorturl\.at|rebrand\.ly|bit\.do|s\.id|link\.tl|tr\.im|soo\.gd|qr\.ae|x\.co)\//i;
+    // linktr.ee: standard tool for cold-outreach B2B spammers ("all my links in one page").
+    const shortenerRe = /\b(?:bit\.ly|tinyurl\.com|t\.co|goo\.gl|ow\.ly|cutt\.ly|rb\.gy|is\.gd|short\.io|tiny\.cc|shorturl\.at|rebrand\.ly|bit\.do|s\.id|link\.tl|tr\.im|soo\.gd|qr\.ae|x\.co|linktr\.ee|lc\.chat|solo\.to|beacons\.ai|taplink\.cc)\//i;
     if (links.some(l => shortenerRe.test(l))) {
       score += 1.5;
       reasons.push('URL-Verkürzer gefunden (versteckt Ziel-URL)');
@@ -2123,7 +2154,7 @@ class SpamAnalyzer {
 
 // ─── Global state ──────────────────────────────────────────────────────────────
 
-const VERSION            = '2.2.19';
+const VERSION            = '2.2.20';
 const WORKER_URL         = 'https://spam-scorer-ai.felber.workers.dev';
 
 let signalExplanations      = {};   // signal text → explanation (populated by prefetch)
