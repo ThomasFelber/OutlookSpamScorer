@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
   <!-- Hügel des Hotzenwalds -->
   <path d="M0 150 C120 110 220 100 330 120 C420 136 470 118 560 104 C660 90 760 108 960 128" stroke-opacity=".5"/>
   <path d="M0 170 C90 150 170 146 250 156 C340 168 420 150 500 140 C620 126 780 138 960 150" stroke-opacity=".3"/>
