@@ -21,6 +21,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, "..", "src"))
 import krypto
 import formulare as F
+import en as EN
 
 CFG = {
     "HOST": os.environ.get("HOST", "127.0.0.1"),
@@ -81,22 +82,25 @@ def rate_ok(ip):
         q.append(now); return True
 
 # ---------- Prüfung ----------
-def pruefe(form, daten):
+def pruefe(form, daten, lang="de"):
     """Gibt (bereinigte_daten, fehler) zurück. Unbekannte Felder sind ein Fehler."""
     idx = F.field_index(form)
+    L = lambda s: (EN.T.get(s, s) if lang == "en" else s)
+    M = {"de": ("Unbekanntes Feld", "Zu lang", "Ungültige Auswahl", "Pflichtfeld fehlt", "Datenschutzhinweis nicht bestätigt"),
+         "en": ("Unknown field", "Too long", "Invalid choice", "Required field missing", "Privacy notice not confirmed")}[lang]
     sauber, fehler = {}, []
     for k, v in daten.items():
         if k in ("datenschutz", "firma_web"): continue
-        if k not in idx: fehler.append(f"Unbekanntes Feld: {k}"); continue
+        if k not in idx: fehler.append(f"{M[0]}: {k}"); continue
         v = (v or "").strip()
-        if len(v) > CFG["MAX_FELD"]: fehler.append(f"Zu lang: {idx[k]['label']}"); continue
+        if len(v) > CFG["MAX_FELD"]: fehler.append(f"{M[1]}: {L(idx[k]['label'])}"); continue
         fl = idx[k]
-        if fl["type"] == "select" and v and v not in fl["options"]: fehler.append(f"Ungültige Auswahl: {fl['label']}"); continue
+        if fl["type"] == "select" and v and v not in fl["options"]: fehler.append(f"{M[2]}: {L(fl['label'])}"); continue
         if fl["type"] == "checkbox": v = "ja" if v else ""
         if v: sauber[k] = v
     for name, fl in idx.items():
-        if fl.get("required") and not sauber.get(name): fehler.append(f"Pflichtfeld fehlt: {fl['label']}")
-    if daten.get("datenschutz") != "ja": fehler.append("Datenschutzhinweis nicht bestätigt")
+        if fl.get("required") and not sauber.get(name): fehler.append(f"{M[3]}: {L(fl['label'])}")
+    if daten.get("datenschutz") != "ja": fehler.append(M[4])
     return sauber, fehler
 
 # ---------- E-Mail ----------
@@ -129,10 +133,30 @@ Diese Nachricht enthält absichtlich keine Angaben aus dem Fragebogen.
         log.error("E-Mail fehlgeschlagen für %s: %s", nummer, e)
 
 # ---------- HTML ----------
-def seite(titel, inhalt, status=200):
-    return status, f"""<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>{html.escape(titel)} · Notar Stadler</title><link rel="stylesheet" href="/style.css"></head>
-<body><div class="shell"><main id="inhalt"><section class="page-hero"><div class="wrap"><div><p class="eyebrow">Fragebogen</p><h1>{html.escape(titel)}</h1></div></div></section>
-<section><div class="wrap prose">{inhalt}<p style="margin-top:24px"><a href="/">Zur Startseite</a> · <a href="/fragebogen.html">Alle Fragebögen</a></p></div></section></main></div></body></html>"""
+TXT = {
+ "de": {"eyebrow": "Fragebogen", "home": "Zur Startseite", "all": "Alle Fragebögen", "home_url": "/", "all_url": "/fragebogen.html",
+        "abgelehnt": "Übermittlung abgelehnt", "herkunft": "Die Anfrage kam nicht von der Website des Notariats.",
+        "zuviel": "Zu viele Anfragen", "spaeter": "Bitte versuchen Sie es später erneut oder rufen Sie an.", "gross": "Die Eingabe ist zu groß.",
+        "danke": "Vielen Dank", "eingegangen": "Ihr Fragebogen ist eingegangen.", "pruefen": "Bitte prüfen Sie Ihre Angaben",
+        "nicht": "Der Fragebogen konnte nicht angenommen werden:", "zurueck": "Gehen Sie mit dem Zurück-Knopf des Browsers zum Fragebogen; Ihre Eingaben bleiben erhalten.",
+        "ok1": "Ihr Fragebogen <strong>{t}</strong> ist beim Notariat eingegangen.", "ok2": "Vorgangsnummer: <strong>{n}</strong>. Bitte nennen Sie diese Nummer bei Rückfragen.",
+        "ok3": "Das Büro meldet sich bei Ihnen. Einen Termin vereinbaren Sie telefonisch unter <a href=\"tel:+497761926170\">07761 92617-0</a>.",
+        "ok4": "Ihre Angaben wurden verschlüsselt gespeichert und sind nur für das Notariat lesbar."},
+ "en": {"eyebrow": "Questionnaire", "home": "Back to home", "all": "All questionnaires", "home_url": "/en/index.html", "all_url": "/en/fragebogen.html",
+        "abgelehnt": "Submission rejected", "herkunft": "The request did not come from the notary's website.",
+        "zuviel": "Too many requests", "spaeter": "Please try again later or call us.", "gross": "The input is too large.",
+        "danke": "Thank you", "eingegangen": "Your questionnaire has been received.", "pruefen": "Please check your entries",
+        "nicht": "The questionnaire could not be accepted:", "zurueck": "Use your browser's back button to return to the questionnaire; your entries are kept.",
+        "ok1": "Your questionnaire <strong>{t}</strong> has reached the notary's office.", "ok2": "Reference number: <strong>{n}</strong>. Please quote it in any query.",
+        "ok3": "The office will contact you. Appointments are made by telephone: <a href=\"tel:+497761926170\">+49 7761 92617-0</a>.",
+        "ok4": "Your details were stored in encrypted form and can only be read by the notary's office."},
+}
+
+def seite(titel, inhalt, status=200, lang="de"):
+    x = TXT[lang]
+    return status, f"""<!doctype html><html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>{html.escape(titel)} · Notar Stadler</title><link rel="stylesheet" href="/style.css"></head>
+<body><div class="shell"><main id="inhalt"><section class="page-hero"><div class="wrap"><div><p class="eyebrow">{x["eyebrow"]}</p><h1>{html.escape(titel)}</h1></div></div></section>
+<section><div class="wrap prose">{inhalt}<p style="margin-top:24px"><a href="{x["home_url"]}">{x["home"]}</a> · <a href="{x["all_url"]}">{x["all"]}</a></p></div></section></main></div></body></html>"""
 
 # ---------- Handler ----------
 class H(BaseHTTPRequestHandler):
@@ -190,22 +214,24 @@ class H(BaseHTTPRequestHandler):
         m = re.fullmatch(r"/api/formular/([a-z-]+)", urlsplit(self.path).path)
         if not m or m.group(1) not in F.BY_SLUG: return self.send(404, "not found", "text/plain")
         form = F.BY_SLUG[m.group(1)]
+        lang = "en" if parse_qs(urlsplit(self.path).query).get("lang", [""])[0] == "en" else "de"
+        x = TXT[lang]
         origin = self.headers.get("Origin") or ""
         referer = self.headers.get("Referer") or ""
         if not (origin == CFG["SITE_ORIGIN"] or referer.startswith(CFG["SITE_ORIGIN"] + "/")):
-            return self.send(*seite("Übermittlung abgelehnt", "<p>Die Anfrage kam nicht von der Website des Notariats.</p>", 403))
+            return self.send(*seite(x["abgelehnt"], f"<p>{x['herkunft']}</p>", 403, lang))
         if not rate_ok(self.client_ip()):
-            return self.send(*seite("Zu viele Anfragen", "<p>Bitte versuchen Sie es später erneut oder rufen Sie an.</p>", 429))
+            return self.send(*seite(x["zuviel"], f"<p>{x['spaeter']}</p>", 429, lang))
         n = int(self.headers.get("Content-Length") or 0)
-        if n <= 0 or n > CFG["MAX_BODY"]: return self.send(*seite("Übermittlung abgelehnt", "<p>Die Eingabe ist zu groß.</p>", 413))
+        if n <= 0 or n > CFG["MAX_BODY"]: return self.send(*seite(x["abgelehnt"], f"<p>{x['gross']}</p>", 413, lang))
         raw = self.rfile.read(n).decode("utf-8", "replace")
         daten = {k: v[0] for k, v in parse_qs(raw, keep_blank_values=True).items()}
         if daten.get("firma_web"):  # Honeypot: Menschen sehen das Feld nicht
-            return self.send(*seite("Vielen Dank", "<p>Ihr Fragebogen ist eingegangen.</p>"))
-        sauber, fehler = pruefe(form, daten)
+            return self.send(*seite(x["danke"], f"<p>{x['eingegangen']}</p>", 200, lang))
+        sauber, fehler = pruefe(form, daten, lang)
         if fehler:
             li = "".join(f"<li>{html.escape(x)}</li>" for x in fehler)
-            return self.send(*seite("Bitte prüfen Sie Ihre Angaben", f"<p>Der Fragebogen konnte nicht angenommen werden:</p><ul>{li}</ul><p>Gehen Sie mit dem Zurück-Knopf des Browsers zum Fragebogen; Ihre Eingaben bleiben erhalten.</p>", 400))
+            return self.send(*seite(x["pruefen"], f"<p>{x['nicht']}</p><ul>{li}</ul><p>{x['zurueck']}</p>", 400, lang))
         c = db()
         nummer = naechste_nummer(c, form["kurz"])
         zeit = datetime.datetime.now().astimezone().strftime("%d.%m.%Y %H:%M")
@@ -216,10 +242,8 @@ class H(BaseHTTPRequestHandler):
                       (nummer, form["slug"], zeit, paket["eph"], paket["nonce"], paket["ct"])); c.commit()
         log.info("Fragebogen gespeichert: %s %s", form["slug"], nummer)
         threading.Thread(target=benachrichtige, args=(form, nummer, zeit), daemon=True).start()
-        self.send(*seite("Vielen Dank", f"""<p>Ihr Fragebogen <strong>{html.escape(form['title'])}</strong> ist beim Notariat eingegangen.</p>
-<p>Vorgangsnummer: <strong>{nummer}</strong>. Bitte nennen Sie diese Nummer bei Rückfragen.</p>
-<p>Das Büro meldet sich bei Ihnen. Einen Termin vereinbaren Sie telefonisch unter <a href="tel:+497761926170">07761 92617-0</a>.</p>
-<p>Ihre Angaben wurden verschlüsselt gespeichert und sind nur für das Notariat lesbar.</p>"""))
+        titel = EN.T.get(form["title"], form["title"]) if lang == "en" else form["title"]
+        self.send(*seite(x["danke"], "<p>" + x["ok1"].format(t=html.escape(titel)) + "</p><p>" + x["ok2"].format(n=nummer) + f"</p><p>{x['ok3']}</p><p>{x['ok4']}</p>", 200, lang))
 
 def main():
     if not CFG["OEFFENTLICHER_SCHLUESSEL"] or len(CFG["OEFFENTLICHER_SCHLUESSEL"]) != 64:

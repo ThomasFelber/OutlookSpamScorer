@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" font-family="system-ui, sans-serif" font-size="14">
+  <rect width="640" height="420" fill="var(--paper-2, #EBEEE8)"/>
+  <!-- Rhein -->
+  <path d="M560 0 C540 120 600 260 560 420 L640 420 L640 0 Z" fill="var(--rule, #D3D8D1)" fill-opacity=".7"/>
+  <text x="586" y="220" fill="var(--muted, #5C6673)" transform="rotate(80 586 220)" font-size="13" letter-spacing=".1em">RHEIN</text>
+  <!-- Bahnlinie -->
+  <path d="M20 70 H540" stroke="var(--ink-2, #3A4550)" stroke-width="3" stroke-dasharray="10 6" fill="none"/>
+  <!-- Straßen -->
+  <g stroke="var(--paper, #F4F5F2)" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M330 90 L400 220 L520 200"/>            <!-- Waldshuter Straße -->
+    <path d="M400 220 L410 330"/>                    <!-- Fischergasse / Richtung Woolworth -->
+    <path d="M410 330 L250 400"/>                    <!-- Schützenstraße -->
+    <path d="M150 300 L330 470"/>                    <!-- Scheffelstraße -->
+    <path d="M330 90 L160 300"/>                     <!-- Werderstraße -->
+    <path d="M120 350 L260 300"/>                    <!-- Hauensteinstraße -->
+    <path d="M430 330 L520 320 L540 260"/>           <!-- Altstadt / Münsterplatz -->
+  </g>
+  <!-- Fußweg -->
+  <path d="M330 90 L400 220 L410 330 L250 400 L262 402" stroke="var(--ink, #19222E)" stroke-width="4" fill="none" stroke-dasharray="1 9" stroke-linecap="round"/>
+  <!-- Bahnhof -->
+  <rect x="300" y="52" width="60" height="36" rx="4" fill="var(--ink, #19222E)"/>
+  <text x="330" y="76" fill="var(--paper, #F4F5F2)" text-anchor="middle" font-weight="600">Bahnhof</text>
+  <!-- Kanzlei -->
+  <circle cx="262" cy="402" r="11" fill="var(--seal, #7B2D2D)"/>
+  <circle cx="262" cy="402" r="4" fill="var(--paper, #F4F5F2)"/>
+  <text x="248" y="386" fill="var(--ink, #19222E)" font-weight="600" text-anchor="end">Notariat, Scheffelstraße 23</text>
+  <!-- Parkplatz -->
+  <rect x="196" y="318" width="26" height="22" rx="3" fill="var(--ink-2, #3A4550)"/>
+  <text x="209" y="334" fill="var(--paper, #F4F5F2)" text-anchor="middle" font-weight="700">P</text>
+  <text x="192" y="312" fill="var(--muted, #5C6673)" font-size="12" text-anchor="end">Kundenparkplätze, Einfahrt Hauensteinstr.</text>
+  <!-- Beschriftungen -->
+  <g fill="var(--muted, #5C6673)" font-size="12">
+    <text x="372" y="150" transform="rotate(62 372 150)">Waldshuter Straße</text>
+    <text x="318" y="384" transform="rotate(-24 318 384)">Schützenstraße</text>
+    <text x="180" y="356" transform="rotate(43 180 356)">Scheffelstraße</text>
+    <text x="214" y="200" transform="rotate(-52 214 200)">Werderstraße</text>
+    <text x="470" y="360">Münsterplatz, Altstadt</text>
+    <text x="446" y="262">Fischergasse</text>
+  </g>
+  <!-- Entfernung -->
+  <rect x="24" y="24" width="150" height="46" rx="4" fill="var(--paper, #F4F5F2)" stroke="var(--rule, #D3D8D1)"/>
+  <text x="36" y="44" fill="var(--ink, #19222E)" font-weight="600">Zu Fuß 7 Minuten</text>
+  <text x="36" y="62" fill="var(--muted, #5C6673)" font-size="12">etwa 500 m vom Bahnhof</text>
+  <text x="24" y="408" fill="var(--muted, #5C6673)" font-size="11">Schematische Skizze, nicht maßstäblich.</text>
+</svg>

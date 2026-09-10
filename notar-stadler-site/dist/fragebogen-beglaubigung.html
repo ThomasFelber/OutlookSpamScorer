@@ -10,15 +10,19 @@
 <meta property="og:description" content="Unterschriftsbeglaubigung oder beglaubigte Abschrift. Kurzer Vorgang, meist ohne langen Termin.">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="de_DE">
+<link rel="alternate" hreflang="de" href="https://notar-stadler.de/fragebogen-beglaubigung.html">
+<link rel="alternate" hreflang="en" href="https://notar-stadler.de/en/fragebogen-beglaubigung.html">
+<link rel="alternate" hreflang="x-default" href="https://notar-stadler.de/fragebogen-beglaubigung.html">
 <link rel="stylesheet" href="style.css">
 </head>
-<body class="page-fragebogen-beglaubigung">
+<body class="page-fragebogen-beglaubigung lang-de">
 <div class="shell">
 <a class="skip" href="#inhalt">Zum Inhalt springen</a>
 <div class="topbar"><div class="wrap">
   <span>Scheffelstraße 23 · 79713 Bad Säckingen</span>
   <span>Mo–Do 8–12 und 13–17 Uhr · Fr 8–12 Uhr</span>
   <a href="tel:+497761926170">07761 92617-0</a>
+  <a class="lang" href="en/fragebogen-beglaubigung.html" lang="en" hreflang="en" data-switch="en">English</a>
 </div></div>
 <header class="site-header"><div class="wrap">
   <a class="brand" href="index.html">
@@ -29,6 +33,7 @@
 <li><a href="index.html" data-slug="index">Start</a></li>
 <li><a href="leistungen.html" data-slug="leistungen">Leistungen</a></li>
 <li><a href="ablauf.html" data-slug="ablauf">Ablauf & Unterlagen</a></li>
+<li><a href="fragebogen.html" data-slug="fragebogen">Fragebögen</a></li>
 <li><a href="kosten.html" data-slug="kosten">Kosten</a></li>
 <li><a href="kanzlei.html" data-slug="kanzlei">Kanzlei</a></li>
 <li><a href="kontakt.html" data-slug="kontakt">Kontakt</a></li>
@@ -48,8 +53,8 @@
   <form class="contact fragebogen" action="/api/formular/beglaubigung" method="post" id="fb-beglaubigung" accept-charset="utf-8">
   <fieldset><legend>Person, die unterschreibt</legend><div class="row"><label for="beglaubigung-pe_name">Vor- und Nachname <small>*</small> <input id="beglaubigung-pe_name" name="pe_name" type="text" required></label><label for="beglaubigung-pe_geb">Geburtsdatum <input id="beglaubigung-pe_geb" name="pe_geb" type="date"></label></div>
 <label for="beglaubigung-pe_adr">Anschrift <input id="beglaubigung-pe_adr" name="pe_adr" type="text"></label>
-<div class="row"><label for="beglaubigung-pe_tel">Telefon <input id="beglaubigung-pe_tel" name="pe_tel" type="tel"></label><label for="beglaubigung-pe_mail">E-Mail <input id="beglaubigung-pe_mail" name="pe_mail" type="email"></label></div></fieldset><fieldset><legend>Dokument</legend><div class="row"><label for="beglaubigung-do_art">Art <small>*</small> <select id="beglaubigung-do_art" name="do_art" required><option>Unterschrift unter Vollmacht</option><option>Unterschrift unter Handelsregisteranmeldung</option><option>Unterschrift unter Grundbucherklärung</option><option>Beglaubigte Kopie</option><option>Sonstiges</option></select></label><label for="beglaubigung-do_land">Verwendung im Land <input id="beglaubigung-do_land" name="do_land" type="text" placeholder="Deutschland, Schweiz, anderes"></label></div>
-<div class="row"><label for="beglaubigung-do_apost">Apostille nötig? <select id="beglaubigung-do_apost" name="do_apost"><option>Weiß ich nicht</option><option>Ja</option><option>Nein</option></select></label><label for="beglaubigung-do_sprache">Sprache des Dokuments <input id="beglaubigung-do_sprache" name="do_sprache" type="text" placeholder="Deutsch, andere"></label></div>
+<div class="row"><label for="beglaubigung-pe_tel">Telefon <input id="beglaubigung-pe_tel" name="pe_tel" type="tel"></label><label for="beglaubigung-pe_mail">E-Mail <input id="beglaubigung-pe_mail" name="pe_mail" type="email"></label></div></fieldset><fieldset><legend>Dokument</legend><div class="row"><label for="beglaubigung-do_art">Art <small>*</small> <select id="beglaubigung-do_art" name="do_art" required><option value="Unterschrift unter Vollmacht">Unterschrift unter Vollmacht</option><option value="Unterschrift unter Handelsregisteranmeldung">Unterschrift unter Handelsregisteranmeldung</option><option value="Unterschrift unter Grundbucherklärung">Unterschrift unter Grundbucherklärung</option><option value="Beglaubigte Kopie">Beglaubigte Kopie</option><option value="Sonstiges">Sonstiges</option></select></label><label for="beglaubigung-do_land">Verwendung im Land <input id="beglaubigung-do_land" name="do_land" type="text" placeholder="Deutschland, Schweiz, anderes"></label></div>
+<div class="row"><label for="beglaubigung-do_apost">Apostille nötig? <select id="beglaubigung-do_apost" name="do_apost"><option value="Weiß ich nicht">Weiß ich nicht</option><option value="Ja">Ja</option><option value="Nein">Nein</option></select></label><label for="beglaubigung-do_sprache">Sprache des Dokuments <input id="beglaubigung-do_sprache" name="do_sprache" type="text" placeholder="Deutsch, andere"></label></div>
 <div class="row"><label for="beglaubigung-do_anz">Anzahl Dokumente oder Seiten <input id="beglaubigung-do_anz" name="do_anz" type="number" inputmode="decimal" step="any" min="0"></label><label for="beglaubigung-do_termin">Gewünschter Zeitpunkt <input id="beglaubigung-do_termin" name="do_termin" type="text"></label></div></fieldset><fieldset><legend>Rückfragen</legend><div class="row"><label for="beglaubigung-rf_name">Ansprechperson <small>*</small> <input id="beglaubigung-rf_name" name="rf_name" type="text" required></label><label for="beglaubigung-rf_tel">Telefon <small>*</small> <input id="beglaubigung-rf_tel" name="rf_tel" type="tel" required></label></div>
 <label for="beglaubigung-rf_zeit">Erreichbar <input id="beglaubigung-rf_zeit" name="rf_zeit" type="text" placeholder="z. B. vormittags"></label>
 <label for="beglaubigung-rf_bem">Besonderheiten, Wünsche, Fragen <textarea id="beglaubigung-rf_bem" name="rf_bem"></textarea></label></fieldset>

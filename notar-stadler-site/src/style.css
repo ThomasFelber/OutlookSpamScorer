@@ -57,6 +57,7 @@ strong{font-weight:600}
 .topbar{background:var(--ink); color:var(--paper); font-size:16px}
 .topbar .wrap{display:flex; flex-wrap:wrap; gap:4px 24px; padding-block:6px}
 .topbar a{color:inherit; font-weight:600; margin-left:auto}
+.topbar a.lang{margin-left:0; font-weight:400; border:1px solid rgba(255,255,255,.4); padding:0 8px; border-radius:2px}
 .site-header{border-bottom:1px solid var(--rule); background:var(--paper)}
 .site-header .wrap{display:flex; align-items:center; flex-wrap:wrap; gap:12px 28px; padding-block:16px}
 .brand{display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--ink)}
@@ -231,6 +232,9 @@ form.contact.fragebogen{max-width:none}
   .fragebogen input, .fragebogen select, .fragebogen textarea{border:0; border-bottom:1px solid #999; border-radius:0; background:none; min-height:28px}
   .split{grid-template-columns:1fr}
 }
+
+.navlinks{font-size:16px; color:var(--muted); margin-top:10px}
+.navlinks a{white-space:nowrap}
 
 /* Fuß */
 .site-footer{border-top:2px solid var(--ink); margin-top:40px; padding-block:40px 32px; font-size:16px}

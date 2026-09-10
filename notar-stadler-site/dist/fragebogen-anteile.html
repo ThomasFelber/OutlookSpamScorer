@@ -10,15 +10,19 @@
 <meta property="og:description" content="Verkauf oder Schenkung von GmbH-Anteilen, auch Eintritt oder Ausscheiden eines Gesellschafters.">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="de_DE">
+<link rel="alternate" hreflang="de" href="https://notar-stadler.de/fragebogen-anteile.html">
+<link rel="alternate" hreflang="en" href="https://notar-stadler.de/en/fragebogen-anteile.html">
+<link rel="alternate" hreflang="x-default" href="https://notar-stadler.de/fragebogen-anteile.html">
 <link rel="stylesheet" href="style.css">
 </head>
-<body class="page-fragebogen-anteile">
+<body class="page-fragebogen-anteile lang-de">
 <div class="shell">
 <a class="skip" href="#inhalt">Zum Inhalt springen</a>
 <div class="topbar"><div class="wrap">
   <span>Scheffelstraße 23 · 79713 Bad Säckingen</span>
   <span>Mo–Do 8–12 und 13–17 Uhr · Fr 8–12 Uhr</span>
   <a href="tel:+497761926170">07761 92617-0</a>
+  <a class="lang" href="en/fragebogen-anteile.html" lang="en" hreflang="en" data-switch="en">English</a>
 </div></div>
 <header class="site-header"><div class="wrap">
   <a class="brand" href="index.html">
@@ -29,6 +33,7 @@
 <li><a href="index.html" data-slug="index">Start</a></li>
 <li><a href="leistungen.html" data-slug="leistungen">Leistungen</a></li>
 <li><a href="ablauf.html" data-slug="ablauf">Ablauf & Unterlagen</a></li>
+<li><a href="fragebogen.html" data-slug="fragebogen">Fragebögen</a></li>
 <li><a href="kosten.html" data-slug="kosten">Kosten</a></li>
 <li><a href="kanzlei.html" data-slug="kanzlei">Kanzlei</a></li>
 <li><a href="kontakt.html" data-slug="kontakt">Kontakt</a></li>
@@ -48,15 +53,15 @@
   <form class="contact fragebogen" action="/api/formular/anteile" method="post" id="fb-anteile" accept-charset="utf-8">
   <fieldset><legend>Gesellschaft</legend><label for="anteile-ge_firma">Firma <small>*</small> <input id="anteile-ge_firma" name="ge_firma" type="text" required></label>
 <div class="row"><label for="anteile-ge_hrb">Handelsregister, HRB-Nummer <input id="anteile-ge_hrb" name="ge_hrb" type="text"></label><label for="anteile-ge_sitz">Sitz <input id="anteile-ge_sitz" name="ge_sitz" type="text"></label></div>
-<div class="row"><label for="anteile-ge_kap">Stammkapital in Euro <input id="anteile-ge_kap" name="ge_kap" type="number" inputmode="decimal" step="any" min="0"></label><label for="anteile-ge_liste">Aktuelle Gesellschafterliste vorhanden? <select id="anteile-ge_liste" name="ge_liste"><option>Ja, bringe ich mit</option><option>Bitte vom Register abrufen</option></select></label></div></fieldset><fieldset><legend>Veräußerer</legend><div class="row"><label for="anteile-ve_name">Vor- und Nachname <small>*</small> <input id="anteile-ve_name" name="ve_name" type="text" required></label><label for="anteile-ve_geb">Geburtsdatum <input id="anteile-ve_geb" name="ve_geb" type="date"></label></div>
+<div class="row"><label for="anteile-ge_kap">Stammkapital in Euro <input id="anteile-ge_kap" name="ge_kap" type="number" inputmode="decimal" step="any" min="0"></label><label for="anteile-ge_liste">Aktuelle Gesellschafterliste vorhanden? <select id="anteile-ge_liste" name="ge_liste"><option value="Ja, bringe ich mit">Ja, bringe ich mit</option><option value="Bitte vom Register abrufen">Bitte vom Register abrufen</option></select></label></div></fieldset><fieldset><legend>Veräußerer</legend><div class="row"><label for="anteile-ve_name">Vor- und Nachname <small>*</small> <input id="anteile-ve_name" name="ve_name" type="text" required></label><label for="anteile-ve_geb">Geburtsdatum <input id="anteile-ve_geb" name="ve_geb" type="date"></label></div>
 <label for="anteile-ve_adr">Anschrift <input id="anteile-ve_adr" name="ve_adr" type="text"></label>
 <div class="row"><label for="anteile-ve_tel">Telefon <input id="anteile-ve_tel" name="ve_tel" type="tel"></label><label for="anteile-ve_mail">E-Mail <input id="anteile-ve_mail" name="ve_mail" type="email"></label></div></fieldset><fieldset><legend>Erwerber</legend><div class="row"><label for="anteile-er_name">Vor- und Nachname <small>*</small> <input id="anteile-er_name" name="er_name" type="text" required></label><label for="anteile-er_geb">Geburtsdatum <input id="anteile-er_geb" name="er_geb" type="date"></label></div>
 <label for="anteile-er_adr">Anschrift <input id="anteile-er_adr" name="er_adr" type="text"></label>
 <div class="row"><label for="anteile-er_tel">Telefon <input id="anteile-er_tel" name="er_tel" type="tel"></label><label for="anteile-er_mail">E-Mail <input id="anteile-er_mail" name="er_mail" type="email"></label></div>
 <label for="anteile-er_wb">Wirtschaftlich Berechtigte des Erwerbers, falls Gesellschaft <input id="anteile-er_wb" name="er_wb" type="text"></label></fieldset><fieldset><legend>Anteile und Gegenleistung</legend><label for="anteile-an_nr">Übertragene Anteile <input id="anteile-an_nr" name="an_nr" type="text" placeholder="laufende Nummern und Nennbeträge laut Gesellschafterliste"></label>
-<div class="row"><label for="anteile-an_art">Art <select id="anteile-an_art" name="an_art"><option>Verkauf</option><option>Schenkung</option><option>Einbringung</option><option>Sonstiges</option></select></label><label for="anteile-an_preis">Kaufpreis in Euro <input id="anteile-an_preis" name="an_preis" type="number" inputmode="decimal" step="any" min="0"></label></div>
-<div class="row"><label for="anteile-an_stichtag">Wirtschaftlicher Übergang <input id="anteile-an_stichtag" name="an_stichtag" type="date"></label><label for="anteile-an_gf">Änderung der Geschäftsführung? <select id="anteile-an_gf" name="an_gf"><option>Nein</option><option>Ja, bitte erklären</option></select></label></div>
-<label for="anteile-an_zust">Zustimmung der Gesellschaft erforderlich? <select id="anteile-an_zust" name="an_zust"><option>Weiß ich nicht</option><option>Ja</option><option>Nein</option></select></label></fieldset><fieldset><legend>Rückfragen</legend><div class="row"><label for="anteile-rf_name">Ansprechperson <small>*</small> <input id="anteile-rf_name" name="rf_name" type="text" required></label><label for="anteile-rf_tel">Telefon <small>*</small> <input id="anteile-rf_tel" name="rf_tel" type="tel" required></label></div>
+<div class="row"><label for="anteile-an_art">Art <select id="anteile-an_art" name="an_art"><option value="Verkauf">Verkauf</option><option value="Schenkung">Schenkung</option><option value="Einbringung">Einbringung</option><option value="Sonstiges">Sonstiges</option></select></label><label for="anteile-an_preis">Kaufpreis in Euro <input id="anteile-an_preis" name="an_preis" type="number" inputmode="decimal" step="any" min="0"></label></div>
+<div class="row"><label for="anteile-an_stichtag">Wirtschaftlicher Übergang <input id="anteile-an_stichtag" name="an_stichtag" type="date"></label><label for="anteile-an_gf">Änderung der Geschäftsführung? <select id="anteile-an_gf" name="an_gf"><option value="Nein">Nein</option><option value="Ja, bitte erklären">Ja, bitte erklären</option></select></label></div>
+<label for="anteile-an_zust">Zustimmung der Gesellschaft erforderlich? <select id="anteile-an_zust" name="an_zust"><option value="Weiß ich nicht">Weiß ich nicht</option><option value="Ja">Ja</option><option value="Nein">Nein</option></select></label></fieldset><fieldset><legend>Rückfragen</legend><div class="row"><label for="anteile-rf_name">Ansprechperson <small>*</small> <input id="anteile-rf_name" name="rf_name" type="text" required></label><label for="anteile-rf_tel">Telefon <small>*</small> <input id="anteile-rf_tel" name="rf_tel" type="tel" required></label></div>
 <label for="anteile-rf_zeit">Erreichbar <input id="anteile-rf_zeit" name="rf_zeit" type="text" placeholder="z. B. vormittags"></label>
 <label for="anteile-rf_bem">Besonderheiten, Wünsche, Fragen <textarea id="anteile-rf_bem" name="rf_bem"></textarea></label></fieldset>
   <div class="hp" aria-hidden="true"><label for="anteile-firma_web">Firma Web<input id="anteile-firma_web" name="firma_web" type="text" tabindex="-1" autocomplete="off"></label></div>

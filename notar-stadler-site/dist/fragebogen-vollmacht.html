@@ -10,15 +10,19 @@
 <meta property="og:description" content="Für den Entwurf von Vorsorgevollmacht, Patientenverfügung und Betreuungsverfügung. Für Ehegatten bitte je einen Bogen.">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="de_DE">
+<link rel="alternate" hreflang="de" href="https://notar-stadler.de/fragebogen-vollmacht.html">
+<link rel="alternate" hreflang="en" href="https://notar-stadler.de/en/fragebogen-vollmacht.html">
+<link rel="alternate" hreflang="x-default" href="https://notar-stadler.de/fragebogen-vollmacht.html">
 <link rel="stylesheet" href="style.css">
 </head>
-<body class="page-fragebogen-vollmacht">
+<body class="page-fragebogen-vollmacht lang-de">
 <div class="shell">
 <a class="skip" href="#inhalt">Zum Inhalt springen</a>
 <div class="topbar"><div class="wrap">
   <span>Scheffelstraße 23 · 79713 Bad Säckingen</span>
   <span>Mo–Do 8–12 und 13–17 Uhr · Fr 8–12 Uhr</span>
   <a href="tel:+497761926170">07761 92617-0</a>
+  <a class="lang" href="en/fragebogen-vollmacht.html" lang="en" hreflang="en" data-switch="en">English</a>
 </div></div>
 <header class="site-header"><div class="wrap">
   <a class="brand" href="index.html">
@@ -29,6 +33,7 @@
 <li><a href="index.html" data-slug="index">Start</a></li>
 <li><a href="leistungen.html" data-slug="leistungen">Leistungen</a></li>
 <li><a href="ablauf.html" data-slug="ablauf">Ablauf & Unterlagen</a></li>
+<li><a href="fragebogen.html" data-slug="fragebogen">Fragebögen</a></li>
 <li><a href="kosten.html" data-slug="kosten">Kosten</a></li>
 <li><a href="kanzlei.html" data-slug="kanzlei">Kanzlei</a></li>
 <li><a href="kontakt.html" data-slug="kontakt">Kontakt</a></li>
@@ -49,12 +54,12 @@
   <fieldset><legend>Vollmachtgeber</legend><div class="row"><label for="vollmacht-vg_name">Vor- und Nachname <small>*</small> <input id="vollmacht-vg_name" name="vg_name" type="text" required></label><label for="vollmacht-vg_geb">Geburtsdatum <input id="vollmacht-vg_geb" name="vg_geb" type="date"></label></div>
 <label for="vollmacht-vg_adr">Anschrift <input id="vollmacht-vg_adr" name="vg_adr" type="text"></label>
 <div class="row"><label for="vollmacht-vg_tel">Telefon <input id="vollmacht-vg_tel" name="vg_tel" type="tel"></label><label for="vollmacht-vg_mail">E-Mail <input id="vollmacht-vg_mail" name="vg_mail" type="email"></label></div>
-<label for="vollmacht-vg_fam">Familienstand <select id="vollmacht-vg_fam" name="vg_fam"><option>ledig</option><option>verheiratet</option><option>geschieden</option><option>verwitwet</option><option>eingetragene Lebenspartnerschaft</option></select></label></fieldset><fieldset><legend>Bevollmächtigte Person 1</legend><div class="row"><label for="vollmacht-b1_name">Vor- und Nachname <small>*</small> <input id="vollmacht-b1_name" name="b1_name" type="text" required></label><label for="vollmacht-b1_geb">Geburtsdatum <input id="vollmacht-b1_geb" name="b1_geb" type="date"></label></div>
+<label for="vollmacht-vg_fam">Familienstand <select id="vollmacht-vg_fam" name="vg_fam"><option value="ledig">ledig</option><option value="verheiratet">verheiratet</option><option value="geschieden">geschieden</option><option value="verwitwet">verwitwet</option><option value="eingetragene Lebenspartnerschaft">eingetragene Lebenspartnerschaft</option></select></label></fieldset><fieldset><legend>Bevollmächtigte Person 1</legend><div class="row"><label for="vollmacht-b1_name">Vor- und Nachname <small>*</small> <input id="vollmacht-b1_name" name="b1_name" type="text" required></label><label for="vollmacht-b1_geb">Geburtsdatum <input id="vollmacht-b1_geb" name="b1_geb" type="date"></label></div>
 <label for="vollmacht-b1_adr">Anschrift <input id="vollmacht-b1_adr" name="b1_adr" type="text"></label>
 <div class="row"><label for="vollmacht-b1_tel">Telefon <input id="vollmacht-b1_tel" name="b1_tel" type="tel"></label><label for="vollmacht-b1_mail">E-Mail <input id="vollmacht-b1_mail" name="b1_mail" type="email"></label></div></fieldset><fieldset><legend>Bevollmächtigte Person 2</legend><p class="hint">Ersatz oder gemeinsam.</p><div class="row"><label for="vollmacht-b2_name">Vor- und Nachname <small>*</small> <input id="vollmacht-b2_name" name="b2_name" type="text" required></label><label for="vollmacht-b2_geb">Geburtsdatum <input id="vollmacht-b2_geb" name="b2_geb" type="date"></label></div>
 <label for="vollmacht-b2_adr">Anschrift <input id="vollmacht-b2_adr" name="b2_adr" type="text"></label>
-<div class="row"><label for="vollmacht-b2_tel">Telefon <input id="vollmacht-b2_tel" name="b2_tel" type="tel"></label><label for="vollmacht-b2_mail">E-Mail <input id="vollmacht-b2_mail" name="b2_mail" type="email"></label></div></fieldset><fieldset><legend>Ausgestaltung</legend><div class="row"><label for="vollmacht-au_art">Handeln die Bevollmächtigten <select id="vollmacht-au_art" name="au_art"><option>Jeder allein</option><option>Nur gemeinsam</option><option>Person 2 nur, wenn Person 1 verhindert</option></select></label><label for="vollmacht-au_ab">Gilt die Vollmacht <select id="vollmacht-au_ab" name="au_ab"><option>Sofort, mit interner Absprache</option><option>Bitte erklären</option></select></label></div>
-<div class="row"><label for="vollmacht-au_pv">Patientenverfügung <select id="vollmacht-au_pv" name="au_pv"><option>Ja, mit beurkunden</option><option>Liegt bereits vor</option><option>Nein</option></select></label><label for="vollmacht-au_bv">Betreuungsverfügung <select id="vollmacht-au_bv" name="au_bv"><option>Ja, gleiche Personen</option><option>Ja, andere Person</option><option>Nein</option></select></label></div>
+<div class="row"><label for="vollmacht-b2_tel">Telefon <input id="vollmacht-b2_tel" name="b2_tel" type="tel"></label><label for="vollmacht-b2_mail">E-Mail <input id="vollmacht-b2_mail" name="b2_mail" type="email"></label></div></fieldset><fieldset><legend>Ausgestaltung</legend><div class="row"><label for="vollmacht-au_art">Handeln die Bevollmächtigten <select id="vollmacht-au_art" name="au_art"><option value="Jeder allein">Jeder allein</option><option value="Nur gemeinsam">Nur gemeinsam</option><option value="Person 2 nur, wenn Person 1 verhindert">Person 2 nur, wenn Person 1 verhindert</option></select></label><label for="vollmacht-au_ab">Gilt die Vollmacht <select id="vollmacht-au_ab" name="au_ab"><option value="Sofort, mit interner Absprache">Sofort, mit interner Absprache</option><option value="Bitte erklären">Bitte erklären</option></select></label></div>
+<div class="row"><label for="vollmacht-au_pv">Patientenverfügung <select id="vollmacht-au_pv" name="au_pv"><option value="Ja, mit beurkunden">Ja, mit beurkunden</option><option value="Liegt bereits vor">Liegt bereits vor</option><option value="Nein">Nein</option></select></label><label for="vollmacht-au_bv">Betreuungsverfügung <select id="vollmacht-au_bv" name="au_bv"><option value="Ja, gleiche Personen">Ja, gleiche Personen</option><option value="Ja, andere Person">Ja, andere Person</option><option value="Nein">Nein</option></select></label></div>
 <label for="vollmacht-au_wert">Immobilien und größere Vermögenswerte <small>kurz, für den Geschäftswert</small><input id="vollmacht-au_wert" name="au_wert" type="text"></label>
 <div class="checks"><label class="chk" for="vollmacht-au_verm"><input id="vollmacht-au_verm" name="au_verm" type="checkbox" value="ja"><span>Vermögen, Bank, Verträge</span></label><label class="chk" for="vollmacht-au_immo"><input id="vollmacht-au_immo" name="au_immo" type="checkbox" value="ja"><span>Immobilien, Grundbuch</span></label><label class="chk" for="vollmacht-au_ges"><input id="vollmacht-au_ges" name="au_ges" type="checkbox" value="ja"><span>Gesundheit, Ärzte, Pflege</span></label><label class="chk" for="vollmacht-au_auf"><input id="vollmacht-au_auf" name="au_auf" type="checkbox" value="ja"><span>Aufenthalt, Heim, Wohnung</span></label><label class="chk" for="vollmacht-au_post"><input id="vollmacht-au_post" name="au_post" type="checkbox" value="ja"><span>Post, Behörden, Gerichte</span></label><label class="chk" for="vollmacht-au_dig"><input id="vollmacht-au_dig" name="au_dig" type="checkbox" value="ja"><span>Digitales, Konten im Internet</span></label><label class="chk" for="vollmacht-au_reg"><input id="vollmacht-au_reg" name="au_reg" type="checkbox" value="ja"><span>Eintragung im Zentralen Vorsorgeregister gewünscht</span></label></div></fieldset><fieldset><legend>Rückfragen</legend><div class="row"><label for="vollmacht-rf_name">Ansprechperson <small>*</small> <input id="vollmacht-rf_name" name="rf_name" type="text" required></label><label for="vollmacht-rf_tel">Telefon <small>*</small> <input id="vollmacht-rf_tel" name="rf_tel" type="tel" required></label></div>
 <label for="vollmacht-rf_zeit">Erreichbar <input id="vollmacht-rf_zeit" name="rf_zeit" type="text" placeholder="z. B. vormittags"></label>

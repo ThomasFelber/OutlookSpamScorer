@@ -10,15 +10,19 @@
 <meta property="og:description" content="Anmeldung eines neuen Vereins oder Änderung von Vorstand und Satzung beim Vereinsregister.">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="de_DE">
+<link rel="alternate" hreflang="de" href="https://notar-stadler.de/fragebogen-verein.html">
+<link rel="alternate" hreflang="en" href="https://notar-stadler.de/en/fragebogen-verein.html">
+<link rel="alternate" hreflang="x-default" href="https://notar-stadler.de/fragebogen-verein.html">
 <link rel="stylesheet" href="style.css">
 </head>
-<body class="page-fragebogen-verein">
+<body class="page-fragebogen-verein lang-de">
 <div class="shell">
 <a class="skip" href="#inhalt">Zum Inhalt springen</a>
 <div class="topbar"><div class="wrap">
   <span>Scheffelstraße 23 · 79713 Bad Säckingen</span>
   <span>Mo–Do 8–12 und 13–17 Uhr · Fr 8–12 Uhr</span>
   <a href="tel:+497761926170">07761 92617-0</a>
+  <a class="lang" href="en/fragebogen-verein.html" lang="en" hreflang="en" data-switch="en">English</a>
 </div></div>
 <header class="site-header"><div class="wrap">
   <a class="brand" href="index.html">
@@ -29,6 +33,7 @@
 <li><a href="index.html" data-slug="index">Start</a></li>
 <li><a href="leistungen.html" data-slug="leistungen">Leistungen</a></li>
 <li><a href="ablauf.html" data-slug="ablauf">Ablauf & Unterlagen</a></li>
+<li><a href="fragebogen.html" data-slug="fragebogen">Fragebögen</a></li>
 <li><a href="kosten.html" data-slug="kosten">Kosten</a></li>
 <li><a href="kanzlei.html" data-slug="kanzlei">Kanzlei</a></li>
 <li><a href="kontakt.html" data-slug="kontakt">Kontakt</a></li>
@@ -48,9 +53,9 @@
   <form class="contact fragebogen" action="/api/formular/verein" method="post" id="fb-verein" accept-charset="utf-8">
   <fieldset><legend>Verein</legend><label for="verein-ve_name">Name des Vereins <small>*</small> <input id="verein-ve_name" name="ve_name" type="text" required></label>
 <div class="row"><label for="verein-ve_sitz">Sitz <input id="verein-ve_sitz" name="ve_sitz" type="text"></label><label for="verein-ve_vr">Vereinsregister-Nummer, falls eingetragen <input id="verein-ve_vr" name="ve_vr" type="text"></label></div>
-<label for="verein-ve_art">Anliegen <small>*</small> <select id="verein-ve_art" name="ve_art" required><option>Neugründung</option><option>Vorstandswechsel</option><option>Satzungsänderung</option><option>Sonstiges</option></select></label>
+<label for="verein-ve_art">Anliegen <small>*</small> <select id="verein-ve_art" name="ve_art" required><option value="Neugründung">Neugründung</option><option value="Vorstandswechsel">Vorstandswechsel</option><option value="Satzungsänderung">Satzungsänderung</option><option value="Sonstiges">Sonstiges</option></select></label>
 <label for="verein-ve_zweck">Vereinszweck <textarea id="verein-ve_zweck" name="ve_zweck"></textarea></label>
-<div class="row"><label for="verein-ve_datum">Datum der Gründungs- oder Mitgliederversammlung <input id="verein-ve_datum" name="ve_datum" type="date"></label><label for="verein-ve_unterlagen">Protokoll und Satzung vorhanden? <select id="verein-ve_unterlagen" name="ve_unterlagen"><option>Ja, bringe ich mit</option><option>Nein, bitte beraten</option></select></label></div></fieldset><fieldset><legend>Vorstand</legend><label for="verein-vo_mitgl">Vorstandsmitglieder nach § 26 BGB <small>*</small> <small>Name, Geburtsdatum, Anschrift, Amt</small><textarea id="verein-vo_mitgl" name="vo_mitgl" required></textarea></label>
+<div class="row"><label for="verein-ve_datum">Datum der Gründungs- oder Mitgliederversammlung <input id="verein-ve_datum" name="ve_datum" type="date"></label><label for="verein-ve_unterlagen">Protokoll und Satzung vorhanden? <select id="verein-ve_unterlagen" name="ve_unterlagen"><option value="Ja, bringe ich mit">Ja, bringe ich mit</option><option value="Nein, bitte beraten">Nein, bitte beraten</option></select></label></div></fieldset><fieldset><legend>Vorstand</legend><label for="verein-vo_mitgl">Vorstandsmitglieder nach § 26 BGB <small>*</small> <small>Name, Geburtsdatum, Anschrift, Amt</small><textarea id="verein-vo_mitgl" name="vo_mitgl" required></textarea></label>
 <label for="verein-vo_vert">Vertretungsregelung laut Satzung <input id="verein-vo_vert" name="vo_vert" type="text"></label></fieldset><fieldset><legend>Anmeldende Person</legend><div class="row"><label for="verein-am_name">Vor- und Nachname <small>*</small> <input id="verein-am_name" name="am_name" type="text" required></label><label for="verein-am_geb">Geburtsdatum <input id="verein-am_geb" name="am_geb" type="date"></label></div>
 <label for="verein-am_adr">Anschrift <input id="verein-am_adr" name="am_adr" type="text"></label>
 <div class="row"><label for="verein-am_tel">Telefon <input id="verein-am_tel" name="am_tel" type="tel"></label><label for="verein-am_mail">E-Mail <input id="verein-am_mail" name="am_mail" type="email"></label></div></fieldset><fieldset><legend>Rückfragen</legend><div class="row"><label for="verein-rf_name">Ansprechperson <small>*</small> <input id="verein-rf_name" name="rf_name" type="text" required></label><label for="verein-rf_tel">Telefon <small>*</small> <input id="verein-rf_tel" name="rf_tel" type="tel" required></label></div>
