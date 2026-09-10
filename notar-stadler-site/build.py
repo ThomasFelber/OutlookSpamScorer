@@ -155,11 +155,13 @@ def build_dist():
 <head>
 {head}</head>
 <body class="page-{slug}">
+<div class="shell">
 {header(slug, "dist")}
 <main id="inhalt">
 {body}
 </main>
 {footer("dist")}
+</div>
 </body>
 </html>
 """
@@ -193,9 +195,17 @@ def build_preview():
     var t = document.getElementById(slug).getAttribute('data-title');
     if(t) document.title = t;
     window.scrollTo(0,0);
+    var sh = document.querySelector('.shell'); if(sh) sh.scrollTop = 0;
   }
   window.addEventListener('hashchange', show);
   show();
+  var tgl = document.getElementById('pv-toggle');
+  tgl.addEventListener('click', function(){
+    var on = !document.body.classList.contains('pv-phone');
+    document.body.classList.toggle('pv-phone', on);
+    tgl.textContent = on ? 'Bildschirm-Ansicht' : 'Handy-Ansicht';
+    tgl.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
 })();
 </script>"""
     doc = f"""<title>{html.escape(first[2])}</title>
@@ -203,12 +213,14 @@ def build_preview():
 <style>
 {css}
 </style>
-<div class="pv-banner">Musterseite (statische Vorschau). Platzhalter in eckigen Klammern werden vor Veröffentlichung ersetzt.</div>
+<div class="pv-banner"><span>Musterseite, Vorschau. Rot markierte Angaben werden vor Veröffentlichung ersetzt.</span><button type="button" id="pv-toggle" aria-pressed="false">Handy-Ansicht</button></div>
+<div class="shell">
 {header("index", "preview")}
 <main id="inhalt">
 {chr(10).join(sections)}
 </main>
 {footer("preview")}
+</div>
 {js}
 """
     (ROOT / "preview.html").write_text(doc, encoding="utf-8")

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+  <!-- Fenster mit Blick auf den Rhein -->
+  <rect x="300" y="36" width="140" height="120" fill="currentColor" fill-opacity=".05"/>
+  <path d="M370 36 V156 M300 96 H440"/>
+  <path d="M308 120 C328 114 348 126 368 120 M376 130 C396 124 416 136 432 130" stroke-opacity=".5"/>
+  <!-- Bücherregal -->
+  <rect x="40" y="40" width="150" height="130"/>
+  <path d="M40 84 H190 M40 128 H190"/>
+  <g fill="currentColor" fill-opacity=".12">
+    <rect x="48" y="52" width="10" height="30"/><rect x="60" y="48" width="12" height="34"/><rect x="74" y="56" width="9" height="26"/><rect x="86" y="50" width="14" height="32"/><rect x="104" y="54" width="10" height="28"/><rect x="118" y="46" width="12" height="36"/><rect x="134" y="52" width="9" height="30"/><rect x="146" y="50" width="12" height="32"/><rect x="162" y="56" width="10" height="26"/>
+    <rect x="50" y="96" width="12" height="30"/><rect x="66" y="92" width="10" height="34"/><rect x="80" y="98" width="14" height="28"/><rect x="98" y="94" width="10" height="32"/><rect x="112" y="90" width="12" height="36"/><rect x="128" y="96" width="9" height="30"/><rect x="142" y="94" width="14" height="32"/><rect x="160" y="98" width="10" height="28"/>
+    <rect x="48" y="140" width="14" height="28"/><rect x="66" y="136" width="10" height="32"/><rect x="80" y="142" width="12" height="26"/><rect x="96" y="138" width="10" height="30"/><rect x="110" y="134" width="14" height="34"/><rect x="128" y="140" width="9" height="28"/><rect x="142" y="136" width="12" height="32"/><rect x="158" y="142" width="14" height="26"/>
+  </g>
+  <!-- Tisch -->
+  <path d="M60 210 H420 L400 226 H80 Z" fill="currentColor" fill-opacity=".14"/>
+  <path d="M86 226 V290 M394 226 V290 M96 226 V286 M384 226 V286"/>
+  <!-- Urkunde mit Siegel -->
+  <path d="M206 186 L262 178 L270 208 L214 216 Z" fill="var(--paper,#F4F5F2)"/>
+  <path d="M214 192 L244 188 M216 198 L250 193 M218 204 L240 201"/>
+  <circle cx="258" cy="203" r="6" fill="var(--seal,#7B2D2D)" stroke="none"/>
+  <!-- Feder -->
+  <path d="M290 196 L318 176 C324 172 330 172 334 174 C326 178 320 186 312 194 L296 200 Z" fill="currentColor" fill-opacity=".1"/>
+  <!-- Lampe -->
+  <path d="M120 208 V166 M100 166 H140 L132 150 H108 Z" fill="currentColor" fill-opacity=".1"/>
+  <!-- Stühle -->
+  <g fill="currentColor" fill-opacity=".08">
+    <path d="M150 250 H190 V290 M150 250 V290 M150 250 V230 H190 V250"/>
+    <path d="M290 250 H330 V290 M290 250 V290 M290 250 V230 H330 V250"/>
+  </g>
+  <path d="M20 296 H460" stroke-opacity=".4"/>
+</svg>
