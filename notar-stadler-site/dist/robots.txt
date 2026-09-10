@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://notar-stadler.de/sitemap.xml
