@@ -24,13 +24,25 @@ PAGES = [
     ("beglaubigungen",None,                  "Beglaubigungen und Schweiz · Notar Stadler",               "Unterschriftsbeglaubigung, Abschriften, Apostille, Dokumente für die Schweiz und das Ausland."),
     ("ablauf",        "Ablauf & Unterlagen", "Ablauf und Unterlagen · Notar Stadler",                    "So läuft ein Termin beim Notar ab und was Sie mitbringen: Checklisten für Kauf, Testament, Vollmacht, Gründung."),
     ("kosten",        "Kosten",              "Kosten · Notar Stadler, Bad Säckingen",                    "Notarkosten sind gesetzlich festgelegt (GNotKG) und bei jedem Notar gleich. Beispiele und Erklärung."),
-    ("glossar",       "Glossar",             "Glossar · Notar Stadler",                                  "Begriffe aus dem Notariat verständlich erklärt: Beurkundung, Beglaubigung, Auflassung, Pflichtteil, Grundschuld und mehr."),
+    ("glossar",       None,                  "Glossar · Notar Stadler",                                  "Begriffe aus dem Notariat verständlich erklärt: Beurkundung, Beglaubigung, Auflassung, Pflichtteil, Grundschuld und mehr."),
     ("kanzlei",       "Kanzlei",             "Kanzlei · Notar Stadler, Bad Säckingen",                   "Notar Kai-Christoph Stadler, Amtssitz Bad Säckingen. Räume, Anfahrt, Öffnungszeiten, Zugang."),
     ("kontakt",       "Kontakt",             "Kontakt und Termin · Notar Stadler",                       "Termin anfragen: Scheffelstraße 23, 79713 Bad Säckingen, Telefon 07761 92617-0. Öffnungszeiten und Anfahrt."),
     ("impressum",     None,                  "Impressum · Notar Stadler",                                "Impressum mit den Pflichtangaben für Notare."),
     ("datenschutz",   None,                  "Datenschutz · Notar Stadler",                              "Datenschutzerklärung. Diese Seite setzt keine Cookies und bindet keine Drittanbieter ein."),
 ]
 SLUGS = [p[0] for p in PAGES]
+SERVICES = [("immobilien","Immobilien"),("vererben","Vererben"),("schenken","Schenken"),("vorsorge","Vorsorge"),
+            ("familie","Familie"),("unternehmen","Unternehmen"),("beglaubigungen","Beglaubigungen & Schweiz")]
+
+def siblings(slug, mode):
+    if slug not in dict(SERVICES):
+        return ""
+    items = []
+    for s, label in SERVICES:
+        href = f"#{s}" if mode == "preview" else f"{s}.html"
+        cur = ' aria-current="page"' if s == slug else ""
+        items.append(f'<a href="{href}"{cur}>{label}</a>')
+    return '<nav class="siblings" aria-label="Weitere Leistungen"><div class="wrap"><span>Leistungen:</span>' + "".join(items) + "</div></nav>\n"
 
 HEAD = """<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -82,7 +94,7 @@ def header(active, mode):
 </div></div>
 <header class="site-header"><div class="wrap">
   <a class="brand" href="{home}">
-    <span class="brand-seal" aria-hidden="true"></span>
+    <span class="brand-mark" aria-hidden="true"></span>
     <span class="brand-text"><strong>Notar Kai-Christoph Stadler</strong><span>Bad Säckingen</span></span>
   </a>
   <nav aria-label="Hauptnavigation"><ul>
@@ -158,7 +170,7 @@ def build_dist():
 <div class="shell">
 {header(slug, "dist")}
 <main id="inhalt">
-{body}
+{siblings(slug, "dist")}{body}
 </main>
 {footer("dist")}
 </div>
@@ -176,7 +188,7 @@ def build_preview():
     sections = []
     for slug, label, title, desc in PAGES:
         body = to_preview_links(read_page(slug))
-        sections.append(f'<section class="pv-page page-{slug}" id="{slug}" data-title="{html.escape(title)}" hidden>\n{body}\n</section>')
+        sections.append(f'<section class="pv-page page-{slug}" id="{slug}" data-title="{html.escape(title)}" hidden>\n{siblings(slug, "preview")}{body}\n</section>')
     first = PAGES[0]
     js = """
 <script>

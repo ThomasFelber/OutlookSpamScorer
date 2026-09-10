@@ -17,7 +17,7 @@
   <!-- Urkunde mit Siegel -->
   <path d="M206 186 L262 178 L270 208 L214 216 Z" fill="var(--paper,#F4F5F2)"/>
   <path d="M214 192 L244 188 M216 198 L250 193 M218 204 L240 201"/>
-  <circle cx="258" cy="203" r="6" fill="var(--seal,#7B2D2D)" stroke="none"/>
+  <circle cx="258" cy="203" r="6" fill="currentColor" stroke="none"/>
   <!-- Feder -->
   <path d="M290 196 L318 176 C324 172 330 172 334 174 C326 178 320 186 312 194 L296 200 Z" fill="currentColor" fill-opacity=".1"/>
   <!-- Lampe -->

@@ -47,7 +47,7 @@
     <path d="M0 276 C50 270 80 282 120 276 S190 270 230 276 S300 282 340 276 S410 270 450 276 S520 282 560 276 S630 270 670 276 S740 282 780 276 S850 270 890 276 S940 282 960 278" stroke-opacity=".6"/>
   </g>
   <!-- Grenzmarkierung: Schweiz auf der Südseite -->
-  <g stroke="var(--seal, #7B2D2D)">
+  <g>
     <path d="M40 206 V150" /><path d="M40 150 H56 V162 H40"/>
     <path d="M45 156 H51 M48 153 V159"/>
   </g>
