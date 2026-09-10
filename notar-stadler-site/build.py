@@ -313,11 +313,41 @@ def render_form(x, mode, lang="de"):
   </aside>
 </div></section>"""
 
+def render_contact(mode, lang="de"):
+    """Kontaktformular aus F.ANFRAGE, gleiche Annahme wie die Fragebögen."""
+    u = lambda s: tr(s, lang)
+    x = F.ANFRAGE
+    out = []
+    for sec in x["sections"]:
+        rows, row = [], []
+        for fl in sec["fields"]:
+            if fl["w"] == 2:
+                if row: rows.append(row); row = []
+                rows.append([fl])
+            else:
+                row.append(fl)
+                if len(row) == 2: rows.append(row); row = []
+        if row: rows.append(row)
+        for r in rows:
+            out.append(render_field(r[0], "anfrage", lang) if len(r) == 1 else '<div class="row">' + "".join(render_field(fl, "anfrage", lang) for fl in r) + "</div>")
+    action = "#" if mode == "preview" else "/api/formular/anfrage" + ("?lang=en" if lang == "en" else "")
+    ds = href_for("datenschutz", mode, lang)
+    note = ("Musterseite: Das Formular ist in der Vorschau nicht angebunden." if lang == "de" else "Sample site: the form is not connected in this preview.") if mode == "preview" else \
+           ("Verschlüsselt an das Notariat. Sie erhalten eine sechsstellige Referenz für Rückfragen." if lang == "de" else "Encrypted to the notary's office. You receive a six-character reference for queries.")
+    return f"""<form class="contact" action="{action}" method="post" accept-charset="utf-8">
+      {"".join(out)}
+      <div class="hp" aria-hidden="true"><label for="anfrage-firma_web">Firma Web<input id="anfrage-firma_web" name="firma_web" type="text" tabindex="-1" autocomplete="off"></label></div>
+      <label for="anfrage-ds" class="chk" style="display:flex; gap:10px; align-items:flex-start; font-weight:400"><input id="anfrage-ds" name="datenschutz" type="checkbox" value="ja" required style="width:auto; margin-top:6px"><span>{u("Ich habe die")} <a href="{ds}">{u("Datenschutzhinweise")}</a>{u("gelesen. Meine Angaben werden nur zur Bearbeitung der Anfrage verwendet.") if lang == "en" else " gelesen. Meine Angaben werden nur zur Bearbeitung der Anfrage verwendet."}</span></label>
+      <div><button class="btn btn-primary" type="submit">{u("Anfrage senden")}</button></div>
+      <p style="font-size:16px; color:var(--muted); margin:0">{note}</p>
+    </form>"""
+
 def render_form_index(mode, lang="de"):
     def h(s): return href_for(s, mode, lang)
     u = lambda s: tr(s, lang)
     groups = {}
-    for x in F.FORMS: groups.setdefault(x["gruppe"], []).append(x)
+    for x in F.FORMS:
+        if not x.get("intern"): groups.setdefault(x["gruppe"], []).append(x)
     parts = []
     for g, items in groups.items():
         cards = "".join(f'<a class="card" href="{h("fragebogen-"+x["slug"])}"><span class="icon">{{{{svg:{x["icon"]}}}}}</span><h3>{html.escape(u(x["title"]))}</h3><p>{html.escape(u(x["lead"]).split(". ")[0].rstrip("."))}.</p><span class="more">{u("Fragebogen öffnen")}</span></a>' for x in items)
@@ -341,6 +371,7 @@ def read_page(slug, lang="de"):
     else:
         p = SRC / "pages" / ("en/" if lang == "en" else "") / f"{slug}.html"
         body = p.read_text(encoding="utf-8")
+    body = body.replace("{{form:anfrage}}", render_contact(_MODE["mode"], lang))
     body = SVG_RE.sub(inline_svg, body)
     return IMG_RE.sub(inline_img, body)
 

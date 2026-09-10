@@ -9,30 +9,7 @@
 <section class="band"><div class="wrap"><figure class="photo">{{img:kanzlei-tuer.jpg|View into the meeting room of the office}}</figure></div></section>
 <section><div class="wrap split">
   <div>
-    <form class="contact" action="#" method="post">
-      <div class="row">
-        <label for="f-name">Name<input id="f-name" name="name" type="text" autocomplete="name" required></label>
-        <label for="f-tel">Telephone<input id="f-tel" name="telefon" type="tel" autocomplete="tel" required></label>
-      </div>
-      <label for="f-mail">Email <small>(optional)</small><input id="f-mail" name="email" type="email" autocomplete="email"></label>
-      <label for="f-anliegen">Matter
-        <select id="f-anliegen" name="anliegen">
-          <option>Buying or selling property</option>
-          <option>Land charge</option>
-          <option>Will or inheritance contract</option>
-          <option>Certificate of inheritance, estate</option>
-          <option>Gift, transfer</option>
-          <option>Power of attorney, living will</option>
-          <option>Marriage contract, divorce settlement</option>
-          <option>GmbH, commercial register</option>
-          <option>Certification</option>
-          <option>Other</option>
-        </select></label>
-      <label for="f-text">Brief description <small>(no confidential details; we discuss those in person)</small><textarea id="f-text" name="nachricht"></textarea></label>
-      <label for="f-ds" style="display:flex; gap:10px; align-items:flex-start; font-weight:400"><input id="f-ds" name="datenschutz" type="checkbox" required style="width:auto; margin-top:6px"><span>I have read the <a href="datenschutz.html">privacy notice</a>. My details are used only to handle this enquiry.</span></label>
-      <div><button class="btn btn-primary" type="submit">Send enquiry</button></div>
-      <p style="font-size:16px; color:var(--muted); margin:0">Sample site: the form is not yet connected. In operation it is transmitted to the office in encrypted form.</p>
-    </form>
+    {{form:anfrage}}
   </div>
   <div>
     <div class="box">

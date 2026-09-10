@@ -14,7 +14,7 @@ python3 build.py
 
 ## Fragebögen und Server
 
-`src/formulare.py` beschreibt alle 14 Fragebögen als Schema; `build.py` erzeugt daraus die Seiten. `server/` enthält den Annahme-Server (verschlüsselte Speicherung, E-Mail ohne Mandantendaten, Abholwerkzeug für das Büro), siehe `server/README.md`.
+`src/formulare.py` beschreibt alle 14 Fragebögen als Schema; `build.py` erzeugt daraus die Seiten. `server/` enthält den Annahme-Server: verschlüsselte Speicherung, sechsstellige Referenzen, E-Mail ohne Mandantendaten, Verwaltungsoberfläche mit Passwort und YubiKey unter `/verwaltung/`, Abholwerkzeug als Sicherungsweg. Siehe `server/README.md`.
 
 ## Seiten
 
@@ -32,7 +32,6 @@ Alles in eckigen Klammern (ocker hinterlegt) ist vor Veröffentlichung zu ersetz
 
 ## Vor Veröffentlichung
 
-- Kontaktformular an einen Mailversand auf dem eigenen Server anbinden (die Fragebögen sind bereits über `server/` angebunden)
 - Liste der Fragebögen mit dem bisherigen Bereich auf notar-formulare.de/stadler abgleichen
 - Texte durch den Notar auf Berufsrecht prüfen (§ 29 BNotO, Richtlinien der Notarkammer Baden-Württemberg)
 - Kostenbeispiele gegen aktuelle GNotKG-Tabelle prüfen

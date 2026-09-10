@@ -3,7 +3,8 @@
 
   python3 schluessel.py erzeugen [verzeichnis]
 
-Schreibt privat.key (bleibt im Büro, nie auf den Server) und oeffentlich.key (kommt in die Server-Konfiguration).
+Nur für den Betrieb ohne Verwaltungsoberfläche. Im Normalfall entsteht das Schlüsselpaar bei der
+Einrichtung unter /verwaltung/ im Browser des Notariats.
 """
 import sys, os, pathlib
 sys.path.insert(0, os.path.dirname(__file__))

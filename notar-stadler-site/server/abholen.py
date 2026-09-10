@@ -11,6 +11,7 @@ Liest Umgebungsvariablen (oder abholen.env im gleichen Ordner):
 
 Je Eingang entstehen NUMMER.txt (lesbar, druckbar) und NUMMER.json.
 Mit --loeschen wird ein Eingang nach erfolgreichem Entschlüsseln vom Server gelöscht.
+Sicherungsweg: braucht den privaten Schlüssel aus der Sicherungskopie der Verwaltungs-Einrichtung.
 """
 import os, sys, json, pathlib, urllib.request
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -27,7 +28,7 @@ def lade_env():
 
 def lesbar(d):
     form = F.BY_SLUG.get(d["formular"])
-    out = [f"{d['titel']}  ·  {d['nummer']}  ·  eingegangen {d['zeit']}", "=" * 70, ""]
+    out = [f"{d['titel']}  ·  Referenz {d.get('referenz', d.get('nummer'))}  ·  eingegangen {d['zeit']}", "=" * 70, ""]
     if form:
         for sec in form["sections"]:
             zeilen = [(fl["label"], d["felder"][fl["name"]]) for fl in sec["fields"] if d["felder"].get(fl["name"])]

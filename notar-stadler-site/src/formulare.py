@@ -339,7 +339,18 @@ FORMS = [
     RUECKFRAGEN]},
 ]
 
-BY_SLUG = {x["slug"]: x for x in FORMS}
+# Kontaktanfrage: kein eigener Fragebogen, aber gleiche Annahme, Verschlüsselung und Referenz
+ANFRAGE = {"slug": "anfrage", "kurz": "AN", "gruppe": "Kontakt", "title": "Kontaktanfrage", "icon": "telefon", "intern": True,
+  "lead": "Rufen Sie an oder schreiben Sie uns. Das Büro meldet sich, klärt das Anliegen und schlägt einen Termin vor.",
+  "sections": [{"title": "Ihre Anfrage", "fields": [
+      f("an_name", "Name", required=True),
+      f("an_tel", "Telefon", "tel", required=True),
+      f("an_mail", "E-Mail", "email", w=2),
+      f("an_anliegen", "Anliegen", "select", ["Immobilie kaufen oder verkaufen", "Grundschuld", "Testament oder Erbvertrag", "Erbschein, Nachlass", "Schenkung, Übergabe", "Vorsorgevollmacht, Patientenverfügung", "Ehevertrag, Scheidungsfolgen", "GmbH, Handelsregister", "Beglaubigung", "Sonstiges"], w=2),
+      f("an_text", "Kurze Beschreibung", "textarea", w=2, hint="keine vertraulichen Details, die besprechen wir im Gespräch"),
+  ]}]}
+
+BY_SLUG = {x["slug"]: x for x in FORMS + [ANFRAGE]}
 
 def field_index(form):
     """name -> Feld, über alle Abschnitte."""
