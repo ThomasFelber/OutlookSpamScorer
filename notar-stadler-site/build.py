@@ -4,7 +4,9 @@
   python3 build.py            -> dist/  (eine HTML-Datei je Seite, sitemap, robots)
                                  preview.html (alle Seiten in einer Datei, Hash-Navigation)
 """
-import re, html, pathlib, datetime
+import re, html, pathlib, datetime, sys
+sys.path.insert(0, str(pathlib.Path(__file__).parent / "src"))
+import formulare as F
 
 ROOT = pathlib.Path(__file__).parent
 SRC = ROOT / "src"
@@ -23,9 +25,10 @@ PAGES = [
     ("unternehmen",   None,                  "Unternehmen und Gesellschaften · Notar Stadler",           "GmbH-Gründung, Geschäftsanteile, Handelsregister, Online-Beurkundung: notarielle Leistungen für Unternehmen."),
     ("beglaubigungen",None,                  "Beglaubigungen und Schweiz · Notar Stadler",               "Unterschriftsbeglaubigung, Abschriften, Apostille, Dokumente für die Schweiz und das Ausland."),
     ("ablauf",        "Ablauf & Unterlagen", "Ablauf und Unterlagen · Notar Stadler",                    "So läuft ein Termin beim Notar ab und was Sie mitbringen: Checklisten für Kauf, Testament, Vollmacht, Gründung."),
-    ("fragebogen-kaufvertrag", None,       "Fragebogen Kaufvertrag · Notar Stadler",                   "Eckdaten für den Entwurf eines Kaufvertrags: Verkäufer, Käufer, Objekt, Kaufpreis, Finanzierung, Übergabe."),
-    ("fragebogen-gmbh",        None,       "Fragebogen GmbH-Gründung · Notar Stadler",                 "Eckdaten für Gesellschaftsvertrag und Handelsregisteranmeldung: Firma, Sitz, Kapital, Gesellschafter, Geschäftsführung."),
-    ("fragebogen-vollmacht",   None,       "Fragebogen Vorsorgevollmacht · Notar Stadler",             "Eckdaten für Vorsorgevollmacht, Patientenverfügung und Betreuungsverfügung."),
+    ("fragebogen",    None,                  "Fragebögen · Notar Stadler",                                "Alle Fragebögen zur Terminvorbereitung: Kaufvertrag, Wohnung, Grundschuld, Übergabe, Testament, Erbschein, Vollmacht, Ehevertrag, Scheidung, GmbH, Anteile, Handelsregister, Verein, Beglaubigung."),
+] + [
+    (f"fragebogen-{x['slug']}", None, f"Fragebogen {x['title']} · Notar Stadler", x["lead"]) for x in F.FORMS
+] + [
     ("kosten",        "Kosten",              "Kosten · Notar Stadler, Bad Säckingen",                    "Notarkosten sind gesetzlich festgelegt (GNotKG) und bei jedem Notar gleich. Beispiele und Erklärung."),
     ("glossar",       None,                  "Glossar · Notar Stadler",                                  "Begriffe aus dem Notariat verständlich erklärt: Beurkundung, Beglaubigung, Auflassung, Pflichtteil, Grundschuld und mehr."),
     ("kanzlei",       "Kanzlei",             "Kanzlei · Notar Stadler, Bad Säckingen",                   "Notar Kai-Christoph Stadler, Amtssitz Bad Säckingen. Räume, Anfahrt, Öffnungszeiten, Zugang."),
@@ -129,7 +132,7 @@ def footer(mode):
     </div>
     <div>
       <p class="f-title">Seiten</p>
-      <p><a href="{h('leistungen')}">Leistungen</a><br><a href="{h('ablauf')}">Ablauf &amp; Unterlagen</a><br><a href="{h('kosten')}">Kosten</a><br><a href="{h('glossar')}">Glossar</a><br><a href="{h('kanzlei')}">Kanzlei</a><br><a href="{h('kontakt')}">Kontakt</a></p>
+      <p><a href="{h('leistungen')}">Leistungen</a><br><a href="{h('ablauf')}">Ablauf &amp; Unterlagen</a><br><a href="{h('fragebogen')}">Fragebögen</a><br><a href="{h('kosten')}">Kosten</a><br><a href="{h('glossar')}">Glossar</a><br><a href="{h('kanzlei')}">Kanzlei</a><br><a href="{h('kontakt')}">Kontakt</a></p>
     </div>
     <div>
       <p class="f-title">Rechtliches</p>
@@ -165,8 +168,117 @@ def inline_img(m):
         src = f"img/{name}"
     return f'<img src="{src}" alt="{html.escape(alt)}" loading="lazy"{style}>'
 
+def render_field(fl, form_slug):
+    fid = f"{form_slug}-{fl['name']}"
+    name = fl["name"]; typ = fl["type"]; req = " required" if fl.get("required") else ""
+    label = html.escape(fl["label"]) + (" <small>*</small>" if fl.get("required") else "")
+    hint = f'<small>{html.escape(fl["hint"])}</small>' if fl.get("hint") else ""
+    ph = f' placeholder="{html.escape(fl["placeholder"])}"' if fl.get("placeholder") else ""
+    if typ == "checkbox":
+        return f'<label class="chk" for="{fid}"><input id="{fid}" name="{name}" type="checkbox" value="ja"><span>{label}</span></label>'
+    if typ == "select":
+        opts = "".join(f"<option>{html.escape(o)}</option>" for o in fl["options"])
+        ctl = f'<select id="{fid}" name="{name}"{req}>{opts}</select>'
+    elif typ == "textarea":
+        ctl = f'<textarea id="{fid}" name="{name}"{req}{ph}></textarea>'
+    else:
+        extra = ' inputmode="decimal" step="any" min="0"' if typ == "number" else ""
+        ctl = f'<input id="{fid}" name="{name}" type="{typ}"{extra}{req}{ph}>'
+    return f'<label for="{fid}">{label} {hint}{ctl}</label>'
+
+def render_form(x, mode):
+    """Fragebogen-Seite aus dem Schema. dist: POST an /api/formular/<slug>; preview: ohne Server."""
+    slug = x["slug"]
+    out = []
+    for sec in x["sections"]:
+        note = f'<p class="hint">{html.escape(sec["note"])}</p>' if sec.get("note") else ""
+        rows, row = [], []
+        for fl in sec["fields"]:
+            if fl["w"] == 2 or fl["type"] == "checkbox":
+                if row: rows.append(row); row = []
+                rows.append([fl])
+            else:
+                row.append(fl)
+                if len(row) == 2: rows.append(row); row = []
+        if row: rows.append(row)
+        body = []
+        checks = [r[0] for r in rows if len(r) == 1 and r[0]["type"] == "checkbox"]
+        for r in rows:
+            if len(r) == 1 and r[0]["type"] == "checkbox":
+                continue
+            if len(r) == 1:
+                body.append(render_field(r[0], slug))
+            else:
+                body.append('<div class="row">' + "".join(render_field(fl, slug) for fl in r) + "</div>")
+        if checks:
+            body.append('<div class="checks">' + "".join(render_field(fl, slug) for fl in checks) + "</div>")
+        out.append(f'<fieldset><legend>{html.escape(sec["title"])}</legend>{note}' + "\n".join(body) + "</fieldset>")
+    action = "#" if mode == "preview" else f"/api/formular/{slug}"
+    ds = "#datenschutz" if mode == "preview" else "datenschutz.html"
+    ueb = "#fragebogen" if mode == "preview" else "fragebogen.html"
+    hint = ('Musterseite: Der Versand ist in der Vorschau nicht angebunden.' if mode == "preview"
+            else 'Ihre Angaben werden verschlüsselt übertragen und verschlüsselt gespeichert. Nur das Notariat kann sie lesen. Das Notariat erhält eine Nachricht, dass ein Fragebogen eingegangen ist, ohne Ihre Daten.')
+    return f"""<section class="page-hero"><div class="wrap">
+  <div>
+  <p class="crumbs"><a href="{ueb}">Fragebögen</a> · {html.escape(x["gruppe"])}</p>
+  <h1>Fragebogen {html.escape(x["title"])}</h1>
+  <p class="lead">{html.escape(x["lead"])}</p>
+  </div>
+  <div class="art">{{{{svg:{x["icon"]}}}}}</div>
+</div></section>
+<section><div class="wrap split">
+  <form class="contact fragebogen" action="{action}" method="post" id="fb-{slug}" accept-charset="utf-8">
+  {"".join(out)}
+  <div class="hp" aria-hidden="true"><label for="{slug}-firma_web">Firma Web<input id="{slug}-firma_web" name="firma_web" type="text" tabindex="-1" autocomplete="off"></label></div>
+  <label for="{slug}-ds" class="chk"><input id="{slug}-ds" name="datenschutz" type="checkbox" value="ja" required><span>Die Angaben dienen der Vorbereitung eines Entwurfs und werden nur dafür verwendet. <a href="{ds}">Datenschutzhinweise</a> <small>*</small></span></label>
+  <div class="actions">
+    <button class="btn btn-primary" type="submit">An das Notariat senden</button>
+    <button class="btn" type="button" onclick="window.print()">Ausdrucken und mitbringen</button>
+  </div>
+  <p class="hint">* Pflichtfeld. {hint}</p>
+  </form>
+  <aside>
+    <div class="box">
+      <h3>So geht es weiter</h3>
+      <ol>
+        <li>Sie füllen aus, was Sie wissen. Lücken sind in Ordnung.</li>
+        <li>Das Büro prüft die Angaben und ruft bei Unklarheiten zurück.</li>
+        <li>Sie erhalten den Entwurf zum Lesen, dann wird ein Termin vereinbart.</li>
+      </ol>
+    </div>
+    <div class="box" style="margin-top:18px">
+      <h3>Wichtig</h3>
+      <p>Die Angaben werden im Entwurf verwendet. Bitte prüfen Sie Namen, Geburtsdaten und Beträge.</p>
+      <p style="margin:0">Bringen Sie zum Termin die <a href="{"#ablauf" if mode == "preview" else "ablauf.html"}">Unterlagen aus der Checkliste</a> mit.</p>
+    </div>
+  </aside>
+</div></section>"""
+
+def render_form_index(mode):
+    def h(s): return f"#{s}" if mode == "preview" else f"{s}.html"
+    groups = {}
+    for x in F.FORMS: groups.setdefault(x["gruppe"], []).append(x)
+    parts = []
+    for g, items in groups.items():
+        cards = "".join(f'<a class="card" href="{h("fragebogen-"+x["slug"])}"><span class="icon">{{{{svg:{x["icon"]}}}}}</span><h3>{html.escape(x["title"])}</h3><p>{html.escape(x["lead"].split(". ")[0])}.</p><span class="more">Fragebogen öffnen</span></a>' for x in items)
+        parts.append(f'<section><div class="wrap"><div class="section-head"><h2>{html.escape(g)}</h2></div><div class="grid">{cards}</div></div></section>')
+    return f"""<section class="page-hero"><div class="wrap">
+  <div>
+  <p class="eyebrow">Fragebögen</p>
+  <h1>Fragebögen zur Terminvorbereitung</h1>
+  <p class="lead">Sie tragen die Eckdaten ein, das Notariat erstellt den Entwurf. Ausfüllen am Bildschirm oder ausdrucken. Ihre Angaben werden verschlüsselt an das Notariat übermittelt und dort gespeichert, ohne Dienst eines Drittanbieters. Einen Termin vereinbaren Sie telefonisch.</p>
+  </div>
+  <div class="art">{{{{svg:feder}}}}</div>
+</div></section>
+{"".join(parts)}"""
+
 def read_page(slug):
-    body = (SRC / "pages" / f"{slug}.html").read_text(encoding="utf-8")
+    if slug == "fragebogen":
+        body = render_form_index(_MODE["mode"])
+    elif slug.startswith("fragebogen-"):
+        body = render_form(F.BY_SLUG[slug[len("fragebogen-"):]], _MODE["mode"])
+    else:
+        body = (SRC / "pages" / f"{slug}.html").read_text(encoding="utf-8")
     body = SVG_RE.sub(inline_svg, body)
     return IMG_RE.sub(inline_img, body)
 
@@ -187,6 +299,7 @@ def build_dist():
     today = datetime.date.today().isoformat()
     urls = []
     for slug, label, title, desc in PAGES:
+        _MODE["mode"] = "dist"
         body = read_page(slug)
         canonical = f"{DOMAIN}/" if slug == "index" else f"{DOMAIN}/{slug}.html"
         head = HEAD.format(title=html.escape(title), desc=html.escape(desc), canonical=canonical)
@@ -219,6 +332,7 @@ def build_preview():
     css = (SRC / "style.css").read_text(encoding="utf-8")
     sections = []
     for slug, label, title, desc in PAGES:
+        _MODE["mode"] = "preview"
         body = to_preview_links(read_page(slug))
         sections.append(f'<section class="pv-page page-{slug}" id="{slug}" data-title="{html.escape(title)}" hidden>\n{siblings(slug, "preview")}{body}\n</section>')
     first = PAGES[0]

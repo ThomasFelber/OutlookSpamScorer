@@ -1,0 +1,17 @@
+[Unit]
+Description=Notariat Stadler Website und Fragebogen-Annahme
+After=network.target
+
+[Service]
+User=notariat
+WorkingDirectory=/srv/notariat/server
+EnvironmentFile=/srv/notariat/server/config.env
+ExecStart=/usr/bin/python3 /srv/notariat/server/server.py
+Restart=always
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/srv/notariat/daten
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

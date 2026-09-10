@@ -211,6 +211,8 @@ form.contact .row{display:grid; gap:16px; grid-template-columns:repeat(auto-fit,
 form.contact small{font-weight:400; color:var(--muted)}
 
 /* Fragebögen (eigene Formulare, kein Drittanbieter) */
+.hp{position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden}
+.fragebogen label small{font-weight:400; color:var(--muted)}
 .fragebogen fieldset{border:1px solid var(--rule); padding:16px 18px 6px; margin:0; display:grid; gap:14px; background:var(--paper-2)}
 .fragebogen fieldset.sub{border:0; padding:0 0 6px; background:none; margin-top:-8px}
 .fragebogen legend{font-family:Georgia, "Times New Roman", "Noto Serif", serif; font-size:20px; padding:0 6px}

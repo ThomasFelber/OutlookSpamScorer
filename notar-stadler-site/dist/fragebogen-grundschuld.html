@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fragebogen Grundschuldbestellung · Notar Stadler</title>
+<meta name="description" content="Für die Bestellung einer Grundschuld zugunsten einer Bank, etwa zur Finanzierung eines Kaufs oder Umbaus. Das Grundschuldformular der Bank bitte zum Termin mitbringen.">
+<link rel="canonical" href="https://notar-stadler.de/fragebogen-grundschuld.html">
+<meta property="og:title" content="Fragebogen Grundschuldbestellung · Notar Stadler">
+<meta property="og:description" content="Für die Bestellung einer Grundschuld zugunsten einer Bank, etwa zur Finanzierung eines Kaufs oder Umbaus. Das Grundschuldformular der Bank bitte zum Termin mitbringen.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="de_DE">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="page-fragebogen-grundschuld">
+<div class="shell">
+<a class="skip" href="#inhalt">Zum Inhalt springen</a>
+<div class="topbar"><div class="wrap">
+  <span>Scheffelstraße 23 · 79713 Bad Säckingen</span>
+  <span>Mo–Do 8–12 und 13–17 Uhr · Fr 8–12 Uhr</span>
+  <a href="tel:+497761926170">07761 92617-0</a>
+</div></div>
+<header class="site-header"><div class="wrap">
+  <a class="brand" href="index.html">
+    <span class="brand-mark"><img src="img/wappen-bw.png" alt="Landeswappen Baden-Württemberg" loading="lazy"></span>
+    <span class="brand-text"><strong>Notar Kai-Christoph Stadler</strong><span>Bad Säckingen</span></span>
+  </a>
+  <nav aria-label="Hauptnavigation"><ul>
+<li><a href="index.html" data-slug="index">Start</a></li>
+<li><a href="leistungen.html" data-slug="leistungen">Leistungen</a></li>
+<li><a href="ablauf.html" data-slug="ablauf">Ablauf & Unterlagen</a></li>
+<li><a href="kosten.html" data-slug="kosten">Kosten</a></li>
+<li><a href="kanzlei.html" data-slug="kanzlei">Kanzlei</a></li>
+<li><a href="kontakt.html" data-slug="kontakt">Kontakt</a></li>
+  </ul></nav>
+  <a class="btn btn-primary btn-header" href="kontakt.html">Termin anfragen</a>
+</div></header>
+<main id="inhalt">
+<section class="page-hero"><div class="wrap">
+  <div>
+  <p class="crumbs"><a href="fragebogen.html">Fragebögen</a> · Immobilien</p>
+  <h1>Fragebogen Grundschuldbestellung</h1>
+  <p class="lead">Für die Bestellung einer Grundschuld zugunsten einer Bank, etwa zur Finanzierung eines Kaufs oder Umbaus. Das Grundschuldformular der Bank bitte zum Termin mitbringen.</p>
+  </div>
+  <div class="art"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M10 32 L32 12 L54 32"/><path d="M16 28 V52 H48 V28"/><path d="M28 52 V38 H36 V52"/><path d="M42 12 H48 V20"/></svg></div>
+</div></section>
+<section><div class="wrap split">
+  <form class="contact fragebogen" action="/api/formular/grundschuld" method="post" id="fb-grundschuld" accept-charset="utf-8">
+  <fieldset><legend>Eigentümer</legend><p class="hint">Alle im Grundbuch eingetragenen Eigentümer.</p><div class="row"><label for="grundschuld-eg_name">Vor- und Nachname <small>*</small> <input id="grundschuld-eg_name" name="eg_name" type="text" required></label><label for="grundschuld-eg_geb">Geburtsdatum <input id="grundschuld-eg_geb" name="eg_geb" type="date"></label></div>
+<label for="grundschuld-eg_adr">Anschrift <input id="grundschuld-eg_adr" name="eg_adr" type="text"></label>
+<div class="row"><label for="grundschuld-eg_tel">Telefon <input id="grundschuld-eg_tel" name="eg_tel" type="tel"></label><label for="grundschuld-eg_mail">E-Mail <input id="grundschuld-eg_mail" name="eg_mail" type="email"></label></div>
+<label for="grundschuld-eg_fam">Familienstand <select id="grundschuld-eg_fam" name="eg_fam"><option>ledig</option><option>verheiratet</option><option>geschieden</option><option>verwitwet</option><option>eingetragene Lebenspartnerschaft</option></select></label></fieldset><fieldset><legend>Objekt</legend><label for="grundschuld-ob_adr">Anschrift des Objekts <small>*</small> <input id="grundschuld-ob_adr" name="ob_adr" type="text" required></label>
+<label for="grundschuld-ob_gb">Grundbuch von, Blatt, Flurstück <small>falls bekannt</small><input id="grundschuld-ob_gb" name="ob_gb" type="text"></label>
+<label for="grundschuld-ob_last">Eingetragene Belastungen <small>Grundschulden, Wohnrechte, Wegerechte; falls bekannt</small><input id="grundschuld-ob_last" name="ob_last" type="text"></label></fieldset><fieldset><legend>Grundschuld</legend><label for="grundschuld-gs_bank">Bank mit Anschrift <small>*</small> <input id="grundschuld-gs_bank" name="gs_bank" type="text" required></label>
+<div class="row"><label for="grundschuld-gs_betrag">Grundschuldbetrag in Euro <small>*</small> <input id="grundschuld-gs_betrag" name="gs_betrag" type="number" inputmode="decimal" step="any" min="0" required></label><label for="grundschuld-gs_zins">Grundschuldzins in Prozent <small>steht im Bankformular, meist 12 bis 18</small><input id="grundschuld-gs_zins" name="gs_zins" type="number" inputmode="decimal" step="any" min="0"></label></div>
+<div class="row"><label for="grundschuld-gs_anlass">Anlass <select id="grundschuld-gs_anlass" name="gs_anlass"><option>Kauf</option><option>Neubau</option><option>Umbau, Sanierung</option><option>Umschuldung</option><option>Sonstiges</option></select></label><label for="grundschuld-gs_bearb">Ansprechperson bei der Bank <input id="grundschuld-gs_bearb" name="gs_bearb" type="text"></label></div>
+<label for="grundschuld-gs_frist">Gewünschter Termin bis <input id="grundschuld-gs_frist" name="gs_frist" type="date"></label></fieldset><fieldset><legend>Rückfragen</legend><div class="row"><label for="grundschuld-rf_name">Ansprechperson <small>*</small> <input id="grundschuld-rf_name" name="rf_name" type="text" required></label><label for="grundschuld-rf_tel">Telefon <small>*</small> <input id="grundschuld-rf_tel" name="rf_tel" type="tel" required></label></div>
+<label for="grundschuld-rf_zeit">Erreichbar <input id="grundschuld-rf_zeit" name="rf_zeit" type="text" placeholder="z. B. vormittags"></label>
+<label for="grundschuld-rf_bem">Besonderheiten, Wünsche, Fragen <textarea id="grundschuld-rf_bem" name="rf_bem"></textarea></label></fieldset>
+  <div class="hp" aria-hidden="true"><label for="grundschuld-firma_web">Firma Web<input id="grundschuld-firma_web" name="firma_web" type="text" tabindex="-1" autocomplete="off"></label></div>
+  <label for="grundschuld-ds" class="chk"><input id="grundschuld-ds" name="datenschutz" type="checkbox" value="ja" required><span>Die Angaben dienen der Vorbereitung eines Entwurfs und werden nur dafür verwendet. <a href="datenschutz.html">Datenschutzhinweise</a> <small>*</small></span></label>
+  <div class="actions">
+    <button class="btn btn-primary" type="submit">An das Notariat senden</button>
+    <button class="btn" type="button" onclick="window.print()">Ausdrucken und mitbringen</button>
+  </div>
+  <p class="hint">* Pflichtfeld. Ihre Angaben werden verschlüsselt übertragen und verschlüsselt gespeichert. Nur das Notariat kann sie lesen. Das Notariat erhält eine Nachricht, dass ein Fragebogen eingegangen ist, ohne Ihre Daten.</p>
+  </form>
+  <aside>
+    <div class="box">
+      <h3>So geht es weiter</h3>
+      <ol>
+        <li>Sie füllen aus, was Sie wissen. Lücken sind in Ordnung.</li>
+        <li>Das Büro prüft die Angaben und ruft bei Unklarheiten zurück.</li>
+        <li>Sie erhalten den Entwurf zum Lesen, dann wird ein Termin vereinbart.</li>
+      </ol>
+    </div>
+    <div class="box" style="margin-top:18px">
+      <h3>Wichtig</h3>
+      <p>Die Angaben werden im Entwurf verwendet. Bitte prüfen Sie Namen, Geburtsdaten und Beträge.</p>
+      <p style="margin:0">Bringen Sie zum Termin die <a href="ablauf.html">Unterlagen aus der Checkliste</a> mit.</p>
+    </div>
+  </aside>
+</div></section>
+</main>
+<footer class="site-footer"><div class="wrap">
+  <div class="cols">
+    <div>
+      <p class="f-title">Notar Kai-Christoph Stadler</p>
+      <p>Scheffelstraße 23<br>79713 Bad Säckingen</p>
+      <p><a href="tel:+497761926170">07761 92617-0</a><br><a href="mailto:info@notar-stadler.de">info@notar-stadler.de</a></p>
+    </div>
+    <div>
+      <p class="f-title">Öffnungszeiten</p>
+      <p>Montag bis Donnerstag<br>8–12 Uhr und 13–17 Uhr</p>
+      <p>Freitag<br>8–12 Uhr</p>
+      <p>Termine nach Vereinbarung.</p>
+    </div>
+    <div>
+      <p class="f-title">Seiten</p>
+      <p><a href="leistungen.html">Leistungen</a><br><a href="ablauf.html">Ablauf &amp; Unterlagen</a><br><a href="fragebogen.html">Fragebögen</a><br><a href="kosten.html">Kosten</a><br><a href="glossar.html">Glossar</a><br><a href="kanzlei.html">Kanzlei</a><br><a href="kontakt.html">Kontakt</a></p>
+    </div>
+    <div>
+      <p class="f-title">Rechtliches</p>
+      <p><a href="impressum.html">Impressum</a><br><a href="datenschutz.html">Datenschutz</a><br><a href="stellen.html">Offene Stellen</a></p>
+      <p><a href="https://www.notarkammer-baden-wuerttemberg.de/" rel="noopener">Notarkammer Baden-Württemberg</a><br><a href="https://www.bnotk.de/" rel="noopener">Bundesnotarkammer</a></p>
+    </div>
+  </div>
+  <p class="f-note">Der Notar übt ein öffentliches Amt aus. Er ist zur Unparteilichkeit und Verschwiegenheit verpflichtet. Die Gebühren sind gesetzlich festgelegt (GNotKG). Diese Seite setzt keine Cookies und bindet keine Dienste Dritter ein.</p>
+</div></footer>
+</div>
+</body>
+</html>
