@@ -59,6 +59,15 @@ strong{font-weight:600}
 .topbar a{color:inherit; font-weight:600; margin-left:auto}
 .topbar a.lang{margin-left:0; font-weight:400; border:1px solid rgba(255,255,255,.4); padding:0 8px; border-radius:2px}
 .site-header{border-bottom:1px solid var(--rule); background:var(--paper)}
+/* Desktop: Kopf mit Navigation bleibt beim Scrollen sichtbar; die Adressleiste darüber scrollt weg */
+@container shell (min-width:1000px){
+  .site-header{position:sticky; top:0; z-index:40; box-shadow:0 1px 0 var(--rule)}
+  .site-header .wrap{padding-block:10px}
+  .brand-text strong{font-size:18px}
+  .brand-mark{height:36px; width:26px}
+  section, .fragebogen fieldset, form.contact, #inhalt{scroll-margin-top:72px}
+}
+@media print{ .site-header{position:static} }
 .site-header .wrap{display:flex; align-items:center; flex-wrap:wrap; gap:12px 28px; padding-block:16px}
 .brand{display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--ink)}
 .brand-mark{width:30px; height:42px; flex:none; display:block}
@@ -255,7 +264,7 @@ form.contact.fragebogen{max-width:none}
 .shell{container:shell / inline-size}
 
 /* Vorschau-Modus */
-.pv-banner{background:var(--mark-soft); color:var(--mark); font-size:16px; text-align:center; padding:6px 12px; display:flex; flex-wrap:wrap; gap:6px 16px; justify-content:center; align-items:center; position:sticky; top:0; z-index:50}
+.pv-banner{background:var(--mark-soft); color:var(--mark); font-size:16px; text-align:center; padding:6px 12px; display:flex; flex-wrap:wrap; gap:6px 16px; justify-content:center; align-items:center}
 .pv-banner button{font:inherit; font-weight:600; color:var(--ink); background:var(--paper); border:1.5px solid var(--ink); border-radius:3px; padding:3px 10px; cursor:pointer}
 .pv-page{padding-block:0; border-top:0}
 .pv-page[hidden]{display:none}
