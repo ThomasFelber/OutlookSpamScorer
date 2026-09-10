@@ -23,6 +23,9 @@ PAGES = [
     ("unternehmen",   None,                  "Unternehmen und Gesellschaften · Notar Stadler",           "GmbH-Gründung, Geschäftsanteile, Handelsregister, Online-Beurkundung: notarielle Leistungen für Unternehmen."),
     ("beglaubigungen",None,                  "Beglaubigungen und Schweiz · Notar Stadler",               "Unterschriftsbeglaubigung, Abschriften, Apostille, Dokumente für die Schweiz und das Ausland."),
     ("ablauf",        "Ablauf & Unterlagen", "Ablauf und Unterlagen · Notar Stadler",                    "So läuft ein Termin beim Notar ab und was Sie mitbringen: Checklisten für Kauf, Testament, Vollmacht, Gründung."),
+    ("fragebogen-kaufvertrag", None,       "Fragebogen Kaufvertrag · Notar Stadler",                   "Eckdaten für den Entwurf eines Kaufvertrags: Verkäufer, Käufer, Objekt, Kaufpreis, Finanzierung, Übergabe."),
+    ("fragebogen-gmbh",        None,       "Fragebogen GmbH-Gründung · Notar Stadler",                 "Eckdaten für Gesellschaftsvertrag und Handelsregisteranmeldung: Firma, Sitz, Kapital, Gesellschafter, Geschäftsführung."),
+    ("fragebogen-vollmacht",   None,       "Fragebogen Vorsorgevollmacht · Notar Stadler",             "Eckdaten für Vorsorgevollmacht, Patientenverfügung und Betreuungsverfügung."),
     ("kosten",        "Kosten",              "Kosten · Notar Stadler, Bad Säckingen",                    "Notarkosten sind gesetzlich festgelegt (GNotKG) und bei jedem Notar gleich. Beispiele und Erklärung."),
     ("glossar",       None,                  "Glossar · Notar Stadler",                                  "Begriffe aus dem Notariat verständlich erklärt: Beurkundung, Beglaubigung, Auflassung, Pflichtteil, Grundschuld und mehr."),
     ("kanzlei",       "Kanzlei",             "Kanzlei · Notar Stadler, Bad Säckingen",                   "Notar Kai-Christoph Stadler, Amtssitz Bad Säckingen. Räume, Anfahrt, Öffnungszeiten, Zugang."),
@@ -225,7 +228,7 @@ def build_preview():
 <style>
 {css}
 </style>
-<div class="pv-banner"><span>Musterseite, Vorschau. Rot markierte Angaben werden vor Veröffentlichung ersetzt.</span><button type="button" id="pv-toggle" aria-pressed="false">Handy-Ansicht</button></div>
+<div class="pv-banner"><span><strong>Musterseite, nicht die Originalseite von notar-stadler.de.</strong> Entwurf eines neuen Auftritts. Farbig markierte Angaben werden vor Veröffentlichung ersetzt.</span><button type="button" id="pv-toggle" aria-pressed="false">Handy-Ansicht</button></div>
 <div class="shell">
 {header("index", "preview")}
 <main id="inhalt">

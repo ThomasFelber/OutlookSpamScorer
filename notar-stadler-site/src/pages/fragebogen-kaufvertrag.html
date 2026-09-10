@@ -1,0 +1,94 @@
+<section class="page-hero"><div class="wrap">
+  <div>
+  <p class="crumbs"><a href="ablauf.html">Ablauf &amp; Unterlagen</a> · Fragebogen</p>
+  <h1>Fragebogen Kaufvertrag</h1>
+  <p class="lead">Für den Entwurf eines Kaufvertrags über ein Haus, eine Wohnung oder ein Grundstück. Ausfüllen kann der Verkäufer, der Käufer oder der Makler. Dauer etwa zehn Minuten.</p>
+  </div>
+  <div class="art">{{svg:feder}}</div>
+</div></section>
+<section><div class="wrap split">
+  <form class="contact fragebogen" action="#" method="post" id="fb-kaufvertrag">
+  <fieldset>
+    <legend>Verkäufer</legend><p class="hint">Bei Ehegatten oder mehreren Eigentümern bitte alle nennen; weitere Personen unter Besonderheiten.</p>
+    <div class="row">
+      <label for="vk-name">Vor- und Nachname<input id="vk-name" name="vk-name" type="text" autocomplete="off"></label>
+      <label for="vk-geb">Geburtsdatum<input id="vk-geb" name="vk-geb" type="date"></label>
+    </div>
+    <label for="vk-adr">Anschrift<input id="vk-adr" name="vk-adr" type="text"></label>
+    <div class="row">
+      <label for="vk-tel">Telefon<input id="vk-tel" name="vk-tel" type="tel"></label>
+      <label for="vk-mail">E-Mail<input id="vk-mail" name="vk-mail" type="email"></label>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Käufer</legend><p class="hint">Bei Erwerb zu mehreren: alle Käufer und das gewünschte Verhältnis, etwa je zur Hälfte.</p>
+    <div class="row">
+      <label for="kf-name">Vor- und Nachname<input id="kf-name" name="kf-name" type="text" autocomplete="off"></label>
+      <label for="kf-geb">Geburtsdatum<input id="kf-geb" name="kf-geb" type="date"></label>
+    </div>
+    <label for="kf-adr">Anschrift<input id="kf-adr" name="kf-adr" type="text"></label>
+    <div class="row">
+      <label for="kf-tel">Telefon<input id="kf-tel" name="kf-tel" type="tel"></label>
+      <label for="kf-mail">E-Mail<input id="kf-mail" name="kf-mail" type="email"></label>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Objekt</legend>
+    <label for="ob-adr">Anschrift des Objekts<input id="ob-adr" name="ob-adr" type="text"></label>
+    <div class="row">
+      <label for="ob-art">Art<select id="ob-art" name="ob-art"><option>Einfamilienhaus</option><option>Eigentumswohnung</option><option>Mehrfamilienhaus</option><option>Unbebautes Grundstück</option><option>Gewerbe</option></select></label>
+      <label for="ob-gb">Grundbuch von, Blatt, Flurstück <small>(falls bekannt)</small><input id="ob-gb" name="ob-gb" type="text"></label>
+    </div>
+    <div class="row">
+      <label for="ob-miet">Vermietet?<select id="ob-miet" name="ob-miet"><option>Nein</option><option>Ja, Mietvertrag geht über</option><option>Ja, wird vor Übergabe beendet</option></select></label>
+      <label for="ob-inv">Mitverkauftes Inventar <small>(Küche, Möbel, Wert)</small><input id="ob-inv" name="ob-inv" type="text"></label>
+    </div>
+    <label for="ob-last">Eingetragene Belastungen <small>(Grundschulden, Wohnrechte, Wegerechte)</small><input id="ob-last" name="ob-last" type="text"></label>
+  </fieldset>
+  <fieldset>
+    <legend>Kaufpreis und Zahlung</legend>
+    <div class="row">
+      <label for="kp-betrag">Kaufpreis in Euro<input id="kp-betrag" name="kp-betrag" type="text" inputmode="decimal"></label>
+      <label for="kp-inv">Davon für Inventar<input id="kp-inv" name="kp-inv" type="text" inputmode="decimal"></label>
+    </div>
+    <div class="row">
+      <label for="kp-fin">Finanzierung<select id="kp-fin" name="kp-fin"><option>Eigenmittel</option><option>Bankdarlehen, Grundschuld nötig</option><option>Teils, teils</option></select></label>
+      <label for="kp-bank">Bank und Höhe der Grundschuld<input id="kp-bank" name="kp-bank" type="text"></label>
+    </div>
+    <div class="row">
+      <label for="kp-ueb">Gewünschte Übergabe<input id="kp-ueb" name="kp-ueb" type="date"></label>
+      <label for="kp-makler">Makler beteiligt?<input id="kp-makler" name="kp-makler" type="text" placeholder="Name, oder: nein"></label>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Rückfragen</legend>
+    <label for="rf-name">Ansprechperson<input id="rf-name" name="rf-name" type="text"></label>
+    <div class="row">
+      <label for="rf-tel">Telefon<input id="rf-tel" name="rf-tel" type="tel"></label>
+      <label for="rf-zeit">Erreichbar<input id="rf-zeit" name="rf-zeit" type="text" placeholder="z. B. vormittags"></label>
+    </div>
+    <label for="rf-bem">Besonderheiten, Fragen<textarea id="rf-bem" name="rf-bem"></textarea></label>
+  </fieldset>
+  <label for="fb-ds" class="chk"><input id="fb-ds" name="datenschutz" type="checkbox" required><span>Die Angaben dienen der Vorbereitung eines Entwurfs und werden nur dafür verwendet. <a href="datenschutz.html">Datenschutzhinweise</a></span></label>
+  <div class="actions">
+    <button class="btn btn-primary" type="submit">An das Notariat senden</button>
+    <button class="btn" type="button" onclick="window.print()">Ausdrucken und mitbringen</button>
+  </div>
+  <p class="hint">Musterseite: Der Versand ist noch nicht angebunden. Im Betrieb geht der Fragebogen verschlüsselt an das Notariat, ohne Dienst eines Drittanbieters.</p>
+  </form>
+  <aside>
+    <div class="box">
+      <h3>So geht es weiter</h3>
+      <ol>
+        <li>Sie füllen aus, was Sie wissen. Lücken sind in Ordnung.</li>
+        <li>Das Büro prüft die Angaben und ruft bei Unklarheiten zurück.</li>
+        <li>Sie erhalten den Entwurf zum Lesen, dann wird ein Termin vereinbart.</li>
+      </ol>
+    </div>
+    <div class="box" style="margin-top:18px">
+      <h3>Wichtig</h3>
+      <p>Die Angaben werden im Entwurf verwendet. Bitte prüfen Sie Namen, Geburtsdaten und Beträge auf Richtigkeit.</p>
+      <p style="margin:0">Bringen Sie zum Termin die <a href="ablauf.html">Unterlagen aus der Checkliste</a> mit.</p>
+    </div>
+  </aside>
+</div></section>

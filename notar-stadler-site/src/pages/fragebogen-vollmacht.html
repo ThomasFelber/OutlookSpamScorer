@@ -1,0 +1,102 @@
+<section class="page-hero"><div class="wrap">
+  <div>
+  <p class="crumbs"><a href="ablauf.html">Ablauf &amp; Unterlagen</a> · Fragebogen</p>
+  <h1>Fragebogen Vorsorgevollmacht</h1>
+  <p class="lead">Für den Entwurf von Vorsorgevollmacht, Patientenverfügung und Betreuungsverfügung. Für Ehegatten bitte je ein Bogen.</p>
+  </div>
+  <div class="art">{{svg:feder}}</div>
+</div></section>
+<section><div class="wrap split">
+  <form class="contact fragebogen" action="#" method="post" id="fb-vollmacht">
+  <fieldset>
+    <legend>Vollmachtgeber <small>(die Person, die die Vollmacht erteilt)</small></legend>
+    <div class="row">
+      <label for="vg-name">Vor- und Nachname<input id="vg-name" name="vg-name" type="text" autocomplete="off"></label>
+      <label for="vg-geb">Geburtsdatum<input id="vg-geb" name="vg-geb" type="date"></label>
+    </div>
+    <label for="vg-adr">Anschrift<input id="vg-adr" name="vg-adr" type="text"></label>
+    <div class="row">
+      <label for="vg-tel">Telefon<input id="vg-tel" name="vg-tel" type="tel"></label>
+      <label for="vg-mail">E-Mail<input id="vg-mail" name="vg-mail" type="email"></label>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Bevollmächtigte Person 1</legend>
+    <div class="row">
+      <label for="b1-name">Vor- und Nachname<input id="b1-name" name="b1-name" type="text" autocomplete="off"></label>
+      <label for="b1-geb">Geburtsdatum<input id="b1-geb" name="b1-geb" type="date"></label>
+    </div>
+    <label for="b1-adr">Anschrift<input id="b1-adr" name="b1-adr" type="text"></label>
+    <div class="row">
+      <label for="b1-tel">Telefon<input id="b1-tel" name="b1-tel" type="tel"></label>
+      <label for="b1-mail">E-Mail<input id="b1-mail" name="b1-mail" type="email"></label>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Bevollmächtigte Person 2 <small>(Ersatz oder gemeinsam)</small></legend>
+    <div class="row">
+      <label for="b2-name">Vor- und Nachname<input id="b2-name" name="b2-name" type="text" autocomplete="off"></label>
+      <label for="b2-geb">Geburtsdatum<input id="b2-geb" name="b2-geb" type="date"></label>
+    </div>
+    <label for="b2-adr">Anschrift<input id="b2-adr" name="b2-adr" type="text"></label>
+    <div class="row">
+      <label for="b2-tel">Telefon<input id="b2-tel" name="b2-tel" type="tel"></label>
+      <label for="b2-mail">E-Mail<input id="b2-mail" name="b2-mail" type="email"></label>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Ausgestaltung</legend>
+    <div class="row">
+      <label for="au-art">Handeln die Bevollmächtigten<select id="au-art" name="au-art"><option>Jeder allein</option><option>Nur gemeinsam</option><option>Person 2 nur, wenn Person 1 verhindert</option></select></label>
+      <label for="au-ab">Gilt die Vollmacht<select id="au-ab" name="au-ab"><option>Sofort, mit interner Absprache</option><option>Bitte erklären</option></select></label>
+    </div>
+    <fieldset class="sub">
+      <legend>Bereiche</legend>
+      <div class="checks">
+        <label class="chk"><input type="checkbox" name="ber-verm" id="ber-verm" checked><span>Vermögen, Bank, Verträge</span></label>
+        <label class="chk"><input type="checkbox" name="ber-immo" id="ber-immo" checked><span>Immobilien, Grundbuch</span></label>
+        <label class="chk"><input type="checkbox" name="ber-ges" id="ber-ges" checked><span>Gesundheit, Ärzte, Pflege</span></label>
+        <label class="chk"><input type="checkbox" name="ber-auf" id="ber-auf" checked><span>Aufenthalt, Heim, Wohnung</span></label>
+        <label class="chk"><input type="checkbox" name="ber-post" id="ber-post" checked><span>Post, Behörden, Gerichte</span></label>
+        <label class="chk"><input type="checkbox" name="ber-dig" id="ber-dig"><span>Digitales, Konten im Internet</span></label>
+      </div>
+    </fieldset>
+    <div class="row">
+      <label for="au-pv">Patientenverfügung<select id="au-pv" name="au-pv"><option>Ja, mit beurkunden</option><option>Liegt bereits vor</option><option>Nein</option></select></label>
+      <label for="au-bv">Betreuungsverfügung<select id="au-bv" name="au-bv"><option>Ja, gleiche Personen</option><option>Ja, andere Person</option><option>Nein</option></select></label>
+    </div>
+    <label for="au-reg" class="chk"><input id="au-reg" name="au-reg" type="checkbox" checked><span>Eintragung im Zentralen Vorsorgeregister der Bundesnotarkammer gewünscht</span></label>
+    <label for="au-immo">Immobilien und größere Vermögenswerte <small>(kurz, für den Geschäftswert)</small><input id="au-immo" name="au-immo" type="text"></label>
+  </fieldset>
+  <fieldset>
+    <legend>Rückfragen</legend>
+    <label for="vo-rf-name">Ansprechperson<input id="vo-rf-name" name="rf-name" type="text"></label>
+    <div class="row">
+      <label for="vo-rf-tel">Telefon<input id="vo-rf-tel" name="rf-tel" type="tel"></label>
+      <label for="vo-rf-zeit">Erreichbar<input id="vo-rf-zeit" name="rf-zeit" type="text" placeholder="z. B. vormittags"></label>
+    </div>
+    <label for="vo-rf-bem">Besonderheiten, Fragen<textarea id="vo-rf-bem" name="rf-bem"></textarea></label>
+  </fieldset>
+  <label for="vo-fb-ds" class="chk"><input id="vo-fb-ds" name="datenschutz" type="checkbox" required><span>Die Angaben dienen der Vorbereitung eines Entwurfs und werden nur dafür verwendet. <a href="datenschutz.html">Datenschutzhinweise</a></span></label>
+  <div class="actions">
+    <button class="btn btn-primary" type="submit">An das Notariat senden</button>
+    <button class="btn" type="button" onclick="window.print()">Ausdrucken und mitbringen</button>
+  </div>
+  <p class="hint">Musterseite: Der Versand ist noch nicht angebunden. Im Betrieb geht der Fragebogen verschlüsselt an das Notariat, ohne Dienst eines Drittanbieters.</p>
+  </form>
+  <aside>
+    <div class="box">
+      <h3>So geht es weiter</h3>
+      <ol>
+        <li>Sie füllen aus, was Sie wissen. Lücken sind in Ordnung.</li>
+        <li>Das Büro prüft die Angaben und ruft bei Unklarheiten zurück.</li>
+        <li>Sie erhalten den Entwurf zum Lesen, dann wird ein Termin vereinbart.</li>
+      </ol>
+    </div>
+    <div class="box" style="margin-top:18px">
+      <h3>Wichtig</h3>
+      <p>Die Angaben werden im Entwurf verwendet. Bitte prüfen Sie Namen, Geburtsdaten und Beträge auf Richtigkeit.</p>
+      <p style="margin:0">Bringen Sie zum Termin die <a href="ablauf.html">Unterlagen aus der Checkliste</a> mit.</p>
+    </div>
+  </aside>
+</div></section>

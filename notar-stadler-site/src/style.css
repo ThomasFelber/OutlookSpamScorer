@@ -187,6 +187,26 @@ form.contact textarea{min-height:140px}
 form.contact .row{display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))}
 form.contact small{font-weight:400; color:var(--muted)}
 
+/* Fragebögen (eigene Formulare, kein Drittanbieter) */
+.fragebogen fieldset{border:1px solid var(--rule); padding:16px 18px 6px; margin:0; display:grid; gap:14px; background:var(--paper-2)}
+.fragebogen fieldset.sub{border:0; padding:0 0 6px; background:none; margin-top:-8px}
+.fragebogen legend{font-family:Georgia, "Times New Roman", "Noto Serif", serif; font-size:20px; padding:0 6px}
+.fragebogen .hint{font-size:16px; color:var(--muted); margin:0}
+.fragebogen .chk{display:flex; gap:10px; align-items:flex-start; font-weight:400}
+.fragebogen .chk input{width:auto; margin-top:6px}
+.fragebogen .checks{display:grid; gap:8px; grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}
+.fragebogen .actions{display:flex; flex-wrap:wrap; gap:12px}
+.fragebogen button{font:inherit; cursor:pointer}
+form.contact.fragebogen{max-width:none}
+@media print{
+  .topbar, .site-header, .site-footer, .siblings, .pv-banner, .fragebogen .actions, .fragebogen .hint, aside{display:none !important}
+  body{background:#fff; color:#000; font-size:12pt}
+  .page-hero{border:0; padding:0}
+  .fragebogen fieldset{background:none; break-inside:avoid; border-color:#999}
+  .fragebogen input, .fragebogen select, .fragebogen textarea{border:0; border-bottom:1px solid #999; border-radius:0; background:none; min-height:28px}
+  .split{grid-template-columns:1fr}
+}
+
 /* Fuß */
 .site-footer{border-top:2px solid var(--ink); margin-top:40px; padding-block:40px 32px; font-size:16px}
 .site-footer .cols{display:grid; gap:28px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
