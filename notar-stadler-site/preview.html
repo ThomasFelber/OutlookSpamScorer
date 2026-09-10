@@ -1,0 +1,928 @@
+<title>Notar Kai-Christoph Stadler · Bad Säckingen</title>
+<meta name="description" content="Notar in Bad Säckingen: Beurkundungen und Beratung bei Immobilien, Erbe, Vorsorge, Familie und Unternehmen. Scheffelstraße 23, Telefon 07761 92617-0.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+/* Notariat Stadler – Musterseite. Tokens zuerst, alles andere leitet sich daraus ab. */
+:root{
+  --paper:#F4F5F2;
+  --paper-2:#EBEEE8;
+  --ink:#19222E;
+  --ink-2:#3A4550;
+  --muted:#5C6673;
+  --rule:#D3D8D1;
+  --seal:#7B2D2D;
+  --seal-soft:#F0E2E1;
+  --link:#2B4A6B;
+  --focus:#B5541F;
+  --max:1120px;
+  --measure:68ch;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#141A21; --paper-2:#1C232C; --ink:#E7E9E4; --ink-2:#C6CCC9; --muted:#A0A9B1;
+    --rule:#2F3842; --seal:#D18E8E; --seal-soft:#2B1E1E; --link:#9BB8D6; --focus:#E4A26F;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141A21; --paper-2:#1C232C; --ink:#E7E9E4; --ink-2:#C6CCC9; --muted:#A0A9B1;
+  --rule:#2F3842; --seal:#D18E8E; --seal-soft:#2B1E1E; --link:#9BB8D6; --focus:#E4A26F;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Source Sans 3", system-ui, "Segoe UI", Roboto, sans-serif;
+  font-size:18px; line-height:1.6;
+}
+.wrap{max-width:var(--max); margin:0 auto; padding-inline:20px}
+a{color:var(--link); text-underline-offset:3px}
+a:hover{color:var(--seal)}
+:focus-visible{outline:3px solid var(--focus); outline-offset:3px}
+.skip{position:absolute; left:-999px; top:8px; background:var(--ink); color:var(--paper); padding:8px 12px; z-index:100}
+.skip:focus{left:8px}
+
+h1,h2,h3{font-family:"Libre Caslon Text", Georgia, "Times New Roman", serif; font-weight:400; line-height:1.2; text-wrap:balance; margin:0 0 .5em}
+h1{font-size:clamp(30px,4.8vw,44px)}
+h2{font-size:clamp(24px,3.2vw,32px); margin-top:0}
+h3{font-size:22px}
+p{margin:0 0 1em}
+ul,ol{margin:0 0 1em; padding-left:1.3em}
+li{margin-bottom:.4em}
+strong{font-weight:600}
+.lead{font-size:21px; color:var(--ink-2); max-width:var(--measure)}
+.prose{max-width:var(--measure)}
+.eyebrow{font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 10px}
+.ph{color:var(--seal); background:var(--seal-soft); padding:0 4px; border-radius:2px; font-style:normal}
+
+/* Kopf */
+.topbar{background:var(--ink); color:var(--paper); font-size:14px}
+.topbar .wrap{display:flex; flex-wrap:wrap; gap:4px 24px; padding-block:6px}
+.topbar a{color:inherit; font-weight:600; margin-left:auto}
+.site-header{border-bottom:1px solid var(--rule); background:var(--paper)}
+.site-header .wrap{display:flex; align-items:center; flex-wrap:wrap; gap:12px 28px; padding-block:16px}
+.brand{display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--ink)}
+.brand-seal{width:34px; height:34px; border-radius:50%; border:2px solid var(--seal); position:relative; flex:none}
+.brand-seal::after{content:""; position:absolute; inset:6px; border-radius:50%; border:1px solid var(--seal)}
+.brand-text{display:flex; flex-direction:column; line-height:1.15}
+.brand-text strong{font-family:"Libre Caslon Text", Georgia, serif; font-weight:400; font-size:20px}
+.brand-text span{font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.site-header nav{margin-left:auto}
+.site-header nav ul{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:2px 18px}
+.site-header nav a{text-decoration:none; color:var(--ink-2); font-weight:600; font-size:16px; padding:6px 0; border-bottom:2px solid transparent}
+.site-header nav a:hover, .site-header nav a.active{color:var(--ink); border-bottom-color:var(--seal)}
+.btn{display:inline-block; text-decoration:none; font-weight:600; padding:10px 18px; border:1.5px solid var(--ink); color:var(--ink); border-radius:3px}
+.btn:hover{background:var(--paper-2); color:var(--ink)}
+.btn-primary{background:var(--ink); color:var(--paper)}
+.btn-primary:hover{background:var(--seal); border-color:var(--seal); color:#fff}
+.btn-header{font-size:15px; padding:8px 14px}
+@media (max-width:1100px){ .btn-header{display:none} }
+@media (max-width:820px){ .site-header nav{margin-left:0; width:100%} }
+
+/* Abschnitte */
+main{display:block}
+section{padding-block:56px}
+section + section{border-top:1px solid var(--rule)}
+section.tight{padding-block:36px}
+.section-head{display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px 24px; margin-bottom:24px}
+.section-head p{margin:0; color:var(--muted); max-width:52ch}
+
+/* Hero */
+.hero{padding-block:64px 48px; border-bottom:1px solid var(--rule)}
+.hero .wrap{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:40px; align-items:end}
+.hero .actions{display:flex; flex-wrap:wrap; gap:12px; margin-top:20px}
+.facts{background:var(--paper-2); border:1px solid var(--rule); padding:20px 22px; display:grid; gap:14px}
+.facts div{display:grid; gap:2px}
+.facts dt{font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.facts dd{margin:0; font-size:17px}
+.facts dl{margin:0}
+@media (max-width:820px){ .hero .wrap{grid-template-columns:1fr} }
+
+/* Karten */
+.grid{display:grid; gap:18px; grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.card{background:var(--paper-2); border:1px solid var(--rule); padding:22px; display:flex; flex-direction:column; gap:8px}
+.card h3{margin:0; font-size:21px}
+.card p{margin:0; color:var(--ink-2); font-size:17px}
+.card .more{margin-top:auto; padding-top:8px; font-weight:600; text-decoration:none}
+.card .more::after{content:" \2192"}
+a.card{text-decoration:none; color:inherit}
+a.card:hover{border-color:var(--seal)}
+
+/* Schritte (echte Reihenfolge) */
+.steps{list-style:none; margin:0; padding:0; display:grid; gap:18px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); counter-reset:s}
+.steps li{counter-increment:s; border-top:2px solid var(--ink); padding-top:12px; margin:0}
+.steps li::before{content:counter(s); display:block; font-family:"Libre Caslon Text", Georgia, serif; font-size:28px; color:var(--seal); line-height:1; margin-bottom:6px}
+.steps strong{display:block; font-size:19px; margin-bottom:4px}
+.steps p{margin:0; font-size:17px; color:var(--ink-2)}
+
+/* Zweispaltig Text + Kasten */
+.split{display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:40px; align-items:start}
+@media (max-width:820px){ .split{grid-template-columns:1fr} }
+.box{background:var(--paper-2); border:1px solid var(--rule); padding:22px}
+.box h3{font-size:19px; margin-top:0}
+.box ul{margin-bottom:0}
+.note{border-left:3px solid var(--seal); padding:12px 18px; background:var(--paper-2); max-width:var(--measure)}
+.note p:last-child{margin:0}
+
+/* Unterseiten Leistungen */
+.page-hero{padding-block:48px 32px; border-bottom:1px solid var(--rule)}
+.page-hero .wrap{max-width:var(--max)}
+.faq details{border-top:1px solid var(--rule); padding:12px 0}
+.faq details:last-child{border-bottom:1px solid var(--rule)}
+.faq summary{font-weight:600; cursor:pointer; font-size:18px}
+.faq details p{margin:10px 0 0; max-width:var(--measure); color:var(--ink-2)}
+.check{list-style:none; padding:0; margin:0 0 1em}
+.check li{padding-left:28px; position:relative}
+.check li::before{content:""; position:absolute; left:0; top:.45em; width:14px; height:14px; border:1.5px solid var(--ink-2); border-radius:2px}
+.crumbs{font-size:15px; color:var(--muted); margin-bottom:10px}
+.crumbs a{color:inherit}
+
+/* Tabellen */
+.tbl{overflow-x:auto}
+table{border-collapse:collapse; width:100%; font-size:17px}
+th,td{text-align:left; padding:10px 12px 10px 0; border-bottom:1px solid var(--rule); vertical-align:top}
+th{font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600}
+td.num{font-variant-numeric:tabular-nums; white-space:nowrap; text-align:right}
+th.num{text-align:right}
+
+/* Glossar */
+.gloss{max-width:var(--measure)}
+.gloss dt{font-family:"Libre Caslon Text", Georgia, serif; font-size:22px; margin-top:22px}
+.gloss dd{margin:6px 0 0; color:var(--ink-2)}
+
+/* Bildplatzhalter (kein Stockmaterial) */
+.img-ph{background:repeating-linear-gradient(135deg, var(--paper-2) 0 12px, var(--paper) 12px 24px); border:1px solid var(--rule); aspect-ratio:4/3; max-width:100%; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:15px; text-align:center; padding:16px}
+.img-ph.wide{aspect-ratio:21/9}
+
+/* Formular (statisch) */
+form.contact{display:grid; gap:16px; max-width:var(--measure)}
+form.contact label{display:grid; gap:6px; font-weight:600}
+form.contact input, form.contact select, form.contact textarea{font:inherit; padding:10px 12px; border:1.5px solid var(--ink-2); background:var(--paper); color:var(--ink); border-radius:3px; width:100%}
+form.contact textarea{min-height:140px}
+form.contact .row{display:grid; gap:16px; grid-template-columns:1fr 1fr}
+@media (max-width:600px){ form.contact .row{grid-template-columns:1fr} }
+form.contact small{font-weight:400; color:var(--muted)}
+
+/* Fuß */
+.site-footer{border-top:2px solid var(--ink); margin-top:40px; padding-block:40px 32px; font-size:16px}
+.site-footer .cols{display:grid; gap:28px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.site-footer p{margin:0 0 10px}
+.f-title{font-family:"Libre Caslon Text", Georgia, serif; font-size:18px}
+.f-note{margin-top:32px; color:var(--muted); font-size:15px; max-width:80ch}
+
+/* Vorschau-Modus */
+.pv-banner{background:var(--seal-soft); color:var(--seal); font-size:14px; text-align:center; padding:6px 12px}
+.pv-page[hidden]{display:none}
+
+</style>
+<div class="pv-banner">Musterseite (statische Vorschau). Platzhalter in eckigen Klammern werden vor Veröffentlichung ersetzt.</div>
+<a class="skip" href="#inhalt">Zum Inhalt springen</a>
+<div class="topbar"><div class="wrap">
+  <span>Scheffelstraße 23 · 79713 Bad Säckingen</span>
+  <span>Mo–Do 8–12 und 13–17 Uhr · Fr 8–12 Uhr</span>
+  <a href="tel:+497761926170">07761 92617-0</a>
+</div></div>
+<header class="site-header"><div class="wrap">
+  <a class="brand" href="#index">
+    <span class="brand-seal" aria-hidden="true"></span>
+    <span class="brand-text"><strong>Notar Kai-Christoph Stadler</strong><span>Bad Säckingen</span></span>
+  </a>
+  <nav aria-label="Hauptnavigation"><ul>
+<li><a href="#index" class="active" aria-current="page" data-slug="index">Start</a></li>
+<li><a href="#leistungen" data-slug="leistungen">Leistungen</a></li>
+<li><a href="#ablauf" data-slug="ablauf">Ablauf & Unterlagen</a></li>
+<li><a href="#kosten" data-slug="kosten">Kosten</a></li>
+<li><a href="#glossar" data-slug="glossar">Glossar</a></li>
+<li><a href="#kanzlei" data-slug="kanzlei">Kanzlei</a></li>
+<li><a href="#kontakt" data-slug="kontakt">Kontakt</a></li>
+  </ul></nav>
+  <a class="btn btn-primary btn-header" href="#kontakt">Termin anfragen</a>
+</div></header>
+<main id="inhalt">
+<section class="pv-page page-index" id="index" data-title="Notar Kai-Christoph Stadler · Bad Säckingen" hidden>
+<section class="hero"><div class="wrap">
+  <div>
+    <p class="eyebrow">Öffentliches Amt · Amtssitz Bad Säckingen</p>
+    <h1>Notar in Bad Säckingen</h1>
+    <p class="lead">Beurkundungen und Beratung bei Immobilien, Erbe, Vorsorge, Familie und Unternehmen. Unparteiisch, an das Gesetz gebunden, für alle Beteiligten gleichermaßen.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="#kontakt">Termin anfragen</a>
+      <a class="btn" href="#ablauf">So läuft ein Termin ab</a>
+    </div>
+  </div>
+  <div class="facts"><dl>
+    <div><dt>Adresse</dt><dd>Scheffelstraße 23, 79713 Bad Säckingen</dd></div>
+    <div><dt>Telefon</dt><dd><a href="tel:+497761926170">07761 92617-0</a></dd></div>
+    <div><dt>Öffnungszeiten</dt><dd>Mo–Do 8–12 und 13–17 Uhr<br>Fr 8–12 Uhr, Termine nach Vereinbarung</dd></div>
+  </dl></div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="section-head">
+    <h2>Wobei hilft ein Notar?</h2>
+    <p>Der Gesetzgeber schreibt für wichtige Verträge und Erklärungen die notarielle Form vor. Der Notar entwirft, erklärt und beurkundet.</p>
+  </div>
+  <div class="grid">
+    <a class="card" href="#immobilien"><h3>Immobilien</h3><p>Kauf und Verkauf von Haus, Wohnung oder Grundstück. Grundschuld für die Finanzierung. Übertragung in der Familie.</p><span class="more">Mehr erfahren</span></a>
+    <a class="card" href="#vererben"><h3>Vererben</h3><p>Testament und Erbvertrag. Was ohne Testament gilt, was der Pflichtteil ist, wie ein Erbschein beantragt wird.</p><span class="more">Mehr erfahren</span></a>
+    <a class="card" href="#schenken"><h3>Schenken</h3><p>Vermögen zu Lebzeiten übertragen, mit Wohnrecht, Nießbrauch oder Rückforderungsrecht abgesichert.</p><span class="more">Mehr erfahren</span></a>
+    <a class="card" href="#vorsorge"><h3>Vorsorge</h3><p>Vorsorgevollmacht, Patientenverfügung und Betreuungsverfügung: wer entscheidet, wenn Sie es nicht mehr können.</p><span class="more">Mehr erfahren</span></a>
+    <a class="card" href="#familie"><h3>Familie</h3><p>Ehevertrag, Vereinbarungen bei Trennung und Scheidung, Adoption, Vaterschaftsanerkennung.</p><span class="more">Mehr erfahren</span></a>
+    <a class="card" href="#unternehmen"><h3>Unternehmen</h3><p>GmbH gründen, Anteile übertragen, Handelsregister. Auf Wunsch per Video-Beurkundung über das Notarportal.</p><span class="more">Mehr erfahren</span></a>
+    <a class="card" href="#beglaubigungen"><h3>Beglaubigungen und Schweiz</h3><p>Unterschriften und Abschriften beglaubigen. Dokumente für Schweizer Behörden und das Ausland.</p><span class="more">Mehr erfahren</span></a>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="section-head">
+    <h2>So läuft es ab</h2>
+    <p>Vier Schritte, bei jedem Vorgang gleich. Sie unterschreiben nichts, was Ihnen nicht vorher erklärt wurde.</p>
+  </div>
+  <ol class="steps">
+    <li><strong>Anfrage</strong><p>Sie rufen an oder schreiben. Das Büro klärt, worum es geht und welche Unterlagen nötig sind.</p></li>
+    <li><strong>Entwurf</strong><p>Der Notar erstellt den Vertrag oder die Erklärung. Sie erhalten den Entwurf vorab zum Lesen.</p></li>
+    <li><strong>Beurkundung</strong><p>Beim Termin liest der Notar den Text vor, erklärt ihn und beantwortet Fragen. Dann wird unterschrieben.</p></li>
+    <li><strong>Vollzug</strong><p>Das Notariat kümmert sich um Grundbuch, Register, Behörden und informiert Sie über den Abschluss.</p></li>
+  </ol>
+  <p style="margin-top:24px"><a href="#ablauf">Ablauf im Einzelnen und Unterlagen-Checklisten</a></p>
+</div></section>
+
+<section><div class="wrap split">
+  <div class="prose">
+    <h2>Was ein Termin kostet</h2>
+    <p>Die Kosten eines Notars sind im Gerichts- und Notarkostengesetz festgelegt. Sie richten sich nach dem Wert des Geschäfts, nicht nach dem Aufwand, und sind bei jedem Notar in Deutschland gleich hoch.</p>
+    <p>Die Beratung, die zu einer Beurkundung gehört, ist in der Gebühr enthalten. Vorab nennen wir Ihnen die voraussichtlichen Kosten.</p>
+    <p><a href="#kosten">Beispiele und Erklärung der Kosten</a></p>
+  </div>
+  <div class="box">
+    <h3>Nahe an der Schweiz</h3>
+    <p>Bad Säckingen liegt am Rhein, gegenüber von Stein AG. Viele Mandanten leben, arbeiten oder besitzen Vermögen auf beiden Seiten der Grenze.</p>
+    <ul>
+      <li>Immobilienkauf durch Käufer aus der Schweiz</li>
+      <li>Erbfälle mit Vermögen in beiden Ländern</li>
+      <li>Beglaubigungen und Apostille für Schweizer Behörden</li>
+    </ul>
+    <p style="margin:12px 0 0"><a href="#beglaubigungen">Dokumente für die Schweiz</a></p>
+  </div>
+</div></section>
+
+<section><div class="wrap split">
+  <div class="prose">
+    <h2>Verständlich erklärt</h2>
+    <p>Notarielle Urkunden verwenden Begriffe, die im Alltag nicht vorkommen: Auflassung, Vollzug, Pflichtteil, Nießbrauch. Beim Termin erklärt der Notar jeden dieser Begriffe. Wer sich vorher einlesen möchte, findet die wichtigsten im Glossar.</p>
+    <p><a href="#glossar">Zum Glossar</a></p>
+  </div>
+  <div class="box">
+    <h3>Gut zu wissen</h3>
+    <ul>
+      <li>Bringen Sie zu jedem Termin Ihren gültigen Personalausweis oder Reisepass mit.</li>
+      <li>Wer die deutsche Sprache nicht ausreichend versteht, braucht einen Dolmetscher. Das Büro hilft bei der Suche.</li>
+      <li>Wer nicht selbst kommen kann, kann sich vertreten lassen. Fragen Sie vorab nach.</li>
+    </ul>
+  </div>
+</div></section>
+
+</section>
+<section class="pv-page page-leistungen" id="leistungen" data-title="Leistungen · Notar Stadler, Bad Säckingen" hidden>
+<section class="page-hero"><div class="wrap">
+  <p class="eyebrow">Leistungen</p>
+  <h1>Wobei ein Notar hilft</h1>
+  <p class="lead">Der Notar wird tätig, wenn das Gesetz die notarielle Form vorschreibt oder wenn Beteiligte Rechtssicherheit wünschen. Er berät alle Seiten gleich und darf niemanden bevorzugen.</p>
+</div></section>
+<section><div class="wrap">
+  <div class="grid">
+    <a class="card" href="#immobilien"><h3>Immobilien</h3><p>Kaufvertrag, Grundschuld, Übertragung, Wohnungseigentum, Erbbaurecht.</p><span class="more">Zur Seite</span></a>
+    <a class="card" href="#vererben"><h3>Vererben</h3><p>Testament, Erbvertrag, Erbschein, Erbausschlagung, Pflichtteilsverzicht.</p><span class="more">Zur Seite</span></a>
+    <a class="card" href="#schenken"><h3>Schenken</h3><p>Übergabevertrag, vorweggenommene Erbfolge, Wohnrecht, Nießbrauch.</p><span class="more">Zur Seite</span></a>
+    <a class="card" href="#vorsorge"><h3>Vorsorge</h3><p>Vorsorgevollmacht, Patientenverfügung, Betreuungsverfügung, Vorsorgeregister.</p><span class="more">Zur Seite</span></a>
+    <a class="card" href="#familie"><h3>Familie</h3><p>Ehevertrag, Scheidungsfolgenvereinbarung, Adoption, Vaterschaft, Unterhalt.</p><span class="more">Zur Seite</span></a>
+    <a class="card" href="#unternehmen"><h3>Unternehmen</h3><p>GmbH und UG, Anteilsübertragung, Satzungsänderung, Handelsregister, Umwandlung.</p><span class="more">Zur Seite</span></a>
+    <a class="card" href="#beglaubigungen"><h3>Beglaubigungen und Schweiz</h3><p>Unterschriftsbeglaubigung, beglaubigte Abschrift, Apostille, Dokumente für das Ausland.</p><span class="more">Zur Seite</span></a>
+  </div>
+</div></section>
+<section class="tight"><div class="wrap">
+  <div class="note prose">
+    <p><strong>Auch bei Streit.</strong> Der Notar kann als neutrale Stelle bei Auseinandersetzungen helfen, etwa unter Erben oder Gesellschaftern. Eine Einigung vor dem Notar ist meist schneller und günstiger als ein Gerichtsverfahren und kann vollstreckbar gemacht werden.</p>
+  </div>
+</div></section>
+
+</section>
+<section class="pv-page page-immobilien" id="immobilien" data-title="Immobilien · Notar Stadler, Bad Säckingen" hidden>
+<section class="page-hero"><div class="wrap">
+  <p class="crumbs"><a href="#leistungen">Leistungen</a> · Immobilien</p>
+  <h1>Immobilien kaufen, verkaufen, übertragen</h1>
+  <p class="lead">Jeder Vertrag über ein Grundstück, ein Haus oder eine Wohnung muss notariell beurkundet werden. Sonst ist er unwirksam. Der Notar sorgt dafür, dass Käufer und Verkäufer gleichermaßen abgesichert sind.</p>
+</div></section>
+<section><div class="wrap split">
+  <div class="prose">
+    <h2>Typische Anlässe</h2>
+    <ul>
+      <li>Kauf oder Verkauf eines Hauses, einer Eigentumswohnung oder eines Grundstücks</li>
+      <li>Bestellung einer Grundschuld für die Bankfinanzierung</li>
+      <li>Übertragung an Kinder oder Ehepartner, mit oder ohne Gegenleistung</li>
+      <li>Teilung eines Hauses in Eigentumswohnungen</li>
+      <li>Erbbaurecht, Wegerecht, Vorkaufsrecht</li>
+    </ul>
+    <h2>Was der Notar tut</h2>
+    <p>Er prüft das Grundbuch, entwirft den Vertrag, klärt offene Punkte mit beiden Seiten und beurkundet. Danach überwacht er den Vollzug: Kaufpreisfälligkeit, Löschung alter Belastungen, Eintragung des neuen Eigentümers. Der Kaufpreis wird erst fällig, wenn der Käufer abgesichert ist.</p>
+    <h2>Häufige Fragen</h2>
+    <div class="faq">
+      <details><summary>Wer wählt den Notar aus?</summary><p>Üblicherweise der Käufer, weil er die Notarkosten trägt. Verkäufer und Käufer können sich aber frei einigen.</p></details>
+      <details><summary>Wann muss ich bezahlen?</summary><p>Erst, wenn der Notar Ihnen mitteilt, dass alle Voraussetzungen erfüllt sind: Vormerkung im Grundbuch eingetragen, Löschungsunterlagen liegen vor, Gemeinde hat auf ihr Vorkaufsrecht verzichtet. Das dauert meist einige Wochen.</p></details>
+      <details><summary>Ich wohne in der Schweiz. Was ist anders?</summary><p>Beim Kauf in Deutschland nichts Grundsätzliches. Bringen Sie einen gültigen Ausweis mit. Bei der Finanzierung über eine Schweizer Bank klären wir vorab, wie die Grundschuld bestellt wird.</p></details>
+      <details><summary>Muss ich zum Termin kommen?</summary><p>Sie können sich vertreten lassen. Die Vollmacht wird dann nachträglich beglaubigt. Das Büro erklärt Ihnen den Weg.</p></details>
+    </div>
+  </div>
+  <div>
+    <div class="box">
+      <h3>Was Sie mitbringen</h3>
+      <ul class="check">
+        <li>Personalausweis oder Reisepass</li>
+        <li>Steuer-Identifikationsnummer</li>
+        <li>Anschrift der Immobilie, Grundbuchblatt falls bekannt</li>
+        <li>Kaufpreis und Übergabetermin, wie besprochen</li>
+        <li>Finanzierungszusage der Bank, falls vorhanden</li>
+        <li>Bei Wohnungen: Teilungserklärung, Verwalter</li>
+      </ul>
+      <p style="margin:12px 0 0"><a href="#ablauf">Alle Checklisten</a></p>
+    </div>
+    <div class="box" style="margin-top:18px">
+      <h3>Kosten</h3>
+      <p>Gesetzlich festgelegt, abhängig vom Kaufpreis. <a href="#kosten">Beispiel für einen Kaufvertrag</a></p>
+    </div>
+  </div>
+</div></section>
+
+</section>
+<section class="pv-page page-vererben" id="vererben" data-title="Testament und Erbvertrag · Notar Stadler" hidden>
+<section class="page-hero"><div class="wrap">
+  <p class="crumbs"><a href="#leistungen">Leistungen</a> · Vererben</p>
+  <h1>Testament und Erbvertrag</h1>
+  <p class="lead">Wer nichts regelt, wird nach der gesetzlichen Erbfolge beerbt. Das entspricht oft nicht dem, was man möchte. Ein notarielles Testament schafft Klarheit und erspart den Erben später meist den Erbschein.</p>
+</div></section>
+<section><div class="wrap split">
+  <div class="prose">
+    <h2>Typische Anlässe</h2>
+    <ul>
+      <li>Ehegatten wollen sich gegenseitig absichern und die Kinder als Schlusserben einsetzen</li>
+      <li>Patchwork-Familie: Kinder aus verschiedenen Beziehungen</li>
+      <li>Ein Betrieb oder ein Haus soll an eine bestimmte Person gehen</li>
+      <li>Unverheiratete Partner, die gesetzlich nicht erben</li>
+      <li>Ein Angehöriger mit Behinderung soll versorgt sein, ohne Leistungen zu verlieren</li>
+      <li>Nach einem Todesfall: Erbschein beantragen, Erbe ausschlagen, Nachlass unter Erben aufteilen</li>
+    </ul>
+    <h2>Was der Notar tut</h2>
+    <p>Er fragt nach Familie, Vermögen und Wünschen, erklärt die Möglichkeiten und ihre Folgen, auch bei Pflichtteil und Steuern, und formuliert das Testament oder den Erbvertrag. Die Urkunde wird beim Amtsgericht verwahrt und im Zentralen Testamentsregister der Bundesnotarkammer gemeldet. So wird sie im Todesfall sicher gefunden.</p>
+    <h2>Häufige Fragen</h2>
+    <div class="faq">
+      <details><summary>Reicht ein handgeschriebenes Testament?</summary><p>Ja, es ist gültig, wenn es vollständig von Hand geschrieben und unterschrieben ist. Es birgt aber Risiken: unklare Formulierungen, Verlust, spätere Streitigkeiten. Außerdem brauchen die Erben meist einen Erbschein, der Zeit und Geld kostet.</p></details>
+      <details><summary>Was ist der Unterschied zwischen Testament und Erbvertrag?</summary><p>Ein Testament kann jederzeit allein geändert werden. Ein Erbvertrag bindet beide Seiten und kann nur gemeinsam geändert werden. Er eignet sich, wenn sich jemand auf die Regelung verlassen können muss.</p></details>
+      <details><summary>Kann ich ein Kind enterben?</summary><p>Sie können bestimmen, wer erbt. Kinder, Ehegatten und unter Umständen Eltern behalten aber einen Pflichtteil in Geld. Ein Verzicht darauf ist nur durch notariellen Vertrag möglich.</p></details>
+      <details><summary>Ich habe Vermögen in der Schweiz.</summary><p>Dann kommen zwei Rechtsordnungen in Betracht. Der Notar klärt, welches Erbrecht gilt und ob eine Rechtswahl sinnvoll ist.</p></details>
+    </div>
+  </div>
+  <div>
+    <div class="box">
+      <h3>Was Sie mitbringen</h3>
+      <ul class="check">
+        <li>Personalausweis oder Reisepass</li>
+        <li>Namen, Geburtsdaten und Anschriften der Personen, die bedacht werden sollen</li>
+        <li>Überblick über das Vermögen: Immobilien, Konten, Beteiligungen</li>
+        <li>Frühere Testamente oder Erbverträge, falls vorhanden</li>
+        <li>Ehevertrag, falls vorhanden</li>
+      </ul>
+    </div>
+    <div class="box" style="margin-top:18px">
+      <h3>Kosten</h3>
+      <p>Abhängig vom Vermögen, gesetzlich festgelegt. <a href="#kosten">Beispiel für ein Testament</a></p>
+    </div>
+  </div>
+</div></section>
+
+</section>
+<section class="pv-page page-schenken" id="schenken" data-title="Schenken und Übergabe · Notar Stadler" hidden>
+<section class="page-hero"><div class="wrap">
+  <p class="crumbs"><a href="#leistungen">Leistungen</a> · Schenken</p>
+  <h1>Schenken und Übergabe zu Lebzeiten</h1>
+  <p class="lead">Wer ein Haus oder Vermögen schon zu Lebzeiten an die nächste Generation gibt, spricht von vorweggenommener Erbfolge. Sie muss gut abgesichert sein: für den, der gibt, und für den, der bekommt.</p>
+</div></section>
+<section><div class="wrap split">
+  <div class="prose">
+    <h2>Typische Anlässe</h2>
+    <ul>
+      <li>Eltern übertragen das Haus an ein Kind und behalten das Wohnrecht</li>
+      <li>Freibeträge der Schenkungsteuer alle zehn Jahre nutzen</li>
+      <li>Vermögen vor dem Zugriff im Pflegefall ordnen, mit Blick auf die Zehnjahresfrist</li>
+      <li>Geschwister ausgleichen: Abfindung oder Pflichtteilsverzicht</li>
+    </ul>
+    <h2>Was der Notar tut</h2>
+    <p>Er entwirft den Übergabevertrag und sichert den Übergeber ab: Wohnrecht oder Nießbrauch, Pflegeverpflichtung, Rückforderungsrechte etwa bei Insolvenz, Scheidung oder Verkauf durch den Beschenkten. Er erklärt die Folgen für Pflichtteil, Steuer und Sozialleistungen und kümmert sich um die Eintragung im Grundbuch.</p>
+    <h2>Häufige Fragen</h2>
+    <div class="faq">
+      <details><summary>Kann ich die Schenkung rückgängig machen?</summary><p>Nur, wenn es im Vertrag vereinbart ist oder das Gesetz es erlaubt, etwa bei grobem Undank oder eigener Verarmung. Deshalb werden Rückforderungsrechte im Vertrag genau geregelt.</p></details>
+      <details><summary>Wohnrecht oder Nießbrauch?</summary><p>Das Wohnrecht erlaubt, selbst im Haus zu wohnen. Der Nießbrauch erlaubt zusätzlich, das Haus zu vermieten und die Miete zu behalten. Beide werden im Grundbuch eingetragen.</p></details>
+      <details><summary>Muss ich einen Steuerberater einbeziehen?</summary><p>Der Notar weist auf steuerliche Folgen hin, berät aber nicht steuerlich. Bei größerem Vermögen ist ein Gespräch mit dem Steuerberater vor dem Termin sinnvoll.</p></details>
+    </div>
+  </div>
+  <div>
+    <div class="box">
+      <h3>Was Sie mitbringen</h3>
+      <ul class="check">
+        <li>Personalausweis oder Reisepass aller Beteiligten</li>
+        <li>Steuer-Identifikationsnummern</li>
+        <li>Grundbuchblatt oder Anschrift der Immobilie</li>
+        <li>Ungefährer Wert der Immobilie</li>
+        <li>Wünsche zu Wohnrecht, Pflege, Ausgleich unter Geschwistern</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+</section>
+<section class="pv-page page-vorsorge" id="vorsorge" data-title="Vorsorgevollmacht und Patientenverfügung · Notar Stadler" hidden>
+<section class="page-hero"><div class="wrap">
+  <p class="crumbs"><a href="#leistungen">Leistungen</a> · Vorsorge</p>
+  <h1>Vorsorgevollmacht, Patientenverfügung, Betreuungsverfügung</h1>
+  <p class="lead">Ehepartner und Kinder dürfen nicht automatisch für Sie entscheiden, wenn Sie es selbst nicht mehr können. Ohne Vollmacht bestellt das Gericht einen Betreuer. Mit einer Vorsorgevollmacht bestimmen Sie selbst, wer handelt.</p>
+</div></section>
+<section><div class="wrap split">
+  <div class="prose">
+    <h2>Die drei Dokumente</h2>
+    <ul>
+      <li><strong>Vorsorgevollmacht:</strong> Eine Person Ihres Vertrauens darf für Sie handeln, bei Bank, Behörden, Ärzten, Heim und Immobilien.</li>
+      <li><strong>Patientenverfügung:</strong> Sie legen fest, welche medizinischen Maßnahmen Sie wünschen oder ablehnen, wenn Sie sich nicht mehr äußern können.</li>
+      <li><strong>Betreuungsverfügung:</strong> Für den Fall, dass doch ein Betreuer nötig wird, bestimmen Sie, wer es sein soll.</li>
+    </ul>
+    <h2>Warum notariell?</h2>
+    <p>Banken und Grundbuchämter verlangen für viele Geschäfte eine notarielle oder beglaubigte Vollmacht. Der Notar prüft außerdem, dass Sie geschäftsfähig sind und freiwillig handeln. Das schützt die Vollmacht vor späteren Zweifeln. Die Urkunde wird im Zentralen Vorsorgeregister der Bundesnotarkammer eingetragen, damit Gerichte sie finden.</p>
+    <h2>Häufige Fragen</h2>
+    <div class="faq">
+      <details><summary>Ab wann gilt die Vollmacht?</summary><p>Meist sofort, damit sie im Ernstfall ohne Nachweis einsetzbar ist. Im Innenverhältnis vereinbaren Sie mit dem Bevollmächtigten, dass er sie nur nutzt, wenn Sie es nicht mehr können. Der Notar erklärt die Varianten.</p></details>
+      <details><summary>Kann ich mehrere Personen bevollmächtigen?</summary><p>Ja, einzeln oder nur gemeinsam handelnd. Üblich ist ein Hauptbevollmächtigter und ein Ersatz.</p></details>
+      <details><summary>Kann ich die Vollmacht widerrufen?</summary><p>Jederzeit, solange Sie geschäftsfähig sind. Die Ausfertigung wird dann zurückgefordert und das Register informiert.</p></details>
+    </div>
+  </div>
+  <div>
+    <div class="box">
+      <h3>Was Sie mitbringen</h3>
+      <ul class="check">
+        <li>Personalausweis oder Reisepass</li>
+        <li>Name, Geburtsdatum und Anschrift der Bevollmächtigten</li>
+        <li>Überlegungen zu medizinischen Wünschen</li>
+        <li>Angaben zu Immobilien und Konten, soweit betroffen</li>
+      </ul>
+    </div>
+    <div class="box" style="margin-top:18px">
+      <h3>Hinweis</h3>
+      <p>Die Beurkundung kann bei Bedarf im Krankenhaus oder Pflegeheim stattfinden. Bitte sprechen Sie das Büro darauf an.</p>
+    </div>
+  </div>
+</div></section>
+
+</section>
+<section class="pv-page page-familie" id="familie" data-title="Ehevertrag und Familie · Notar Stadler" hidden>
+<section class="page-hero"><div class="wrap">
+  <p class="crumbs"><a href="#leistungen">Leistungen</a> · Familie</p>
+  <h1>Ehevertrag, Trennung, Adoption</h1>
+  <p class="lead">Viele Regelungen zwischen Ehegatten und in der Familie sind nur mit notarieller Beurkundung wirksam. Der Notar berät beide Seiten und achtet darauf, dass keine Seite unangemessen benachteiligt wird.</p>
+</div></section>
+<section><div class="wrap split">
+  <div class="prose">
+    <h2>Typische Anlässe</h2>
+    <ul>
+      <li>Ehevertrag vor oder während der Ehe: Gütertrennung, modifizierte Zugewinngemeinschaft, Schutz eines Betriebs</li>
+      <li>Trennung und Scheidung: Vereinbarung über Vermögen, Unterhalt, Wohnung, Versorgungsausgleich</li>
+      <li>Adoption eines Kindes, auch Stiefkindadoption</li>
+      <li>Vaterschaftsanerkennung und Sorgeerklärung</li>
+      <li>Unterhaltsvereinbarungen, die vollstreckbar sein sollen</li>
+      <li>Vereinbarungen zwischen unverheirateten Partnern</li>
+    </ul>
+    <h2>Was der Notar tut</h2>
+    <p>Er klärt die Ziele beider Seiten, entwirft die Vereinbarung und erklärt, was ohne Vertrag gelten würde. Eine notarielle Scheidungsfolgenvereinbarung macht das Gerichtsverfahren meist kürzer und günstiger.</p>
+    <h2>Häufige Fragen</h2>
+    <div class="faq">
+      <details><summary>Brauchen wir beide einen Anwalt?</summary><p>Für die Beurkundung nicht. Der Notar berät beide unparteiisch. Wer eine eigene Interessenvertretung wünscht, kann zusätzlich einen Anwalt beauftragen.</p></details>
+      <details><summary>Kann ein Ehevertrag später geändert werden?</summary><p>Ja, jederzeit einvernehmlich, wieder durch notarielle Beurkundung.</p></details>
+      <details><summary>Deutsch-schweizerische Ehe?</summary><p>Dann ist zu klären, welches Güterrecht gilt. Eine Rechtswahl im Ehevertrag schafft Sicherheit.</p></details>
+    </div>
+  </div>
+  <div>
+    <div class="box">
+      <h3>Was Sie mitbringen</h3>
+      <ul class="check">
+        <li>Personalausweis oder Reisepass beider Beteiligten</li>
+        <li>Heiratsurkunde, falls verheiratet</li>
+        <li>Überblick über Vermögen und Einkommen beider Seiten</li>
+        <li>Bei Adoption: Geburtsurkunde des Kindes</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+</section>
+<section class="pv-page page-unternehmen" id="unternehmen" data-title="Unternehmen und Gesellschaften · Notar Stadler" hidden>
+<section class="page-hero"><div class="wrap">
+  <p class="crumbs"><a href="#leistungen">Leistungen</a> · Unternehmen</p>
+  <h1>Unternehmen und Gesellschaften</h1>
+  <p class="lead">Gründung, Anteilsverkauf, Satzungsänderung und viele Anmeldungen zum Handelsregister brauchen den Notar. Er sorgt dafür, dass die Unterlagen vom Registergericht ohne Rückfragen eingetragen werden.</p>
+</div></section>
+<section><div class="wrap split">
+  <div class="prose">
+    <h2>Typische Anlässe</h2>
+    <ul>
+      <li>Gründung einer GmbH oder Unternehmergesellschaft (haftungsbeschränkt)</li>
+      <li>Verkauf oder Übertragung von Geschäftsanteilen</li>
+      <li>Änderung der Satzung, Kapitalerhöhung, Geschäftsführerwechsel</li>
+      <li>Anmeldungen zum Handelsregister für Einzelkaufleute, Personengesellschaften und Vereine</li>
+      <li>Umwandlung, Verschmelzung, Unternehmensnachfolge</li>
+      <li>Gesellschaftervereinbarungen und Nachfolgeregelungen</li>
+    </ul>
+    <h2>Online-Beurkundung</h2>
+    <p>Die Gründung einer GmbH und bestimmte Registeranmeldungen sind per Video über das Notarportal der Bundesnotarkammer möglich. Voraussetzung ist ein Ausweis mit Online-Funktion oder ein anerkannter Identitätsnachweis. Das Büro klärt vorab, ob Ihr Vorgang dafür geeignet ist.</p>
+    <h2>Häufige Fragen</h2>
+    <div class="faq">
+      <details><summary>Wie lange dauert eine GmbH-Gründung?</summary><p>Vom Beurkundungstermin bis zur Eintragung meist ein bis drei Wochen, abhängig vom Registergericht und davon, wie schnell das Stammkapital eingezahlt und nachgewiesen wird.</p></details>
+      <details><summary>Musterprotokoll oder eigene Satzung?</summary><p>Das Musterprotokoll ist günstiger und reicht für einfache Fälle mit bis zu drei Gesellschaftern. Bei mehreren Gesellschaftern mit unterschiedlichen Interessen ist eine eigene Satzung sinnvoll.</p></details>
+      <details><summary>Wirtschaftlich Berechtigter und Transparenzregister?</summary><p>Bei Gesellschaften muss der Notar nach dem Geldwäschegesetz die wirtschaftlich Berechtigten feststellen. Halten Sie die Angaben bereit; die Eintragung ins Transparenzregister ist Sache der Gesellschaft.</p></details>
+    </div>
+  </div>
+  <div>
+    <div class="box">
+      <h3>Was Sie mitbringen</h3>
+      <ul class="check">
+        <li>Personalausweis oder Reisepass aller Beteiligten</li>
+        <li>Firmenname, Sitz, Unternehmensgegenstand</li>
+        <li>Gesellschafter mit Anteilen, Geschäftsführer</li>
+        <li>Bei bestehenden Gesellschaften: aktueller Handelsregisterauszug, Gesellschafterliste, Satzung</li>
+        <li>Angaben zu den wirtschaftlich Berechtigten</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+</section>
+<section class="pv-page page-beglaubigungen" id="beglaubigungen" data-title="Beglaubigungen und Schweiz · Notar Stadler" hidden>
+<section class="page-hero"><div class="wrap">
+  <p class="crumbs"><a href="#leistungen">Leistungen</a> · Beglaubigungen und Schweiz</p>
+  <h1>Beglaubigungen und Dokumente für das Ausland</h1>
+  <p class="lead">Eine Beglaubigung bestätigt, dass eine Unterschrift echt ist oder eine Kopie mit dem Original übereinstimmt. Sie ist schneller und günstiger als eine Beurkundung und oft ausreichend.</p>
+</div></section>
+<section><div class="wrap split">
+  <div class="prose">
+    <h2>Typische Anlässe</h2>
+    <ul>
+      <li>Unterschrift unter einer Vollmacht, Handelsregisteranmeldung oder Grundbucherklärung</li>
+      <li>Beglaubigte Kopie von Zeugnissen, Urkunden, Ausweisen</li>
+      <li>Erklärungen für Schweizer Behörden, Banken oder Grundbuchämter</li>
+      <li>Dokumente, die im Ausland verwendet werden und eine Apostille brauchen</li>
+    </ul>
+    <h2>Schweiz</h2>
+    <p>Bad Säckingen grenzt an den Kanton Aargau. Deutsche notarielle Urkunden werden in der Schweiz anerkannt, wenn sie mit einer Apostille versehen sind. Die Apostille erteilt der Präsident des Landgerichts Waldshut-Tiengen; das Notariat kann sie für Sie einholen. Umgekehrt beraten wir, welche Form Schweizer Stellen für ein bestimmtes Dokument erwarten.</p>
+    <h2>Häufige Fragen</h2>
+    <div class="faq">
+      <details><summary>Brauche ich einen Termin?</summary><p>Für eine Unterschriftsbeglaubigung genügt in der Regel eine kurze Absprache mit dem Büro. Bringen Sie das Dokument ungeschrieben mit; die Unterschrift wird vor dem Notar geleistet.</p></details>
+      <details><summary>Was kostet eine Beglaubigung?</summary><p>Gesetzlich festgelegt, für Unterschriftsbeglaubigungen abhängig vom Geschäftswert mit einer Obergrenze, für Kopien nach Seitenzahl. Das Büro nennt den Betrag vorab.</p></details>
+      <details><summary>Fremdsprachige Dokumente?</summary><p>Der Notar beglaubigt Unterschriften auch unter fremdsprachigen Texten, wenn er den Inhalt ausreichend versteht. Andernfalls ist eine Übersetzung nötig.</p></details>
+    </div>
+  </div>
+  <div>
+    <div class="box">
+      <h3>Was Sie mitbringen</h3>
+      <ul class="check">
+        <li>Gültiger Personalausweis oder Reisepass</li>
+        <li>Das zu unterschreibende Dokument, noch nicht unterschrieben</li>
+        <li>Bei Kopien: das Original</li>
+        <li>Angabe, in welchem Land das Dokument verwendet wird</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+</section>
+<section class="pv-page page-ablauf" id="ablauf" data-title="Ablauf und Unterlagen · Notar Stadler" hidden>
+<section class="page-hero"><div class="wrap">
+  <p class="eyebrow">Ablauf und Unterlagen</p>
+  <h1>So läuft ein Termin beim Notar ab</h1>
+  <p class="lead">Ein notarieller Vorgang hat bei jedem Anliegen dieselben vier Schritte. Wer weiß, was kommt, und die Unterlagen dabei hat, spart Zeit und Rückfragen.</p>
+</div></section>
+<section><div class="wrap">
+  <ol class="steps">
+    <li><strong>Anfrage</strong><p>Sie rufen an oder nutzen das Kontaktformular. Das Büro fragt, worum es geht, wer beteiligt ist und welche Unterlagen nötig sind. Dann wird ein Termin vereinbart.</p></li>
+    <li><strong>Entwurf</strong><p>Der Notar entwirft die Urkunde. Bei Verträgen mit Verbrauchern erhalten Sie den Entwurf mindestens zwei Wochen vor dem Termin, damit Sie ihn in Ruhe lesen und Fragen stellen können.</p></li>
+    <li><strong>Beurkundung</strong><p>Der Notar liest die Urkunde vollständig vor. Das ist gesetzlich vorgeschrieben. Er erklärt jeden Punkt, Änderungen sind noch möglich. Danach unterschreiben alle Beteiligten und der Notar.</p></li>
+    <li><strong>Vollzug</strong><p>Das Notariat reicht die Urkunde bei Grundbuchamt, Registergericht, Finanzamt oder Gemeinde ein, überwacht Fälligkeiten und informiert Sie, wenn alles abgeschlossen ist.</p></li>
+  </ol>
+</div></section>
+<section><div class="wrap split">
+  <div class="prose">
+    <h2>Was für jeden Termin gilt</h2>
+    <ul>
+      <li><strong>Ausweis.</strong> Der Notar muss jede Person anhand eines gültigen Personalausweises oder Reisepasses identifizieren. Ein Führerschein genügt nicht.</li>
+      <li><strong>Geldwäschegesetz.</strong> Bei Immobilien- und Gesellschaftsgeschäften ist der Notar verpflichtet, Angaben zur Person, zum wirtschaftlich Berechtigten und in manchen Fällen zur Herkunft des Geldes zu erfragen. Das ist Routine und kein Misstrauen.</li>
+      <li><strong>Sprache.</strong> Wer Deutsch nicht ausreichend versteht, braucht einen Dolmetscher. Das Büro nennt Ihnen vereidigte Dolmetscher aus der Region.</li>
+      <li><strong>Vertretung.</strong> Wer nicht kommen kann, kann sich vertreten lassen. Der Notar erklärt, wann eine Vollmacht vorab beglaubigt sein muss.</li>
+      <li><strong>Lesen und Hören.</strong> Wer nicht lesen, hören oder sprechen kann, wird ebenfalls beurkundet. Das Gesetz sieht dafür besondere Verfahren vor, etwa das Hinzuziehen eines Zeugen oder Gebärdendolmetschers.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h3>Vor dem Termin</h3>
+    <ul class="check">
+      <li>Entwurf gelesen, Fragen notiert</li>
+      <li>Ausweis gültig</li>
+      <li>Steuer-Identifikationsnummer bei Grundstücksgeschäften</li>
+      <li>Unterlagen aus der Checkliste dabei</li>
+      <li>Genug Zeit: eine Beurkundung dauert je nach Umfang 30 bis 90 Minuten</li>
+    </ul>
+  </div>
+</div></section>
+<section><div class="wrap">
+  <div class="section-head">
+    <h2>Checklisten nach Anliegen</h2>
+    <p>Was Sie zum Termin mitbringen. Fehlt etwas, sagen Sie es dem Büro vorab; vieles lässt sich beschaffen.</p>
+  </div>
+  <div class="grid">
+    <div class="card"><h3>Immobilienkauf</h3>
+      <ul class="check"><li>Ausweis, Steuer-ID beider Seiten</li><li>Anschrift, Grundbuchblatt</li><li>Kaufpreis, Übergabetermin</li><li>Finanzierungszusage</li><li>Bei Wohnung: Teilungserklärung, Verwalter</li><li>Bei vermieteter Immobilie: Mietvertrag</li></ul></div>
+    <div class="card"><h3>Grundschuld</h3>
+      <ul class="check"><li>Ausweis</li><li>Grundschuldbestellungsformular der Bank</li><li>Darlehensbetrag</li></ul></div>
+    <div class="card"><h3>Testament, Erbvertrag</h3>
+      <ul class="check"><li>Ausweis</li><li>Familienstand, Kinder, Enkel mit Geburtsdaten</li><li>Vermögensübersicht</li><li>Frühere Verfügungen, Ehevertrag</li></ul></div>
+    <div class="card"><h3>Vorsorgevollmacht</h3>
+      <ul class="check"><li>Ausweis</li><li>Bevollmächtigte mit Anschrift und Geburtsdatum</li><li>Wünsche zu Medizin und Aufenthalt</li></ul></div>
+    <div class="card"><h3>Schenkung, Übergabe</h3>
+      <ul class="check"><li>Ausweis, Steuer-ID aller Beteiligten</li><li>Grundbuchblatt</li><li>Verkehrswert, ungefähr</li><li>Wünsche zu Wohnrecht, Pflege, Rückforderung</li></ul></div>
+    <div class="card"><h3>GmbH-Gründung</h3>
+      <ul class="check"><li>Ausweise aller Gesellschafter</li><li>Firma, Sitz, Gegenstand</li><li>Stammkapital und Anteile</li><li>Geschäftsführer</li><li>Wirtschaftlich Berechtigte</li></ul></div>
+    <div class="card"><h3>Erbschein</h3>
+      <ul class="check"><li>Ausweis</li><li>Sterbeurkunde</li><li>Familienstammbuch, Geburts- und Heiratsurkunden</li><li>Testament, falls vorhanden</li><li>Vermögensübersicht zum Todestag</li></ul></div>
+    <div class="card"><h3>Beglaubigung</h3>
+      <ul class="check"><li>Ausweis</li><li>Dokument, nicht unterschrieben</li><li>Bei Kopien: Original</li><li>Verwendungsland</li></ul></div>
+  </div>
+</div></section>
+
+</section>
+<section class="pv-page page-kosten" id="kosten" data-title="Kosten · Notar Stadler, Bad Säckingen" hidden>
+<section class="page-hero"><div class="wrap">
+  <p class="eyebrow">Kosten</p>
+  <h1>Was der Notar kostet</h1>
+  <p class="lead">Notarkosten sind im Gerichts- und Notarkostengesetz (GNotKG) festgelegt. Der Notar darf weder mehr noch weniger verlangen. Deshalb kostet dieselbe Urkunde bei jedem Notar in Deutschland gleich viel.</p>
+</div></section>
+<section><div class="wrap split">
+  <div class="prose">
+    <h2>Wie die Kosten entstehen</h2>
+    <p>Die Gebühr richtet sich nach dem <strong>Geschäftswert</strong>, also etwa dem Kaufpreis, dem Vermögen oder dem Stammkapital, und nach der Art des Geschäfts. Der Aufwand des Notars spielt keine Rolle. Ein schwieriger Vertrag kostet nicht mehr als ein einfacher mit gleichem Wert.</p>
+    <p>In der Gebühr enthalten sind Entwurf, Beratung aller Beteiligten, Beurkundung und die Überwachung des Vollzugs. Hinzu kommen Auslagen für Abschriften, Porto und Registerabrufe sowie die Umsatzsteuer. Kosten des Grundbuchamts oder Registergerichts werden gesondert erhoben.</p>
+    <h2>Beratung ohne Beurkundung</h2>
+    <p>Kommt es nach einer Beratung nicht zur Beurkundung, entsteht eine Beratungsgebühr, ebenfalls nach dem Gesetz und nach dem Wert. Das Büro nennt sie vorab.</p>
+    <h2>Kostenvoranschlag</h2>
+    <p>Nennen Sie dem Büro Anliegen und Wert. Sie erhalten vor dem Termin eine Übersicht der voraussichtlichen Kosten.</p>
+  </div>
+  <div>
+    <div class="box">
+      <h3>Beispiel: Kaufvertrag über ein Haus</h3>
+      <p>Kaufpreis 300.000 €, ohne Grundschuld. Gebühren nach GNotKG, ohne Auslagen und Umsatzsteuer.</p>
+      <div class="tbl"><table>
+        <tr><th>Position</th><th class="num">Betrag</th></tr>
+        <tr><td>Beurkundung (2,0-Gebühr)</td><td class="num">1.270,00 €</td></tr>
+        <tr><td>Vollzug (0,5-Gebühr)</td><td class="num">317,50 €</td></tr>
+        <tr><td>Betreuung, etwa Fälligkeitsmitteilung (0,5-Gebühr)</td><td class="num">317,50 €</td></tr>
+        <tr><td><strong>Summe netto</strong></td><td class="num"><strong>1.905,00 €</strong></td></tr>
+      </table></div>
+      <p style="margin:12px 0 0; font-size:15px; color:var(--muted)">Grundbuchamt und Grunderwerbsteuer kommen hinzu. Rechenbeispiel, ohne Gewähr.</p>
+    </div>
+    <div class="box" style="margin-top:18px">
+      <h3>Beispiel: Einzeltestament</h3>
+      <p>Vermögen 100.000 €, 1,0-Gebühr: <strong>273,00 €</strong> netto. Ein gemeinschaftliches Testament von Ehegatten kostet eine 2,0-Gebühr auf das gemeinsame Vermögen.</p>
+    </div>
+  </div>
+</div></section>
+
+</section>
+<section class="pv-page page-glossar" id="glossar" data-title="Glossar · Notar Stadler" hidden>
+<section class="page-hero"><div class="wrap">
+  <p class="eyebrow">Glossar</p>
+  <h1>Begriffe aus dem Notariat, verständlich</h1>
+  <p class="lead">Diese Wörter kommen in Urkunden und Gesprächen vor. Beim Termin erklärt der Notar sie noch einmal. Alphabetisch geordnet.</p>
+</div></section>
+<section><div class="wrap">
+  <dl class="gloss">
+    <dt>Abschrift, beglaubigte</dt><dd>Eine Kopie, deren Übereinstimmung mit dem Original der Notar bestätigt.</dd>
+    <dt>Amtsgericht</dt><dd>Führt Grundbuch, Handelsregister und Nachlasssachen. Für Bad Säckingen zuständig: Amtsgericht Bad Säckingen; Handelsregister beim Amtsgericht Freiburg.</dd>
+    <dt>Auflassung</dt><dd>Die Einigung von Verkäufer und Käufer, dass das Eigentum am Grundstück übergehen soll. Sie steht im Kaufvertrag und wird erst nach Kaufpreiszahlung im Grundbuch vollzogen.</dd>
+    <dt>Ausfertigung</dt><dd>Eine amtliche Kopie der Urkunde, die im Rechtsverkehr das Original ersetzt. Das Original bleibt beim Notar.</dd>
+    <dt>Beglaubigung</dt><dd>Bestätigung, dass eine Unterschrift echt ist oder eine Kopie mit dem Original übereinstimmt. Der Notar prüft dabei nicht den Inhalt.</dd>
+    <dt>Beurkundung</dt><dd>Der Notar verfasst die Urkunde, liest sie vor, erklärt sie und unterschreibt sie zusammen mit den Beteiligten. Er ist für den Inhalt verantwortlich.</dd>
+    <dt>Betreuung</dt><dd>Gerichtlich bestellte Vertretung für Menschen, die ihre Angelegenheiten nicht mehr selbst regeln können. Eine Vorsorgevollmacht macht sie meist überflüssig.</dd>
+    <dt>Erbschein</dt><dd>Bescheinigung des Nachlassgerichts, wer Erbe ist. Bei einem notariellen Testament ist er in der Regel nicht nötig.</dd>
+    <dt>Erbvertrag</dt><dd>Vertrag über die Erbfolge, der beide Seiten bindet und nur gemeinsam geändert werden kann.</dd>
+    <dt>Fälligkeit</dt><dd>Der Zeitpunkt, ab dem der Kaufpreis gezahlt werden muss. Der Notar teilt ihn mit, wenn alle Voraussetzungen erfüllt sind.</dd>
+    <dt>Geschäftswert</dt><dd>Der Wert, nach dem sich die Notargebühren berechnen: Kaufpreis, Vermögen, Stammkapital.</dd>
+    <dt>Grundbuch</dt><dd>Das amtliche Verzeichnis aller Grundstücke mit Eigentümern, Rechten und Belastungen. Nur wer im Grundbuch steht, ist Eigentümer.</dd>
+    <dt>Grundschuld</dt><dd>Recht der Bank am Grundstück als Sicherheit für ein Darlehen. Wird im Grundbuch eingetragen und nach Rückzahlung gelöscht.</dd>
+    <dt>Gütertrennung, Zugewinngemeinschaft</dt><dd>Regeln, wie Vermögen in der Ehe zugeordnet und bei Scheidung ausgeglichen wird. Ohne Ehevertrag gilt die Zugewinngemeinschaft.</dd>
+    <dt>Nießbrauch</dt><dd>Das Recht, eine Sache zu nutzen und die Erträge zu behalten, etwa in einem übertragenen Haus zu wohnen oder es zu vermieten.</dd>
+    <dt>Pflichtteil</dt><dd>Mindestanteil am Nachlass in Geld für Kinder, Ehegatten und unter Umständen Eltern, auch wenn sie im Testament nicht bedacht sind. Er beträgt die Hälfte des gesetzlichen Erbteils.</dd>
+    <dt>Schlusserbe</dt><dd>Person, die nach dem Tod des länger lebenden Ehegatten erbt, häufig die Kinder im gemeinschaftlichen Testament.</dd>
+    <dt>Vollzug</dt><dd>Alle Schritte nach der Beurkundung, bis Grundbuch oder Register den neuen Zustand zeigen.</dd>
+    <dt>Vormerkung</dt><dd>Eintragung im Grundbuch, die den Käufer schützt, bis er als Eigentümer eingetragen ist.</dd>
+    <dt>Vorsorgevollmacht</dt><dd>Vollmacht für den Fall, dass man selbst nicht mehr handeln kann.</dd>
+    <dt>Wirtschaftlich Berechtigter</dt><dd>Die natürliche Person, die hinter einer Gesellschaft steht. Der Notar muss sie nach dem Geldwäschegesetz feststellen.</dd>
+    <dt>Wohnrecht</dt><dd>Das im Grundbuch eingetragene Recht, in einem Haus oder einer Wohnung zu wohnen, auch wenn sie jemand anderem gehört.</dd>
+  </dl>
+</div></section>
+
+</section>
+<section class="pv-page page-kanzlei" id="kanzlei" data-title="Kanzlei · Notar Stadler, Bad Säckingen" hidden>
+<section class="page-hero"><div class="wrap">
+  <p class="eyebrow">Kanzlei</p>
+  <h1>Notariat in Bad Säckingen</h1>
+  <p class="lead">Notar Kai-Christoph Stadler ist Notar mit Amtssitz in Bad Säckingen. Das Notariat ist zuständig für alle Anliegen, unabhängig vom Wohnort der Beteiligten.</p>
+</div></section>
+<section><div class="wrap split">
+  <div class="prose">
+    <h2>Der Notar</h2>
+    <p>Kai-Christoph Stadler, Notar. <span class="ph">[Beruflicher Werdegang in zwei bis drei Sätzen: Studium, Zulassung, Bestellung zum Notar, ggf. Tätigkeit vor 2018.]</span></p>
+    <p>Der Notar ist Träger eines öffentlichen Amtes. Er ist unabhängig, unparteiisch und zur Verschwiegenheit verpflichtet. Er darf ein Amtsgeschäft nicht ohne Grund ablehnen.</p>
+    <h2>Das Team</h2>
+    <p><span class="ph">[Mitarbeitende mit Namen und Aufgabengebiet, etwa Immobilien, Register, Nachlass. Auf Wunsch mit Foto.]</span></p>
+    <h2>Räume und Zugang</h2>
+    <ul>
+      <li>Scheffelstraße 23, 79713 Bad Säckingen, <span class="ph">[Etage, Aufzug ja/nein]</span></li>
+      <li>Zugang: <span class="ph">[stufenlos / Stufen, Hilfe auf Anfrage]</span></li>
+      <li>Parken: <span class="ph">[Parkplätze vor dem Haus / öffentliche Parkplätze in der Nähe]</span></li>
+      <li>Bahn und Bus: Bahnhof Bad Säckingen, <span class="ph">[Gehzeit]</span> Minuten zu Fuß</li>
+    </ul>
+    <p>Beurkundungen außerhalb der Kanzlei, etwa im Krankenhaus oder Pflegeheim, sind nach Absprache möglich.</p>
+  </div>
+  <div>
+    <div class="img-ph">Foto: Kanzleiräume<br>[wird durch eigene Aufnahme ersetzt]</div>
+    <div class="box" style="margin-top:18px">
+      <h3>Öffnungszeiten</h3>
+      <p>Montag bis Donnerstag<br>8–12 Uhr und 13–17 Uhr</p>
+      <p>Freitag<br>8–12 Uhr</p>
+      <p style="margin:0">Termine nach Vereinbarung, auch außerhalb dieser Zeiten.</p>
+    </div>
+  </div>
+</div></section>
+
+</section>
+<section class="pv-page page-kontakt" id="kontakt" data-title="Kontakt und Termin · Notar Stadler" hidden>
+<section class="page-hero"><div class="wrap">
+  <p class="eyebrow">Kontakt</p>
+  <h1>Termin anfragen</h1>
+  <p class="lead">Rufen Sie an oder schreiben Sie uns. Das Büro meldet sich, klärt das Anliegen und schlägt einen Termin vor.</p>
+</div></section>
+<section><div class="wrap split">
+  <div>
+    <form class="contact" action="#" method="post">
+      <div class="row">
+        <label for="f-name">Name<input id="f-name" name="name" type="text" autocomplete="name" required></label>
+        <label for="f-tel">Telefon<input id="f-tel" name="telefon" type="tel" autocomplete="tel" required></label>
+      </div>
+      <label for="f-mail">E-Mail <small>(optional)</small><input id="f-mail" name="email" type="email" autocomplete="email"></label>
+      <label for="f-anliegen">Anliegen
+        <select id="f-anliegen" name="anliegen">
+          <option>Immobilie kaufen oder verkaufen</option>
+          <option>Grundschuld</option>
+          <option>Testament oder Erbvertrag</option>
+          <option>Erbschein, Nachlass</option>
+          <option>Schenkung, Übergabe</option>
+          <option>Vorsorgevollmacht, Patientenverfügung</option>
+          <option>Ehevertrag, Scheidungsfolgen</option>
+          <option>GmbH, Handelsregister</option>
+          <option>Beglaubigung</option>
+          <option>Sonstiges</option>
+        </select></label>
+      <label for="f-text">Kurze Beschreibung <small>(keine vertraulichen Details, die besprechen wir im Gespräch)</small><textarea id="f-text" name="nachricht"></textarea></label>
+      <label for="f-ds" style="display:flex; gap:10px; align-items:flex-start; font-weight:400"><input id="f-ds" name="datenschutz" type="checkbox" required style="width:auto; margin-top:6px"><span>Ich habe die <a href="#datenschutz">Datenschutzhinweise</a> gelesen. Meine Angaben werden nur zur Bearbeitung der Anfrage verwendet.</span></label>
+      <div><button class="btn btn-primary" type="submit">Anfrage senden</button></div>
+      <p style="font-size:15px; color:var(--muted); margin:0">Musterseite: Das Formular ist noch nicht angebunden. Im Betrieb wird es verschlüsselt an das Notariat übermittelt.</p>
+    </form>
+  </div>
+  <div>
+    <div class="box">
+      <h3>Direkt erreichen</h3>
+      <p><strong>Telefon</strong><br><a href="tel:+497761926170">07761 92617-0</a></p>
+      <p><strong>Fax</strong><br><span class="ph">[Faxnummer]</span></p>
+      <p><strong>E-Mail</strong><br><span class="ph">[E-Mail-Adresse]</span></p>
+      <p style="margin:0"><strong>Post</strong><br>Notar Kai-Christoph Stadler<br>Scheffelstraße 23<br>79713 Bad Säckingen</p>
+    </div>
+    <div class="box" style="margin-top:18px">
+      <h3>Öffnungszeiten</h3>
+      <p>Mo–Do 8–12 und 13–17 Uhr<br>Fr 8–12 Uhr</p>
+      <p style="margin:0">Termine nach Vereinbarung.</p>
+    </div>
+    <div class="img-ph wide" style="margin-top:18px">Anfahrtsskizze<br>[statische Karte ohne Dienste Dritter]</div>
+    <p style="margin-top:10px; font-size:15px"><a href="https://www.openstreetmap.org/search?query=Scheffelstra%C3%9Fe%2023%2C%2079713%20Bad%20S%C3%A4ckingen" rel="noopener">Adresse auf OpenStreetMap öffnen</a> (externer Link)</p>
+  </div>
+</div></section>
+
+</section>
+<section class="pv-page page-impressum" id="impressum" data-title="Impressum · Notar Stadler" hidden>
+<section class="page-hero"><div class="wrap">
+  <p class="eyebrow">Impressum</p>
+  <h1>Impressum</h1>
+</div></section>
+<section><div class="wrap prose">
+  <h2>Angaben gemäß § 5 DDG</h2>
+  <p>Notar Kai-Christoph Stadler<br>Scheffelstraße 23<br>79713 Bad Säckingen</p>
+  <p>Telefon: 07761 92617-0<br>Fax: <span class="ph">[Faxnummer]</span><br>E-Mail: <span class="ph">[E-Mail-Adresse]</span></p>
+  <h2>Amtsbezeichnung</h2>
+  <p>Notar. Die Amtsbezeichnung wurde in der Bundesrepublik Deutschland, Land Baden-Württemberg, verliehen. Der Notar ist Träger eines öffentlichen Amtes (§ 1 BNotO).</p>
+  <h2>Aufsichtsbehörde</h2>
+  <p>Präsident des Landgerichts Waldshut-Tiengen<br><span class="ph">[Anschrift des Landgerichts, vor Veröffentlichung prüfen]</span></p>
+  <h2>Zuständige Kammer</h2>
+  <p>Notarkammer Baden-Württemberg<br><span class="ph">[Anschrift, vor Veröffentlichung prüfen]</span><br><a href="https://www.notarkammer-bw.de/" rel="noopener">www.notarkammer-bw.de</a></p>
+  <h2>Berufsrechtliche Regelungen</h2>
+  <ul>
+    <li>Bundesnotarordnung (BNotO)</li>
+    <li>Beurkundungsgesetz (BeurkG)</li>
+    <li>Dienstordnung für Notarinnen und Notare (DONot)</li>
+    <li>Gerichts- und Notarkostengesetz (GNotKG)</li>
+    <li>Richtlinien der Notarkammer Baden-Württemberg</li>
+  </ul>
+  <p>Die Gesetze sind abrufbar unter <a href="https://www.gesetze-im-internet.de/" rel="noopener">www.gesetze-im-internet.de</a>, die Richtlinien bei der Notarkammer Baden-Württemberg.</p>
+  <h2>Umsatzsteuer-Identifikationsnummer</h2>
+  <p><span class="ph">[USt-IdNr.]</span></p>
+  <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+  <p>Notar Kai-Christoph Stadler, Anschrift wie oben.</p>
+  <h2>Hinweis</h2>
+  <p>Die Inhalte dieser Seite dienen der allgemeinen Information über die Tätigkeit des Notars. Sie ersetzen keine Beratung im Einzelfall. Externe Links wurden bei Verlinkung geprüft; für deren Inhalte sind die jeweiligen Betreiber verantwortlich.</p>
+</div></section>
+
+</section>
+<section class="pv-page page-datenschutz" id="datenschutz" data-title="Datenschutz · Notar Stadler" hidden>
+<section class="page-hero"><div class="wrap">
+  <p class="eyebrow">Datenschutz</p>
+  <h1>Datenschutzerklärung</h1>
+  <p class="lead">Diese Seite setzt keine Cookies, verwendet keine Analysewerkzeuge und bindet keine Dienste Dritter ein. Schriften und alle Inhalte werden vom eigenen Server ausgeliefert.</p>
+</div></section>
+<section><div class="wrap prose">
+  <h2>Verantwortlicher</h2>
+  <p>Notar Kai-Christoph Stadler, Scheffelstraße 23, 79713 Bad Säckingen, Telefon 07761 92617-0, E-Mail <span class="ph">[E-Mail-Adresse]</span>.</p>
+  <p>Datenschutzbeauftragter: <span class="ph">[Name und Kontakt, falls bestellt; sonst Absatz streichen]</span></p>
+  <h2>Aufruf der Seite</h2>
+  <p>Beim Aufruf speichert der Server in Protokolldateien die IP-Adresse, Datum und Uhrzeit, die aufgerufene Seite, den Browsertyp und die verweisende Seite. Die Daten dienen dem sicheren Betrieb (Art. 6 Abs. 1 lit. f DSGVO) und werden nach <span class="ph">[7]</span> Tagen gelöscht. Hosting: <span class="ph">[Anbieter, Sitz in Deutschland]</span>, mit dem ein Vertrag zur Auftragsverarbeitung besteht.</p>
+  <h2>Kontaktformular und E-Mail</h2>
+  <p>Ihre Angaben werden verschlüsselt übertragen und ausschließlich zur Bearbeitung Ihrer Anfrage verwendet (Art. 6 Abs. 1 lit. b DSGVO). Sie werden gelöscht, sobald die Anfrage erledigt ist, es sei denn, es kommt zu einem Amtsgeschäft. Dann gelten die Aufbewahrungsfristen des Notarrechts.</p>
+  <h2>Daten im Amtsgeschäft</h2>
+  <p>Für Beurkundungen und Beglaubigungen verarbeitet der Notar personenbezogene Daten auf Grundlage der Bundesnotarordnung, des Beurkundungsgesetzes und des Geldwäschegesetzes. Diese Verarbeitung ist gesetzlich vorgeschrieben. Ausführliche Hinweise erhalten Sie beim Termin oder auf Anfrage.</p>
+  <h2>Ihre Rechte</h2>
+  <p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung und Datenübertragbarkeit, soweit gesetzliche Aufbewahrungspflichten nicht entgegenstehen, sowie das Recht auf Widerspruch. Beschwerden richten Sie an den Landesbeauftragten für den Datenschutz und die Informationsfreiheit Baden-Württemberg.</p>
+  <h2>Externe Links</h2>
+  <p>Links zu OpenStreetMap, zur Notarkammer und zur Bundesnotarkammer führen auf fremde Seiten. Erst beim Klick werden Daten an deren Betreiber übermittelt.</p>
+  <p><span class="ph">[Muster. Vor Veröffentlichung durch den Notar prüfen und um kanzleispezifische Angaben ergänzen.]</span></p>
+</div></section>
+
+</section>
+</main>
+<footer class="site-footer"><div class="wrap">
+  <div class="cols">
+    <div>
+      <p class="f-title">Notar Kai-Christoph Stadler</p>
+      <p>Scheffelstraße 23<br>79713 Bad Säckingen</p>
+      <p><a href="tel:+497761926170">07761 92617-0</a><br><span class="ph">[Fax]</span><br><span class="ph">[E-Mail-Adresse]</span></p>
+    </div>
+    <div>
+      <p class="f-title">Öffnungszeiten</p>
+      <p>Montag bis Donnerstag<br>8–12 Uhr und 13–17 Uhr</p>
+      <p>Freitag<br>8–12 Uhr</p>
+      <p>Termine nach Vereinbarung.</p>
+    </div>
+    <div>
+      <p class="f-title">Seiten</p>
+      <p><a href="#leistungen">Leistungen</a><br><a href="#ablauf">Ablauf &amp; Unterlagen</a><br><a href="#kosten">Kosten</a><br><a href="#glossar">Glossar</a><br><a href="#kanzlei">Kanzlei</a><br><a href="#kontakt">Kontakt</a></p>
+    </div>
+    <div>
+      <p class="f-title">Rechtliches</p>
+      <p><a href="#impressum">Impressum</a><br><a href="#datenschutz">Datenschutz</a></p>
+      <p><a href="https://www.notarkammer-bw.de/" rel="noopener">Notarkammer Baden-Württemberg</a><br><a href="https://www.bnotk.de/" rel="noopener">Bundesnotarkammer</a></p>
+    </div>
+  </div>
+  <p class="f-note">Der Notar übt ein öffentliches Amt aus. Er ist zur Unparteilichkeit und Verschwiegenheit verpflichtet. Die Gebühren sind gesetzlich festgelegt (GNotKG). Diese Seite setzt keine Cookies und bindet keine Dienste Dritter ein.</p>
+</div></footer>
+
+<script>
+(function(){
+  var pages = Array.prototype.slice.call(document.querySelectorAll('.pv-page'));
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav a[data-slug]'));
+  function show(){
+    var slug = (location.hash || '#index').slice(1);
+    if(!document.getElementById(slug)) slug = 'index';
+    pages.forEach(function(p){ p.hidden = (p.id !== slug); });
+    links.forEach(function(a){
+      var on = a.getAttribute('data-slug') === slug;
+      a.classList.toggle('active', on);
+      if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
+    });
+    var t = document.getElementById(slug).getAttribute('data-title');
+    if(t) document.title = t;
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange', show);
+  show();
+})();
+</script>

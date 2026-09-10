@@ -1,0 +1,172 @@
+/* Notariat Stadler – Musterseite. Tokens zuerst, alles andere leitet sich daraus ab. */
+:root{
+  --paper:#F4F5F2;
+  --paper-2:#EBEEE8;
+  --ink:#19222E;
+  --ink-2:#3A4550;
+  --muted:#5C6673;
+  --rule:#D3D8D1;
+  --seal:#7B2D2D;
+  --seal-soft:#F0E2E1;
+  --link:#2B4A6B;
+  --focus:#B5541F;
+  --max:1120px;
+  --measure:68ch;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#141A21; --paper-2:#1C232C; --ink:#E7E9E4; --ink-2:#C6CCC9; --muted:#A0A9B1;
+    --rule:#2F3842; --seal:#D18E8E; --seal-soft:#2B1E1E; --link:#9BB8D6; --focus:#E4A26F;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141A21; --paper-2:#1C232C; --ink:#E7E9E4; --ink-2:#C6CCC9; --muted:#A0A9B1;
+  --rule:#2F3842; --seal:#D18E8E; --seal-soft:#2B1E1E; --link:#9BB8D6; --focus:#E4A26F;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Source Sans 3", system-ui, "Segoe UI", Roboto, sans-serif;
+  font-size:18px; line-height:1.6;
+}
+.wrap{max-width:var(--max); margin:0 auto; padding-inline:20px}
+a{color:var(--link); text-underline-offset:3px}
+a:hover{color:var(--seal)}
+:focus-visible{outline:3px solid var(--focus); outline-offset:3px}
+.skip{position:absolute; left:-999px; top:8px; background:var(--ink); color:var(--paper); padding:8px 12px; z-index:100}
+.skip:focus{left:8px}
+
+h1,h2,h3{font-family:"Libre Caslon Text", Georgia, "Times New Roman", serif; font-weight:400; line-height:1.2; text-wrap:balance; margin:0 0 .5em}
+h1{font-size:clamp(30px,4.8vw,44px)}
+h2{font-size:clamp(24px,3.2vw,32px); margin-top:0}
+h3{font-size:22px}
+p{margin:0 0 1em}
+ul,ol{margin:0 0 1em; padding-left:1.3em}
+li{margin-bottom:.4em}
+strong{font-weight:600}
+.lead{font-size:21px; color:var(--ink-2); max-width:var(--measure)}
+.prose{max-width:var(--measure)}
+.eyebrow{font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 10px}
+.ph{color:var(--seal); background:var(--seal-soft); padding:0 4px; border-radius:2px; font-style:normal}
+
+/* Kopf */
+.topbar{background:var(--ink); color:var(--paper); font-size:14px}
+.topbar .wrap{display:flex; flex-wrap:wrap; gap:4px 24px; padding-block:6px}
+.topbar a{color:inherit; font-weight:600; margin-left:auto}
+.site-header{border-bottom:1px solid var(--rule); background:var(--paper)}
+.site-header .wrap{display:flex; align-items:center; flex-wrap:wrap; gap:12px 28px; padding-block:16px}
+.brand{display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--ink)}
+.brand-seal{width:34px; height:34px; border-radius:50%; border:2px solid var(--seal); position:relative; flex:none}
+.brand-seal::after{content:""; position:absolute; inset:6px; border-radius:50%; border:1px solid var(--seal)}
+.brand-text{display:flex; flex-direction:column; line-height:1.15}
+.brand-text strong{font-family:"Libre Caslon Text", Georgia, serif; font-weight:400; font-size:20px}
+.brand-text span{font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.site-header nav{margin-left:auto}
+.site-header nav ul{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:2px 18px}
+.site-header nav a{text-decoration:none; color:var(--ink-2); font-weight:600; font-size:16px; padding:6px 0; border-bottom:2px solid transparent}
+.site-header nav a:hover, .site-header nav a.active{color:var(--ink); border-bottom-color:var(--seal)}
+.btn{display:inline-block; text-decoration:none; font-weight:600; padding:10px 18px; border:1.5px solid var(--ink); color:var(--ink); border-radius:3px}
+.btn:hover{background:var(--paper-2); color:var(--ink)}
+.btn-primary{background:var(--ink); color:var(--paper)}
+.btn-primary:hover{background:var(--seal); border-color:var(--seal); color:#fff}
+.btn-header{font-size:15px; padding:8px 14px}
+@media (max-width:1100px){ .btn-header{display:none} }
+@media (max-width:820px){ .site-header nav{margin-left:0; width:100%} }
+
+/* Abschnitte */
+main{display:block}
+section{padding-block:56px}
+section + section{border-top:1px solid var(--rule)}
+section.tight{padding-block:36px}
+.section-head{display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px 24px; margin-bottom:24px}
+.section-head p{margin:0; color:var(--muted); max-width:52ch}
+
+/* Hero */
+.hero{padding-block:64px 48px; border-bottom:1px solid var(--rule)}
+.hero .wrap{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:40px; align-items:end}
+.hero .actions{display:flex; flex-wrap:wrap; gap:12px; margin-top:20px}
+.facts{background:var(--paper-2); border:1px solid var(--rule); padding:20px 22px; display:grid; gap:14px}
+.facts div{display:grid; gap:2px}
+.facts dt{font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.facts dd{margin:0; font-size:17px}
+.facts dl{margin:0}
+@media (max-width:820px){ .hero .wrap{grid-template-columns:1fr} }
+
+/* Karten */
+.grid{display:grid; gap:18px; grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.card{background:var(--paper-2); border:1px solid var(--rule); padding:22px; display:flex; flex-direction:column; gap:8px}
+.card h3{margin:0; font-size:21px}
+.card p{margin:0; color:var(--ink-2); font-size:17px}
+.card .more{margin-top:auto; padding-top:8px; font-weight:600; text-decoration:none}
+.card .more::after{content:" \2192"}
+a.card{text-decoration:none; color:inherit}
+a.card:hover{border-color:var(--seal)}
+
+/* Schritte (echte Reihenfolge) */
+.steps{list-style:none; margin:0; padding:0; display:grid; gap:18px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); counter-reset:s}
+.steps li{counter-increment:s; border-top:2px solid var(--ink); padding-top:12px; margin:0}
+.steps li::before{content:counter(s); display:block; font-family:"Libre Caslon Text", Georgia, serif; font-size:28px; color:var(--seal); line-height:1; margin-bottom:6px}
+.steps strong{display:block; font-size:19px; margin-bottom:4px}
+.steps p{margin:0; font-size:17px; color:var(--ink-2)}
+
+/* Zweispaltig Text + Kasten */
+.split{display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:40px; align-items:start}
+@media (max-width:820px){ .split{grid-template-columns:1fr} }
+.box{background:var(--paper-2); border:1px solid var(--rule); padding:22px}
+.box h3{font-size:19px; margin-top:0}
+.box ul{margin-bottom:0}
+.note{border-left:3px solid var(--seal); padding:12px 18px; background:var(--paper-2); max-width:var(--measure)}
+.note p:last-child{margin:0}
+
+/* Unterseiten Leistungen */
+.page-hero{padding-block:48px 32px; border-bottom:1px solid var(--rule)}
+.page-hero .wrap{max-width:var(--max)}
+.faq details{border-top:1px solid var(--rule); padding:12px 0}
+.faq details:last-child{border-bottom:1px solid var(--rule)}
+.faq summary{font-weight:600; cursor:pointer; font-size:18px}
+.faq details p{margin:10px 0 0; max-width:var(--measure); color:var(--ink-2)}
+.check{list-style:none; padding:0; margin:0 0 1em}
+.check li{padding-left:28px; position:relative}
+.check li::before{content:""; position:absolute; left:0; top:.45em; width:14px; height:14px; border:1.5px solid var(--ink-2); border-radius:2px}
+.crumbs{font-size:15px; color:var(--muted); margin-bottom:10px}
+.crumbs a{color:inherit}
+
+/* Tabellen */
+.tbl{overflow-x:auto}
+table{border-collapse:collapse; width:100%; font-size:17px}
+th,td{text-align:left; padding:10px 12px 10px 0; border-bottom:1px solid var(--rule); vertical-align:top}
+th{font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600}
+td.num{font-variant-numeric:tabular-nums; white-space:nowrap; text-align:right}
+th.num{text-align:right}
+
+/* Glossar */
+.gloss{max-width:var(--measure)}
+.gloss dt{font-family:"Libre Caslon Text", Georgia, serif; font-size:22px; margin-top:22px}
+.gloss dd{margin:6px 0 0; color:var(--ink-2)}
+
+/* Bildplatzhalter (kein Stockmaterial) */
+.img-ph{background:repeating-linear-gradient(135deg, var(--paper-2) 0 12px, var(--paper) 12px 24px); border:1px solid var(--rule); aspect-ratio:4/3; max-width:100%; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:15px; text-align:center; padding:16px}
+.img-ph.wide{aspect-ratio:21/9}
+
+/* Formular (statisch) */
+form.contact{display:grid; gap:16px; max-width:var(--measure)}
+form.contact label{display:grid; gap:6px; font-weight:600}
+form.contact input, form.contact select, form.contact textarea{font:inherit; padding:10px 12px; border:1.5px solid var(--ink-2); background:var(--paper); color:var(--ink); border-radius:3px; width:100%}
+form.contact textarea{min-height:140px}
+form.contact .row{display:grid; gap:16px; grid-template-columns:1fr 1fr}
+@media (max-width:600px){ form.contact .row{grid-template-columns:1fr} }
+form.contact small{font-weight:400; color:var(--muted)}
+
+/* Fuß */
+.site-footer{border-top:2px solid var(--ink); margin-top:40px; padding-block:40px 32px; font-size:16px}
+.site-footer .cols{display:grid; gap:28px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.site-footer p{margin:0 0 10px}
+.f-title{font-family:"Libre Caslon Text", Georgia, serif; font-size:18px}
+.f-note{margin-top:32px; color:var(--muted); font-size:15px; max-width:80ch}
+
+/* Vorschau-Modus */
+.pv-banner{background:var(--seal-soft); color:var(--seal); font-size:14px; text-align:center; padding:6px 12px}
+.pv-page[hidden]{display:none}
