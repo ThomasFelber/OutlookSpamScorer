@@ -242,7 +242,7 @@ def render_field(fl, form_slug, lang="de"):
     else:
         extra = ' inputmode="decimal" step="any" min="0"' if typ == "number" else ""
         ctl = f'<input id="{fid}" name="{name}" type="{typ}"{extra}{req}{ph}>'
-    return f'<label for="{fid}">{label} {hint}{ctl}</label>'
+    return f'<label for="{fid}"><span class="lt">{label}</span>{hint}{ctl}</label>'
 
 def render_form(x, mode, lang="de"):
     """Fragebogen-Seite aus dem Schema. dist: POST an /api/formular/<slug>; preview: ohne Server."""
