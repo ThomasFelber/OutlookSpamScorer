@@ -30,6 +30,7 @@ PAGES = [
     ("glossar",       None,                  "Glossar · Notar Stadler",                                  "Begriffe aus dem Notariat verständlich erklärt: Beurkundung, Beglaubigung, Auflassung, Pflichtteil, Grundschuld und mehr."),
     ("kanzlei",       "Kanzlei",             "Kanzlei · Notar Stadler, Bad Säckingen",                   "Notar Kai-Christoph Stadler, Amtssitz Bad Säckingen. Räume, Anfahrt, Öffnungszeiten, Zugang."),
     ("kontakt",       "Kontakt",             "Kontakt und Termin · Notar Stadler",                       "Termin anfragen: Scheffelstraße 23, 79713 Bad Säckingen, Telefon 07761 92617-0. Öffnungszeiten und Anfahrt."),
+    ("stellen",       None,                  "Offene Stellen · Notar Stadler",                           "Notarfachangestellte (m/w/d) gesucht, Vollzeit, unbefristet, Bad Säckingen."),
     ("impressum",     None,                  "Impressum · Notar Stadler",                                "Impressum mit den Pflichtangaben für Notare."),
     ("datenschutz",   None,                  "Datenschutz · Notar Stadler",                              "Datenschutzerklärung. Diese Seite setzt keine Cookies und bindet keine Drittanbieter ein."),
 ]
@@ -86,7 +87,12 @@ def nav_html(active, mode):
         items.append(f'<li><a href="{href}"{cls}{cur} data-slug="{slug}">{label}</a></li>')
     return "\n".join(items)
 
+def wappen_img(mode):
+    _MODE["mode"] = mode
+    return IMG_RE.sub(inline_img, "{{img:wappen-bw.png|Landeswappen Baden-Württemberg}}")
+
 def header(active, mode):
+    wappen = wappen_img(mode)
     home = "#index" if mode == "preview" else "index.html"
     kontakt = "#kontakt" if mode == "preview" else "kontakt.html"
     return f"""<a class="skip" href="#inhalt">Zum Inhalt springen</a>
@@ -97,7 +103,7 @@ def header(active, mode):
 </div></div>
 <header class="site-header"><div class="wrap">
   <a class="brand" href="{home}">
-    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-mark">{wappen}</span>
     <span class="brand-text"><strong>Notar Kai-Christoph Stadler</strong><span>Bad Säckingen</span></span>
   </a>
   <nav aria-label="Hauptnavigation"><ul>
@@ -113,7 +119,7 @@ def footer(mode):
     <div>
       <p class="f-title">Notar Kai-Christoph Stadler</p>
       <p>Scheffelstraße 23<br>79713 Bad Säckingen</p>
-      <p><a href="tel:+497761926170">07761 92617-0</a><br><span class="ph">[Fax]</span><br><span class="ph">[E-Mail-Adresse]</span></p>
+      <p><a href="tel:+497761926170">07761 92617-0</a><br><a href="mailto:info@notar-stadler.de">info@notar-stadler.de</a></p>
     </div>
     <div>
       <p class="f-title">Öffnungszeiten</p>
@@ -127,8 +133,8 @@ def footer(mode):
     </div>
     <div>
       <p class="f-title">Rechtliches</p>
-      <p><a href="{h('impressum')}">Impressum</a><br><a href="{h('datenschutz')}">Datenschutz</a></p>
-      <p><a href="https://www.notarkammer-bw.de/" rel="noopener">Notarkammer Baden-Württemberg</a><br><a href="https://www.bnotk.de/" rel="noopener">Bundesnotarkammer</a></p>
+      <p><a href="{h('impressum')}">Impressum</a><br><a href="{h('datenschutz')}">Datenschutz</a><br><a href="{h('stellen')}">Offene Stellen</a></p>
+      <p><a href="https://www.notarkammer-baden-wuerttemberg.de/" rel="noopener">Notarkammer Baden-Württemberg</a><br><a href="https://www.bnotk.de/" rel="noopener">Bundesnotarkammer</a></p>
     </div>
   </div>
   <p class="f-note">Der Notar übt ein öffentliches Amt aus. Er ist zur Unparteilichkeit und Verschwiegenheit verpflichtet. Die Gebühren sind gesetzlich festgelegt (GNotKG). Diese Seite setzt keine Cookies und bindet keine Dienste Dritter ein.</p>
@@ -143,9 +149,26 @@ def inline_svg(m):
     attrs = f' role="img" aria-label="{html.escape(alt)}"' if alt else ' aria-hidden="true" focusable="false"'
     return svg.replace("<svg ", f"<svg{attrs} ", 1)
 
+IMG_RE = re.compile(r"\{\{img:([\w.-]+)\|([^|}]*)(?:\|([^}]*))?\}\}")
+_MODE = {"mode": "dist"}
+
+def inline_img(m):
+    """{{img:datei.jpg|Alt-Text|object-position}} -> <img>. In der Vorschau als Daten-URI eingebettet."""
+    import base64, mimetypes
+    name, alt, pos = m.group(1), m.group(2).strip(), (m.group(3) or "").strip()
+    style = f' style="object-position:{pos}"' if pos else ""
+    if _MODE["mode"] == "preview":
+        data = (SRC / "img" / "photos" / name).read_bytes()
+        mime = mimetypes.guess_type(name)[0] or "image/jpeg"
+        src = f"data:{mime};base64,{base64.b64encode(data).decode()}"
+    else:
+        src = f"img/{name}"
+    return f'<img src="{src}" alt="{html.escape(alt)}" loading="lazy"{style}>'
+
 def read_page(slug):
     body = (SRC / "pages" / f"{slug}.html").read_text(encoding="utf-8")
-    return SVG_RE.sub(inline_svg, body)
+    body = SVG_RE.sub(inline_svg, body)
+    return IMG_RE.sub(inline_img, body)
 
 def to_preview_links(body):
     # a.html -> #a ; a.html#x -> #a (Ankersprung innerhalb der Vorschau nicht nötig)
@@ -153,7 +176,12 @@ def to_preview_links(body):
     return pat.sub(lambda m: f'href="#{m.group(1)}"', body)
 
 def build_dist():
+    import shutil
+    _MODE["mode"] = "dist"
     DIST.mkdir(exist_ok=True)
+    (DIST / "img").mkdir(exist_ok=True)
+    for f in (SRC / "img" / "photos").iterdir():
+        shutil.copy(f, DIST / "img" / f.name)
     css = (SRC / "style.css").read_text(encoding="utf-8")
     (DIST / "style.css").write_text(css, encoding="utf-8")
     today = datetime.date.today().isoformat()
@@ -187,6 +215,7 @@ def build_dist():
     (DIST / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {DOMAIN}/sitemap.xml\n", encoding="utf-8")
 
 def build_preview():
+    _MODE["mode"] = "preview"
     css = (SRC / "style.css").read_text(encoding="utf-8")
     sections = []
     for slug, label, title, desc in PAGES:

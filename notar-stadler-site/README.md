@@ -14,13 +14,17 @@ python3 build.py
 
 ## Seiten
 
-Start · Leistungen (Immobilien, Vererben, Schenken, Vorsorge, Familie, Unternehmen, Beglaubigungen und Schweiz) · Ablauf & Unterlagen · Kosten · Glossar · Kanzlei · Kontakt · Impressum · Datenschutz
+Start · Leistungen (Immobilien, Vererben, Schenken, Vorsorge, Familie, Unternehmen, Beglaubigungen und Schweiz) · Ablauf & Unterlagen · Fragebögen (Kaufvertrag, GmbH, Vorsorgevollmacht) · Kosten · Glossar · Kanzlei · Offene Stellen · Kontakt · Impressum · Datenschutz
 
 ## Platzhalter
 
-Alles in eckigen Klammern (rot hinterlegt) ist vor Veröffentlichung zu ersetzen: E-Mail, Fax, USt-IdNr., Werdegang, Team, Zugang und Parken, Fotos, Anfahrtsskizze, Anschriften von Aufsichtsbehörde und Kammer, Hosting-Anbieter.
+Alles in eckigen Klammern (ocker hinterlegt) ist vor Veröffentlichung zu ersetzen oder zu prüfen: Etage und Zugang, Gehzeit vom Bahnhof, Hosting-Anbieter, Datenschutzbeauftragter, Zuordnung der Team-Porträts, Formulierung zur Streitbeilegung.
 
-Assets der bestehenden Seite (Logo, Fotos) konnten nicht übernommen werden, weil die Domain aus der Build-Umgebung nicht erreichbar war. Bildflächen sind als schraffierte Platzhalter markiert.
+## Fotos
+
+`src/img/photos/` enthält die Aufnahmen der bisherigen Seite (Kanzlei, Notar, Team, Landeswappen), neu komprimiert und umbenannt. Die Zuordnung der Team-Porträts zu Namen folgt der Reihenfolge auf der bisherigen Team-Seite und ist vor Veröffentlichung zu prüfen. Fünf Mitarbeitende haben dort kein Foto.
+
+`{{img:datei.jpg|Alt-Text|object-position}}` in einem Seitenfragment wird zu `<img>`; in `preview.html` sind die Bilder als Daten-URIs eingebettet, in `dist/img/` liegen sie als Dateien.
 
 ## Vor Veröffentlichung
 
