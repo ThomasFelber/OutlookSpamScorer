@@ -29,7 +29,7 @@ html{scroll-behavior:smooth}
 @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
 body{
   margin:0; background:var(--paper); color:var(--ink);
-  font-family:"Source Sans 3", system-ui, "Segoe UI", Roboto, sans-serif;
+  font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size:18px; line-height:1.6;
 }
 .wrap{max-width:var(--max); margin:0 auto; padding-inline:20px}
@@ -39,7 +39,7 @@ a:hover{color:var(--seal)}
 .skip{position:absolute; left:-999px; top:8px; background:var(--ink); color:var(--paper); padding:8px 12px; z-index:100}
 .skip:focus{left:8px}
 
-h1,h2,h3{font-family:"Libre Caslon Text", Georgia, "Times New Roman", serif; font-weight:400; line-height:1.2; text-wrap:balance; margin:0 0 .5em}
+h1,h2,h3{font-family:Georgia, "Times New Roman", "Noto Serif", serif; font-weight:400; line-height:1.2; text-wrap:balance; margin:0 0 .5em}
 h1{font-size:clamp(30px,4.8vw,44px)}
 h2{font-size:clamp(24px,3.2vw,32px); margin-top:0}
 h3{font-size:22px}
@@ -62,7 +62,7 @@ strong{font-weight:600}
 .brand-seal{width:34px; height:34px; border-radius:50%; border:2px solid var(--seal); position:relative; flex:none}
 .brand-seal::after{content:""; position:absolute; inset:6px; border-radius:50%; border:1px solid var(--seal)}
 .brand-text{display:flex; flex-direction:column; line-height:1.15}
-.brand-text strong{font-family:"Libre Caslon Text", Georgia, serif; font-weight:400; font-size:20px}
+.brand-text strong{font-family:Georgia, "Times New Roman", "Noto Serif", serif; font-weight:400; font-size:20px}
 .brand-text span{font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
 .site-header nav{margin-left:auto}
 .site-header nav ul{list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:2px 18px}
@@ -108,7 +108,7 @@ a.card:hover{border-color:var(--seal)}
 /* Schritte (echte Reihenfolge) */
 .steps{list-style:none; margin:0; padding:0; display:grid; gap:18px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); counter-reset:s}
 .steps li{counter-increment:s; border-top:2px solid var(--ink); padding-top:12px; margin:0}
-.steps li::before{content:counter(s); display:block; font-family:"Libre Caslon Text", Georgia, serif; font-size:28px; color:var(--seal); line-height:1; margin-bottom:6px}
+.steps li::before{content:counter(s); display:block; font-family:Georgia, "Times New Roman", "Noto Serif", serif; font-size:28px; color:var(--seal); line-height:1; margin-bottom:6px}
 .steps strong{display:block; font-size:19px; margin-bottom:4px}
 .steps p{margin:0; font-size:17px; color:var(--ink-2)}
 
@@ -144,7 +144,7 @@ th.num{text-align:right}
 
 /* Glossar */
 .gloss{max-width:var(--measure)}
-.gloss dt{font-family:"Libre Caslon Text", Georgia, serif; font-size:22px; margin-top:22px}
+.gloss dt{font-family:Georgia, "Times New Roman", "Noto Serif", serif; font-size:22px; margin-top:22px}
 .gloss dd{margin:6px 0 0; color:var(--ink-2)}
 
 /* Bildplatzhalter (kein Stockmaterial) */
@@ -164,7 +164,7 @@ form.contact small{font-weight:400; color:var(--muted)}
 .site-footer{border-top:2px solid var(--ink); margin-top:40px; padding-block:40px 32px; font-size:16px}
 .site-footer .cols{display:grid; gap:28px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
 .site-footer p{margin:0 0 10px}
-.f-title{font-family:"Libre Caslon Text", Georgia, serif; font-size:18px}
+.f-title{font-family:Georgia, "Times New Roman", "Noto Serif", serif; font-size:18px}
 .f-note{margin-top:32px; color:var(--muted); font-size:15px; max-width:80ch}
 
 /* Vorschau-Modus */

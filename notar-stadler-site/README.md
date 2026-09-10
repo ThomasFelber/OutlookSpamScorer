@@ -1,6 +1,6 @@
 # Musterseite Notariat Stadler, Bad Säckingen
 
-Statische Musterseite als Vorschlag für den neuen Internetauftritt. Keine Datenbank, kein CMS, keine Dienste Dritter.
+Statische Musterseite als Vorschlag für den neuen Internetauftritt. Keine Datenbank, kein CMS, keine Dienste Dritter, keine externen Schriften oder Skripte. Build nur mit Python-Standardbibliothek.
 
 ## Aufbau
 
@@ -24,7 +24,6 @@ Assets der bestehenden Seite (Logo, Fotos) konnten nicht übernommen werden, wei
 
 ## Vor Veröffentlichung
 
-- Schriften selbst hosten (derzeit Google Fonts zur Vorschau eingebunden); Datenschutzerklärung setzt bereits Selbsthosting voraus
 - Kontaktformular an einen Mailversand auf dem eigenen Server anbinden
 - Texte durch den Notar auf Berufsrecht prüfen (§ 29 BNotO, Richtlinien der Notarkammer Baden-Württemberg)
 - Kostenbeispiele gegen aktuelle GNotKG-Tabelle prüfen
