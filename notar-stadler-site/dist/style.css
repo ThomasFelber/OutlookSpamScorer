@@ -73,7 +73,7 @@ strong{font-weight:600}
 .btn-primary{background:var(--ink); color:var(--paper)}
 .btn-primary:hover{background:var(--seal); border-color:var(--seal); color:#fff}
 .btn-header{font-size:15px; padding:8px 14px}
-@media (max-width:1100px){ .btn-header{display:none} }
+@media (max-width:1280px){ .btn-header{display:none} }
 @media (max-width:820px){ .site-header nav{margin-left:0; width:100%} }
 
 /* Abschnitte */
@@ -147,7 +147,21 @@ th.num{text-align:right}
 .gloss dt{font-family:Georgia, "Times New Roman", "Noto Serif", serif; font-size:22px; margin-top:22px}
 .gloss dd{margin:6px 0 0; color:var(--ink-2)}
 
-/* Bildplatzhalter (kein Stockmaterial) */
+/* Illustrationen und Symbole (Inline-SVG, folgen der Textfarbe) */
+.hero-art{padding-block:8px 0; border-bottom:1px solid var(--rule); background:var(--paper-2)}
+.hero-art svg{display:block; width:100%; height:auto; max-height:300px; color:var(--ink-2)}
+.hero-art figcaption{font-size:13px; color:var(--muted); padding:8px 0 12px; letter-spacing:.06em; text-transform:uppercase}
+.icon{display:block; width:44px; height:44px; color:var(--seal); flex:none}
+.icon svg{display:block; width:100%; height:100%}
+.card .icon{margin-bottom:4px}
+.page-hero .wrap{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:24px 40px; align-items:center}
+.page-hero .art{width:120px; height:120px; color:var(--ink-2); justify-self:end}
+.page-hero .art svg{width:100%; height:100%}
+@media (max-width:600px){ .page-hero .wrap{grid-template-columns:1fr} .page-hero .art{width:72px; height:72px; justify-self:start; order:-1} }
+.steps .icon{width:36px; height:36px; color:var(--seal); margin:4px 0 8px}
+.box .icon{width:32px; height:32px; margin-bottom:6px}
+
+/* Bildplatzhalter für echte Fotos (kein Stockmaterial) */
 .img-ph{background:repeating-linear-gradient(135deg, var(--paper-2) 0 12px, var(--paper) 12px 24px); border:1px solid var(--rule); aspect-ratio:4/3; max-width:100%; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:15px; text-align:center; padding:16px}
 .img-ph.wide{aspect-ratio:21/9}
 

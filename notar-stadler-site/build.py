@@ -119,8 +119,18 @@ def footer(mode):
   <p class="f-note">Der Notar übt ein öffentliches Amt aus. Er ist zur Unparteilichkeit und Verschwiegenheit verpflichtet. Die Gebühren sind gesetzlich festgelegt (GNotKG). Diese Seite setzt keine Cookies und bindet keine Dienste Dritter ein.</p>
 </div></footer>"""
 
+SVG_RE = re.compile(r"\{\{svg:([\w-]+)(?:\|([^}]*))?\}\}")
+
+def inline_svg(m):
+    """{{svg:name|Alt-Text}} -> Inline-SVG. Ohne Alt-Text dekorativ (aria-hidden)."""
+    name, alt = m.group(1), (m.group(2) or "").strip()
+    svg = (SRC / "img" / f"{name}.svg").read_text(encoding="utf-8").strip()
+    attrs = f' role="img" aria-label="{html.escape(alt)}"' if alt else ' aria-hidden="true" focusable="false"'
+    return svg.replace("<svg ", f"<svg{attrs} ", 1)
+
 def read_page(slug):
-    return (SRC / "pages" / f"{slug}.html").read_text(encoding="utf-8")
+    body = (SRC / "pages" / f"{slug}.html").read_text(encoding="utf-8")
+    return SVG_RE.sub(inline_svg, body)
 
 def to_preview_links(body):
     # a.html -> #a ; a.html#x -> #a (Ankersprung innerhalb der Vorschau nicht nötig)

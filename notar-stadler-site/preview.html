@@ -76,7 +76,7 @@ strong{font-weight:600}
 .btn-primary{background:var(--ink); color:var(--paper)}
 .btn-primary:hover{background:var(--seal); border-color:var(--seal); color:#fff}
 .btn-header{font-size:15px; padding:8px 14px}
-@media (max-width:1100px){ .btn-header{display:none} }
+@media (max-width:1280px){ .btn-header{display:none} }
 @media (max-width:820px){ .site-header nav{margin-left:0; width:100%} }
 
 /* Abschnitte */
@@ -150,7 +150,21 @@ th.num{text-align:right}
 .gloss dt{font-family:Georgia, "Times New Roman", "Noto Serif", serif; font-size:22px; margin-top:22px}
 .gloss dd{margin:6px 0 0; color:var(--ink-2)}
 
-/* Bildplatzhalter (kein Stockmaterial) */
+/* Illustrationen und Symbole (Inline-SVG, folgen der Textfarbe) */
+.hero-art{padding-block:8px 0; border-bottom:1px solid var(--rule); background:var(--paper-2)}
+.hero-art svg{display:block; width:100%; height:auto; max-height:300px; color:var(--ink-2)}
+.hero-art figcaption{font-size:13px; color:var(--muted); padding:8px 0 12px; letter-spacing:.06em; text-transform:uppercase}
+.icon{display:block; width:44px; height:44px; color:var(--seal); flex:none}
+.icon svg{display:block; width:100%; height:100%}
+.card .icon{margin-bottom:4px}
+.page-hero .wrap{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:24px 40px; align-items:center}
+.page-hero .art{width:120px; height:120px; color:var(--ink-2); justify-self:end}
+.page-hero .art svg{width:100%; height:100%}
+@media (max-width:600px){ .page-hero .wrap{grid-template-columns:1fr} .page-hero .art{width:72px; height:72px; justify-self:start; order:-1} }
+.steps .icon{width:36px; height:36px; color:var(--seal); margin:4px 0 8px}
+.box .icon{width:32px; height:32px; margin-bottom:6px}
+
+/* Bildplatzhalter für echte Fotos (kein Stockmaterial) */
 .img-ph{background:repeating-linear-gradient(135deg, var(--paper-2) 0 12px, var(--paper) 12px 24px); border:1px solid var(--rule); aspect-ratio:4/3; max-width:100%; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:15px; text-align:center; padding:16px}
 .img-ph.wide{aspect-ratio:21/9}
 
@@ -216,6 +230,60 @@ form.contact small{font-weight:400; color:var(--muted)}
     <div><dt>Öffnungszeiten</dt><dd>Mo–Do 8–12 und 13–17 Uhr<br>Fr 8–12 Uhr, Termine nach Vereinbarung</dd></div>
   </dl></div>
 </div></section>
+<figure class="hero-art"><div class="wrap"><svg role="img" aria-label="Illustration: Gedeckte Holzbrücke über den Rhein zwischen Bad Säckingen und Stein, dahinter die Türme des Fridolinsmünsters" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+  <!-- Hügel des Hotzenwalds -->
+  <path d="M0 150 C120 110 220 100 330 120 C420 136 470 118 560 104 C660 90 760 108 960 128" stroke-opacity=".5"/>
+  <path d="M0 170 C90 150 170 146 250 156 C340 168 420 150 500 140 C620 126 780 138 960 150" stroke-opacity=".3"/>
+  <!-- Stadtsilhouette mit Fridolinsmünster -->
+  <g fill="currentColor" fill-opacity=".06">
+    <path d="M600 200 V150 H620 V140 H628 V150 H648 V200 Z"/>
+    <path d="M660 200 V160 L672 148 L684 160 V200 Z"/>
+    <path d="M700 200 V170 H730 V200 Z"/>
+    <path d="M740 200 V166 L752 154 L764 166 V200 Z"/>
+    <path d="M780 200 V172 H812 V200 Z"/>
+    <path d="M820 200 V168 L836 152 L852 168 V200 Z"/>
+    <path d="M868 200 V176 H900 V200 Z"/>
+    <!-- Münstertürme -->
+    <path d="M540 200 V96 H562 V200 Z"/>
+    <path d="M572 200 V96 H594 V200 Z"/>
+  </g>
+  <path d="M540 96 L551 66 L562 96" /><path d="M572 96 L583 66 L594 96"/>
+  <path d="M551 66 V54" /><path d="M583 66 V54"/>
+  <circle cx="551" cy="80" r="3" fill="currentColor"/><circle cx="583" cy="80" r="3" fill="currentColor"/>
+  <path d="M600 200 H900" stroke-opacity=".6"/>
+  <!-- Gedeckte Holzbrücke -->
+  <g>
+    <path d="M60 176 L120 156 H520 L560 176 Z" fill="currentColor" fill-opacity=".14"/>
+    <path d="M60 176 H560"/>
+    <path d="M70 176 V206 H550 V176" fill="currentColor" fill-opacity=".05"/>
+    <path d="M70 206 H550"/>
+    <!-- Fensterreihe -->
+    <g stroke-opacity=".7">
+      <path d="M100 186 V198 M130 186 V198 M160 186 V198 M190 186 V198 M220 186 V198 M250 186 V198 M280 186 V198 M310 186 V198 M340 186 V198 M370 186 V198 M400 186 V198 M430 186 V198 M460 186 V198 M490 186 V198 M520 186 V198"/>
+    </g>
+    <!-- Pfeiler mit Eisbrechern -->
+    <g fill="currentColor" fill-opacity=".1">
+      <path d="M130 206 V236 L142 246 L154 236 V206 Z"/>
+      <path d="M250 206 V236 L262 246 L274 236 V206 Z"/>
+      <path d="M370 206 V236 L382 246 L394 236 V206 Z"/>
+      <path d="M490 206 V236 L502 246 L514 236 V206 Z"/>
+    </g>
+    <!-- Brückenkopf mit Zollhaus -->
+    <path d="M40 206 V182 H70" /><path d="M550 206 V182 H586 V206"/>
+    <path d="M586 206 V190 L600 176 L614 190 V206" fill="currentColor" fill-opacity=".1"/>
+  </g>
+  <!-- Rhein -->
+  <g stroke-opacity=".55">
+    <path d="M0 236 H960"/>
+    <path d="M20 256 C60 250 90 262 130 256 S200 250 240 256 S310 262 350 256 S420 250 460 256 S530 262 570 256 S640 250 680 256 S750 262 790 256 S860 250 900 256 S940 262 960 258"/>
+    <path d="M0 276 C50 270 80 282 120 276 S190 270 230 276 S300 282 340 276 S410 270 450 276 S520 282 560 276 S630 270 670 276 S740 282 780 276 S850 270 890 276 S940 282 960 278" stroke-opacity=".6"/>
+  </g>
+  <!-- Grenzmarkierung: Schweiz auf der Südseite -->
+  <g stroke="var(--seal, #7B2D2D)">
+    <path d="M40 206 V150" /><path d="M40 150 H56 V162 H40"/>
+    <path d="M45 156 H51 M48 153 V159"/>
+  </g>
+</svg><figcaption>Holzbrücke Bad Säckingen – Stein AG · Fridolinsmünster</figcaption></div></figure>
 
 <section><div class="wrap">
   <div class="section-head">
@@ -223,13 +291,13 @@ form.contact small{font-weight:400; color:var(--muted)}
     <p>Der Gesetzgeber schreibt für wichtige Verträge und Erklärungen die notarielle Form vor. Der Notar entwirft, erklärt und beurkundet.</p>
   </div>
   <div class="grid">
-    <a class="card" href="#immobilien"><h3>Immobilien</h3><p>Kauf und Verkauf von Haus, Wohnung oder Grundstück. Grundschuld für die Finanzierung. Übertragung in der Familie.</p><span class="more">Mehr erfahren</span></a>
-    <a class="card" href="#vererben"><h3>Vererben</h3><p>Testament und Erbvertrag. Was ohne Testament gilt, was der Pflichtteil ist, wie ein Erbschein beantragt wird.</p><span class="more">Mehr erfahren</span></a>
-    <a class="card" href="#schenken"><h3>Schenken</h3><p>Vermögen zu Lebzeiten übertragen, mit Wohnrecht, Nießbrauch oder Rückforderungsrecht abgesichert.</p><span class="more">Mehr erfahren</span></a>
-    <a class="card" href="#vorsorge"><h3>Vorsorge</h3><p>Vorsorgevollmacht, Patientenverfügung und Betreuungsverfügung: wer entscheidet, wenn Sie es nicht mehr können.</p><span class="more">Mehr erfahren</span></a>
-    <a class="card" href="#familie"><h3>Familie</h3><p>Ehevertrag, Vereinbarungen bei Trennung und Scheidung, Adoption, Vaterschaftsanerkennung.</p><span class="more">Mehr erfahren</span></a>
-    <a class="card" href="#unternehmen"><h3>Unternehmen</h3><p>GmbH gründen, Anteile übertragen, Handelsregister. Auf Wunsch per Video-Beurkundung über das Notarportal.</p><span class="more">Mehr erfahren</span></a>
-    <a class="card" href="#beglaubigungen"><h3>Beglaubigungen und Schweiz</h3><p>Unterschriften und Abschriften beglaubigen. Dokumente für Schweizer Behörden und das Ausland.</p><span class="more">Mehr erfahren</span></a>
+    <a class="card" href="#immobilien"><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M10 32 L32 12 L54 32"/><path d="M16 28 V52 H48 V28"/><path d="M28 52 V38 H36 V52"/><path d="M42 12 H48 V20"/></svg></span><h3>Immobilien</h3><p>Kauf und Verkauf von Haus, Wohnung oder Grundstück. Grundschuld für die Finanzierung. Übertragung in der Familie.</p><span class="more">Mehr erfahren</span></a>
+    <a class="card" href="#vererben"><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M16 8 H40 L50 18 V56 H16 Z"/><path d="M40 8 V18 H50"/><path d="M22 28 H44 M22 36 H44 M22 44 H34"/><circle cx="42" cy="48" r="6" fill="var(--seal,#7B2D2D)" stroke="none"/><path d="M42 44 V52 M38 48 H46" stroke="var(--paper,#F4F5F2)"/></svg></span><h3>Vererben</h3><p>Testament und Erbvertrag. Was ohne Testament gilt, was der Pflichtteil ist, wie ein Erbschein beantragt wird.</p><span class="more">Mehr erfahren</span></a>
+    <a class="card" href="#schenken"><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><circle cx="22" cy="32" r="10"/><circle cx="22" cy="32" r="3"/><path d="M32 32 H54 V40 M48 32 V38 M42 32 V38"/></svg></span><h3>Schenken</h3><p>Vermögen zu Lebzeiten übertragen, mit Wohnrecht, Nießbrauch oder Rückforderungsrecht abgesichert.</p><span class="more">Mehr erfahren</span></a>
+    <a class="card" href="#vorsorge"><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M8 34 C8 20 19 12 32 12 C45 12 56 20 56 34 Z"/><path d="M8 34 C12 30 16 30 20 34 C24 30 28 30 32 34 C36 30 40 30 44 34 C48 30 52 30 56 34"/><path d="M32 12 V8"/><path d="M32 34 V50 C32 55 26 55 26 50"/></svg></span><h3>Vorsorge</h3><p>Vorsorgevollmacht, Patientenverfügung und Betreuungsverfügung: wer entscheidet, wenn Sie es nicht mehr können.</p><span class="more">Mehr erfahren</span></a>
+    <a class="card" href="#familie"><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><circle cx="25" cy="34" r="13"/><circle cx="39" cy="34" r="13"/><path d="M22 21 L25 14 L28 21"/></svg></span><h3>Familie</h3><p>Ehevertrag, Vereinbarungen bei Trennung und Scheidung, Adoption, Vaterschaftsanerkennung.</p><span class="more">Mehr erfahren</span></a>
+    <a class="card" href="#unternehmen"><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M12 56 V22 L32 12 L52 22 V56 Z"/><path d="M8 56 H56"/><path d="M20 30 H26 M30 30 H34 M38 30 H44 M20 38 H26 M30 38 H34 M38 38 H44 M20 46 H26 M38 46 H44"/><path d="M29 56 V46 H35 V56"/></svg></span><h3>Unternehmen</h3><p>GmbH gründen, Anteile übertragen, Handelsregister. Auf Wunsch per Video-Beurkundung über das Notarportal.</p><span class="more">Mehr erfahren</span></a>
+    <a class="card" href="#beglaubigungen"><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M24 12 H40 V26 H24 Z"/><path d="M14 26 H50 V36 H14 Z"/><path d="M14 36 V50 H50 V36"/><path d="M20 44 H44" stroke="var(--seal,#7B2D2D)"/><path d="M28 12 V8 H36 V12"/></svg></span><h3>Beglaubigungen und Schweiz</h3><p>Unterschriften und Abschriften beglaubigen. Dokumente für Schweizer Behörden und das Ausland.</p><span class="more">Mehr erfahren</span></a>
   </div>
 </div></section>
 
@@ -239,10 +307,10 @@ form.contact small{font-weight:400; color:var(--muted)}
     <p>Vier Schritte, bei jedem Vorgang gleich. Sie unterschreiben nichts, was Ihnen nicht vorher erklärt wurde.</p>
   </div>
   <ol class="steps">
-    <li><strong>Anfrage</strong><p>Sie rufen an oder schreiben. Das Büro klärt, worum es geht und welche Unterlagen nötig sind.</p></li>
-    <li><strong>Entwurf</strong><p>Der Notar erstellt den Vertrag oder die Erklärung. Sie erhalten den Entwurf vorab zum Lesen.</p></li>
-    <li><strong>Beurkundung</strong><p>Beim Termin liest der Notar den Text vor, erklärt ihn und beantwortet Fragen. Dann wird unterschrieben.</p></li>
-    <li><strong>Vollzug</strong><p>Das Notariat kümmert sich um Grundbuch, Register, Behörden und informiert Sie über den Abschluss.</p></li>
+    <li><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M18 10 H30 L34 22 L27 27 C30 34 36 40 43 43 L48 36 L58 42 L54 52 C52 54 48 56 44 54 C28 48 16 36 10 20 C9 16 12 12 18 10 Z"/></svg></span><strong>Anfrage</strong><p>Sie rufen an oder schreiben. Das Büro klärt, worum es geht und welche Unterlagen nötig sind.</p></li>
+    <li><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M14 50 L40 24"/><path d="M40 24 C46 14 54 12 56 10 C54 20 48 30 38 34 L30 34 L26 40"/><path d="M12 56 H52"/></svg></span><strong>Entwurf</strong><p>Der Notar erstellt den Vertrag oder die Erklärung. Sie erhalten den Entwurf vorab zum Lesen.</p></li>
+    <li><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><circle cx="32" cy="30" r="16"/><circle cx="32" cy="30" r="10" stroke="var(--seal,#7B2D2D)"/><path d="M24 44 L20 58 L32 52 L44 58 L40 44"/></svg></span><strong>Beurkundung</strong><p>Beim Termin liest der Notar den Text vor, erklärt ihn und beantwortet Fragen. Dann wird unterschrieben.</p></li>
+    <li><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><circle cx="32" cy="32" r="22"/><path d="M20 33 L28 41 L44 24"/></svg></span><strong>Vollzug</strong><p>Das Notariat kümmert sich um Grundbuch, Register, Behörden und informiert Sie über den Abschluss.</p></li>
   </ol>
   <p style="margin-top:24px"><a href="#ablauf">Ablauf im Einzelnen und Unterlagen-Checklisten</a></p>
 </div></section>
@@ -255,6 +323,7 @@ form.contact small{font-weight:400; color:var(--muted)}
     <p><a href="#kosten">Beispiele und Erklärung der Kosten</a></p>
   </div>
   <div class="box">
+    <span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M8 40 C24 34 40 46 56 40"/><path d="M8 48 C24 42 40 54 56 48" stroke-opacity=".5"/><path d="M14 40 L20 20 H44 L50 40"/><path d="M20 20 V12 H30 V20"/><path d="M32 24 V34 M27 29 H37" stroke="var(--seal,#7B2D2D)"/></svg></span>
     <h3>Nahe an der Schweiz</h3>
     <p>Bad Säckingen liegt am Rhein, gegenüber von Stein AG. Viele Mandanten leben, arbeiten oder besitzen Vermögen auf beiden Seiten der Grenze.</p>
     <ul>
@@ -273,6 +342,7 @@ form.contact small{font-weight:400; color:var(--muted)}
     <p><a href="#glossar">Zum Glossar</a></p>
   </div>
   <div class="box">
+    <span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="6" y="14" width="52" height="36" rx="3"/><circle cx="20" cy="30" r="6"/><path d="M11 44 C12 38 28 38 29 44"/><path d="M36 26 H50 M36 34 H50"/></svg></span>
     <h3>Gut zu wissen</h3>
     <ul>
       <li>Bringen Sie zu jedem Termin Ihren gültigen Personalausweis oder Reisepass mit.</li>
@@ -291,13 +361,13 @@ form.contact small{font-weight:400; color:var(--muted)}
 </div></section>
 <section><div class="wrap">
   <div class="grid">
-    <a class="card" href="#immobilien"><h3>Immobilien</h3><p>Kaufvertrag, Grundschuld, Übertragung, Wohnungseigentum, Erbbaurecht.</p><span class="more">Zur Seite</span></a>
-    <a class="card" href="#vererben"><h3>Vererben</h3><p>Testament, Erbvertrag, Erbschein, Erbausschlagung, Pflichtteilsverzicht.</p><span class="more">Zur Seite</span></a>
-    <a class="card" href="#schenken"><h3>Schenken</h3><p>Übergabevertrag, vorweggenommene Erbfolge, Wohnrecht, Nießbrauch.</p><span class="more">Zur Seite</span></a>
-    <a class="card" href="#vorsorge"><h3>Vorsorge</h3><p>Vorsorgevollmacht, Patientenverfügung, Betreuungsverfügung, Vorsorgeregister.</p><span class="more">Zur Seite</span></a>
-    <a class="card" href="#familie"><h3>Familie</h3><p>Ehevertrag, Scheidungsfolgenvereinbarung, Adoption, Vaterschaft, Unterhalt.</p><span class="more">Zur Seite</span></a>
-    <a class="card" href="#unternehmen"><h3>Unternehmen</h3><p>GmbH und UG, Anteilsübertragung, Satzungsänderung, Handelsregister, Umwandlung.</p><span class="more">Zur Seite</span></a>
-    <a class="card" href="#beglaubigungen"><h3>Beglaubigungen und Schweiz</h3><p>Unterschriftsbeglaubigung, beglaubigte Abschrift, Apostille, Dokumente für das Ausland.</p><span class="more">Zur Seite</span></a>
+    <a class="card" href="#immobilien"><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M10 32 L32 12 L54 32"/><path d="M16 28 V52 H48 V28"/><path d="M28 52 V38 H36 V52"/><path d="M42 12 H48 V20"/></svg></span><h3>Immobilien</h3><p>Kaufvertrag, Grundschuld, Übertragung, Wohnungseigentum, Erbbaurecht.</p><span class="more">Zur Seite</span></a>
+    <a class="card" href="#vererben"><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M16 8 H40 L50 18 V56 H16 Z"/><path d="M40 8 V18 H50"/><path d="M22 28 H44 M22 36 H44 M22 44 H34"/><circle cx="42" cy="48" r="6" fill="var(--seal,#7B2D2D)" stroke="none"/><path d="M42 44 V52 M38 48 H46" stroke="var(--paper,#F4F5F2)"/></svg></span><h3>Vererben</h3><p>Testament, Erbvertrag, Erbschein, Erbausschlagung, Pflichtteilsverzicht.</p><span class="more">Zur Seite</span></a>
+    <a class="card" href="#schenken"><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><circle cx="22" cy="32" r="10"/><circle cx="22" cy="32" r="3"/><path d="M32 32 H54 V40 M48 32 V38 M42 32 V38"/></svg></span><h3>Schenken</h3><p>Übergabevertrag, vorweggenommene Erbfolge, Wohnrecht, Nießbrauch.</p><span class="more">Zur Seite</span></a>
+    <a class="card" href="#vorsorge"><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M8 34 C8 20 19 12 32 12 C45 12 56 20 56 34 Z"/><path d="M8 34 C12 30 16 30 20 34 C24 30 28 30 32 34 C36 30 40 30 44 34 C48 30 52 30 56 34"/><path d="M32 12 V8"/><path d="M32 34 V50 C32 55 26 55 26 50"/></svg></span><h3>Vorsorge</h3><p>Vorsorgevollmacht, Patientenverfügung, Betreuungsverfügung, Vorsorgeregister.</p><span class="more">Zur Seite</span></a>
+    <a class="card" href="#familie"><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><circle cx="25" cy="34" r="13"/><circle cx="39" cy="34" r="13"/><path d="M22 21 L25 14 L28 21"/></svg></span><h3>Familie</h3><p>Ehevertrag, Scheidungsfolgenvereinbarung, Adoption, Vaterschaft, Unterhalt.</p><span class="more">Zur Seite</span></a>
+    <a class="card" href="#unternehmen"><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M12 56 V22 L32 12 L52 22 V56 Z"/><path d="M8 56 H56"/><path d="M20 30 H26 M30 30 H34 M38 30 H44 M20 38 H26 M30 38 H34 M38 38 H44 M20 46 H26 M38 46 H44"/><path d="M29 56 V46 H35 V56"/></svg></span><h3>Unternehmen</h3><p>GmbH und UG, Anteilsübertragung, Satzungsänderung, Handelsregister, Umwandlung.</p><span class="more">Zur Seite</span></a>
+    <a class="card" href="#beglaubigungen"><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M24 12 H40 V26 H24 Z"/><path d="M14 26 H50 V36 H14 Z"/><path d="M14 36 V50 H50 V36"/><path d="M20 44 H44" stroke="var(--seal,#7B2D2D)"/><path d="M28 12 V8 H36 V12"/></svg></span><h3>Beglaubigungen und Schweiz</h3><p>Unterschriftsbeglaubigung, beglaubigte Abschrift, Apostille, Dokumente für das Ausland.</p><span class="more">Zur Seite</span></a>
   </div>
 </div></section>
 <section class="tight"><div class="wrap">
@@ -309,9 +379,12 @@ form.contact small{font-weight:400; color:var(--muted)}
 </section>
 <section class="pv-page page-immobilien" id="immobilien" data-title="Immobilien · Notar Stadler, Bad Säckingen" hidden>
 <section class="page-hero"><div class="wrap">
+  <div>
   <p class="crumbs"><a href="#leistungen">Leistungen</a> · Immobilien</p>
   <h1>Immobilien kaufen, verkaufen, übertragen</h1>
   <p class="lead">Jeder Vertrag über ein Grundstück, ein Haus oder eine Wohnung muss notariell beurkundet werden. Sonst ist er unwirksam. Der Notar sorgt dafür, dass Käufer und Verkäufer gleichermaßen abgesichert sind.</p>
+  </div>
+  <div class="art"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M10 32 L32 12 L54 32"/><path d="M16 28 V52 H48 V28"/><path d="M28 52 V38 H36 V52"/><path d="M42 12 H48 V20"/></svg></div>
 </div></section>
 <section><div class="wrap split">
   <div class="prose">
@@ -356,9 +429,12 @@ form.contact small{font-weight:400; color:var(--muted)}
 </section>
 <section class="pv-page page-vererben" id="vererben" data-title="Testament und Erbvertrag · Notar Stadler" hidden>
 <section class="page-hero"><div class="wrap">
+  <div>
   <p class="crumbs"><a href="#leistungen">Leistungen</a> · Vererben</p>
   <h1>Testament und Erbvertrag</h1>
   <p class="lead">Wer nichts regelt, wird nach der gesetzlichen Erbfolge beerbt. Das entspricht oft nicht dem, was man möchte. Ein notarielles Testament schafft Klarheit und erspart den Erben später meist den Erbschein.</p>
+  </div>
+  <div class="art"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M16 8 H40 L50 18 V56 H16 Z"/><path d="M40 8 V18 H50"/><path d="M22 28 H44 M22 36 H44 M22 44 H34"/><circle cx="42" cy="48" r="6" fill="var(--seal,#7B2D2D)" stroke="none"/><path d="M42 44 V52 M38 48 H46" stroke="var(--paper,#F4F5F2)"/></svg></div>
 </div></section>
 <section><div class="wrap split">
   <div class="prose">
@@ -402,9 +478,12 @@ form.contact small{font-weight:400; color:var(--muted)}
 </section>
 <section class="pv-page page-schenken" id="schenken" data-title="Schenken und Übergabe · Notar Stadler" hidden>
 <section class="page-hero"><div class="wrap">
+  <div>
   <p class="crumbs"><a href="#leistungen">Leistungen</a> · Schenken</p>
   <h1>Schenken und Übergabe zu Lebzeiten</h1>
   <p class="lead">Wer ein Haus oder Vermögen schon zu Lebzeiten an die nächste Generation gibt, spricht von vorweggenommener Erbfolge. Sie muss gut abgesichert sein: für den, der gibt, und für den, der bekommt.</p>
+  </div>
+  <div class="art"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><circle cx="22" cy="32" r="10"/><circle cx="22" cy="32" r="3"/><path d="M32 32 H54 V40 M48 32 V38 M42 32 V38"/></svg></div>
 </div></section>
 <section><div class="wrap split">
   <div class="prose">
@@ -441,9 +520,12 @@ form.contact small{font-weight:400; color:var(--muted)}
 </section>
 <section class="pv-page page-vorsorge" id="vorsorge" data-title="Vorsorgevollmacht und Patientenverfügung · Notar Stadler" hidden>
 <section class="page-hero"><div class="wrap">
+  <div>
   <p class="crumbs"><a href="#leistungen">Leistungen</a> · Vorsorge</p>
   <h1>Vorsorgevollmacht, Patientenverfügung, Betreuungsverfügung</h1>
   <p class="lead">Ehepartner und Kinder dürfen nicht automatisch für Sie entscheiden, wenn Sie es selbst nicht mehr können. Ohne Vollmacht bestellt das Gericht einen Betreuer. Mit einer Vorsorgevollmacht bestimmen Sie selbst, wer handelt.</p>
+  </div>
+  <div class="art"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M8 34 C8 20 19 12 32 12 C45 12 56 20 56 34 Z"/><path d="M8 34 C12 30 16 30 20 34 C24 30 28 30 32 34 C36 30 40 30 44 34 C48 30 52 30 56 34"/><path d="M32 12 V8"/><path d="M32 34 V50 C32 55 26 55 26 50"/></svg></div>
 </div></section>
 <section><div class="wrap split">
   <div class="prose">
@@ -482,9 +564,12 @@ form.contact small{font-weight:400; color:var(--muted)}
 </section>
 <section class="pv-page page-familie" id="familie" data-title="Ehevertrag und Familie · Notar Stadler" hidden>
 <section class="page-hero"><div class="wrap">
+  <div>
   <p class="crumbs"><a href="#leistungen">Leistungen</a> · Familie</p>
   <h1>Ehevertrag, Trennung, Adoption</h1>
   <p class="lead">Viele Regelungen zwischen Ehegatten und in der Familie sind nur mit notarieller Beurkundung wirksam. Der Notar berät beide Seiten und achtet darauf, dass keine Seite unangemessen benachteiligt wird.</p>
+  </div>
+  <div class="art"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><circle cx="25" cy="34" r="13"/><circle cx="39" cy="34" r="13"/><path d="M22 21 L25 14 L28 21"/></svg></div>
 </div></section>
 <section><div class="wrap split">
   <div class="prose">
@@ -522,9 +607,12 @@ form.contact small{font-weight:400; color:var(--muted)}
 </section>
 <section class="pv-page page-unternehmen" id="unternehmen" data-title="Unternehmen und Gesellschaften · Notar Stadler" hidden>
 <section class="page-hero"><div class="wrap">
+  <div>
   <p class="crumbs"><a href="#leistungen">Leistungen</a> · Unternehmen</p>
   <h1>Unternehmen und Gesellschaften</h1>
   <p class="lead">Gründung, Anteilsverkauf, Satzungsänderung und viele Anmeldungen zum Handelsregister brauchen den Notar. Er sorgt dafür, dass die Unterlagen vom Registergericht ohne Rückfragen eingetragen werden.</p>
+  </div>
+  <div class="art"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M12 56 V22 L32 12 L52 22 V56 Z"/><path d="M8 56 H56"/><path d="M20 30 H26 M30 30 H34 M38 30 H44 M20 38 H26 M30 38 H34 M38 38 H44 M20 46 H26 M38 46 H44"/><path d="M29 56 V46 H35 V56"/></svg></div>
 </div></section>
 <section><div class="wrap split">
   <div class="prose">
@@ -563,9 +651,12 @@ form.contact small{font-weight:400; color:var(--muted)}
 </section>
 <section class="pv-page page-beglaubigungen" id="beglaubigungen" data-title="Beglaubigungen und Schweiz · Notar Stadler" hidden>
 <section class="page-hero"><div class="wrap">
+  <div>
   <p class="crumbs"><a href="#leistungen">Leistungen</a> · Beglaubigungen und Schweiz</p>
   <h1>Beglaubigungen und Dokumente für das Ausland</h1>
   <p class="lead">Eine Beglaubigung bestätigt, dass eine Unterschrift echt ist oder eine Kopie mit dem Original übereinstimmt. Sie ist schneller und günstiger als eine Beurkundung und oft ausreichend.</p>
+  </div>
+  <div class="art"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M16 8 H48 V56 H16 Z"/><path d="M22 18 H42 M22 26 H42 M22 34 H34"/><circle cx="40" cy="46" r="7" stroke="var(--seal,#7B2D2D)"/><path d="M37 46 L39 48 L43 44" stroke="var(--seal,#7B2D2D)"/></svg></div>
 </div></section>
 <section><div class="wrap split">
   <div class="prose">
@@ -601,16 +692,19 @@ form.contact small{font-weight:400; color:var(--muted)}
 </section>
 <section class="pv-page page-ablauf" id="ablauf" data-title="Ablauf und Unterlagen · Notar Stadler" hidden>
 <section class="page-hero"><div class="wrap">
+  <div>
   <p class="eyebrow">Ablauf und Unterlagen</p>
   <h1>So läuft ein Termin beim Notar ab</h1>
   <p class="lead">Ein notarieller Vorgang hat bei jedem Anliegen dieselben vier Schritte. Wer weiß, was kommt, und die Unterlagen dabei hat, spart Zeit und Rückfragen.</p>
+  </div>
+  <div class="art"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><circle cx="32" cy="30" r="16"/><circle cx="32" cy="30" r="10" stroke="var(--seal,#7B2D2D)"/><path d="M24 44 L20 58 L32 52 L44 58 L40 44"/></svg></div>
 </div></section>
 <section><div class="wrap">
   <ol class="steps">
-    <li><strong>Anfrage</strong><p>Sie rufen an oder nutzen das Kontaktformular. Das Büro fragt, worum es geht, wer beteiligt ist und welche Unterlagen nötig sind. Dann wird ein Termin vereinbart.</p></li>
-    <li><strong>Entwurf</strong><p>Der Notar entwirft die Urkunde. Bei Verträgen mit Verbrauchern erhalten Sie den Entwurf mindestens zwei Wochen vor dem Termin, damit Sie ihn in Ruhe lesen und Fragen stellen können.</p></li>
-    <li><strong>Beurkundung</strong><p>Der Notar liest die Urkunde vollständig vor. Das ist gesetzlich vorgeschrieben. Er erklärt jeden Punkt, Änderungen sind noch möglich. Danach unterschreiben alle Beteiligten und der Notar.</p></li>
-    <li><strong>Vollzug</strong><p>Das Notariat reicht die Urkunde bei Grundbuchamt, Registergericht, Finanzamt oder Gemeinde ein, überwacht Fälligkeiten und informiert Sie, wenn alles abgeschlossen ist.</p></li>
+    <li><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M18 10 H30 L34 22 L27 27 C30 34 36 40 43 43 L48 36 L58 42 L54 52 C52 54 48 56 44 54 C28 48 16 36 10 20 C9 16 12 12 18 10 Z"/></svg></span><strong>Anfrage</strong><p>Sie rufen an oder nutzen das Kontaktformular. Das Büro fragt, worum es geht, wer beteiligt ist und welche Unterlagen nötig sind. Dann wird ein Termin vereinbart.</p></li>
+    <li><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M14 50 L40 24"/><path d="M40 24 C46 14 54 12 56 10 C54 20 48 30 38 34 L30 34 L26 40"/><path d="M12 56 H52"/></svg></span><strong>Entwurf</strong><p>Der Notar entwirft die Urkunde. Bei Verträgen mit Verbrauchern erhalten Sie den Entwurf mindestens zwei Wochen vor dem Termin, damit Sie ihn in Ruhe lesen und Fragen stellen können.</p></li>
+    <li><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><circle cx="32" cy="30" r="16"/><circle cx="32" cy="30" r="10" stroke="var(--seal,#7B2D2D)"/><path d="M24 44 L20 58 L32 52 L44 58 L40 44"/></svg></span><strong>Beurkundung</strong><p>Der Notar liest die Urkunde vollständig vor. Das ist gesetzlich vorgeschrieben. Er erklärt jeden Punkt, Änderungen sind noch möglich. Danach unterschreiben alle Beteiligten und der Notar.</p></li>
+    <li><span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><circle cx="32" cy="32" r="22"/><path d="M20 33 L28 41 L44 24"/></svg></span><strong>Vollzug</strong><p>Das Notariat reicht die Urkunde bei Grundbuchamt, Registergericht, Finanzamt oder Gemeinde ein, überwacht Fälligkeiten und informiert Sie, wenn alles abgeschlossen ist.</p></li>
   </ol>
 </div></section>
 <section><div class="wrap split">
@@ -625,6 +719,7 @@ form.contact small{font-weight:400; color:var(--muted)}
     </ul>
   </div>
   <div class="box">
+    <span class="icon"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="6" y="14" width="52" height="36" rx="3"/><circle cx="20" cy="30" r="6"/><path d="M11 44 C12 38 28 38 29 44"/><path d="M36 26 H50 M36 34 H50"/></svg></span>
     <h3>Vor dem Termin</h3>
     <ul class="check">
       <li>Entwurf gelesen, Fragen notiert</li>
@@ -663,9 +758,12 @@ form.contact small{font-weight:400; color:var(--muted)}
 </section>
 <section class="pv-page page-kosten" id="kosten" data-title="Kosten · Notar Stadler, Bad Säckingen" hidden>
 <section class="page-hero"><div class="wrap">
+  <div>
   <p class="eyebrow">Kosten</p>
   <h1>Was der Notar kostet</h1>
   <p class="lead">Notarkosten sind im Gerichts- und Notarkostengesetz (GNotKG) festgelegt. Der Notar darf weder mehr noch weniger verlangen. Deshalb kostet dieselbe Urkunde bei jedem Notar in Deutschland gleich viel.</p>
+  </div>
+  <div class="art"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M32 10 V54 M18 54 H46"/><path d="M12 18 H52"/><path d="M18 18 L10 36 H26 Z"/><path d="M46 18 L38 36 H54 Z"/><path d="M10 36 C10 42 26 42 26 36 M38 36 C38 42 54 42 54 36"/></svg></div>
 </div></section>
 <section><div class="wrap split">
   <div class="prose">
@@ -700,9 +798,12 @@ form.contact small{font-weight:400; color:var(--muted)}
 </section>
 <section class="pv-page page-glossar" id="glossar" data-title="Glossar · Notar Stadler" hidden>
 <section class="page-hero"><div class="wrap">
+  <div>
   <p class="eyebrow">Glossar</p>
   <h1>Begriffe aus dem Notariat, verständlich</h1>
   <p class="lead">Diese Wörter kommen in Urkunden und Gesprächen vor. Beim Termin erklärt der Notar sie noch einmal. Alphabetisch geordnet.</p>
+  </div>
+  <div class="art"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M8 14 C16 12 24 13 32 18 C40 13 48 12 56 14 V50 C48 48 40 49 32 54 C24 49 16 48 8 50 Z"/><path d="M32 18 V54"/><path d="M14 22 H26 M14 30 H26 M14 38 H26 M38 22 H50 M38 30 H50 M38 38 H50" stroke-opacity=".6"/></svg></div>
 </div></section>
 <section><div class="wrap">
   <dl class="gloss">
@@ -734,9 +835,12 @@ form.contact small{font-weight:400; color:var(--muted)}
 </section>
 <section class="pv-page page-kanzlei" id="kanzlei" data-title="Kanzlei · Notar Stadler, Bad Säckingen" hidden>
 <section class="page-hero"><div class="wrap">
+  <div>
   <p class="eyebrow">Kanzlei</p>
   <h1>Notariat in Bad Säckingen</h1>
   <p class="lead">Notar Kai-Christoph Stadler ist Notar mit Amtssitz in Bad Säckingen. Das Notariat ist zuständig für alle Anliegen, unabhängig vom Wohnort der Beteiligten.</p>
+  </div>
+  <div class="art"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><circle cx="32" cy="30" r="16"/><circle cx="32" cy="30" r="10" stroke="var(--seal,#7B2D2D)"/><path d="M24 44 L20 58 L32 52 L44 58 L40 44"/></svg></div>
 </div></section>
 <section><div class="wrap split">
   <div class="prose">
@@ -768,9 +872,12 @@ form.contact small{font-weight:400; color:var(--muted)}
 </section>
 <section class="pv-page page-kontakt" id="kontakt" data-title="Kontakt und Termin · Notar Stadler" hidden>
 <section class="page-hero"><div class="wrap">
+  <div>
   <p class="eyebrow">Kontakt</p>
   <h1>Termin anfragen</h1>
   <p class="lead">Rufen Sie an oder schreiben Sie uns. Das Büro meldet sich, klärt das Anliegen und schlägt einen Termin vor.</p>
+  </div>
+  <div class="art"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M18 10 H30 L34 22 L27 27 C30 34 36 40 43 43 L48 36 L58 42 L54 52 C52 54 48 56 44 54 C28 48 16 36 10 20 C9 16 12 12 18 10 Z"/></svg></div>
 </div></section>
 <section><div class="wrap split">
   <div>
